@@ -105,7 +105,7 @@
 .button--secondary:active { background: var(--surface-block); }
 
 /* --- map -------------------------------------------------------------------------------- */
-.map { display: block; width: 100%; height: auto; background: var(--surface-page); }
+.map { display: block; width: 100%; height: auto; max-height: var(--size-viewport-min-height); margin: 0 auto; background: var(--surface-page); }
 .map__land { fill: var(--map-land); stroke: var(--map-outline); stroke-width: var(--size-hairline); stroke-linejoin: round; }
 .map__land path { vector-effect: non-scaling-stroke; }
 .map__community { cursor: pointer; }

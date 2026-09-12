@@ -240,3 +240,6 @@ D5. **National scope** — only if the NT is finished early; the brief allows it
 | 2026-09-12 | Amber with the printed assumption, not grey, not green | Tarik |
 | 2026-09-12 | No AI in the product; declared in the process | Tarik |
 | 2026-09-12 | PWA, single HTML, no tiles, no server; Python pipeline; NT only | notes.md "Calls already made" |
+| 2026-09-13 | Map filter "Clinic, no terrestrial path" uses the §5 best-available-path rule (health centre present, path is satellite): 12 of 96. The brief's 41 reproduces from nothing; 69 and 11 rejected, recorded in `design/screens/README.md` | Eko, on Tarik's instruction to decide |
+| 2026-09-13 | Screen tabs stay in the top bar per DESIGN.md; the app scrolls the selected tab (and the selected filter tab) into view on load. Own nav row is a v1.1 candidate | Eko, on Tarik's instruction to decide |
+| 2026-09-13 | The map is capped at `size.viewport-min-height` and centred on wide screens; points are coloured by the telehealth video verdict, the PRD's other colour-by choices are not renderable under DESIGN.md's colour rule and are dropped from v1 | Eko, on Tarik's instruction to decide |

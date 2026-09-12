@@ -41,7 +41,8 @@ No definition reproduces 41. The two candidates the task named give 69 (health c
 centre and no carrier 4G polygon). The screen uses the PRD's own definition of a terrestrial
 path, which gives 12; the one community beyond the 11 has a carrier polygon but no licensed
 site within 5 km, so the path rule does not trust the polygon. Change the label and the count
-together if a different definition is preferred.
+together if a different definition is preferred. Decided 2026-09-13: the PRD path rule stays; it is
+now in the PRD decision log.
 
 Telehealth video verdicts across all 96, shown in the legend: Works 1, Degraded 58, Fails 11,
 No data 26. The 11 filtered communities are Orrtipa-Thurra, Manmoyi, Woodycupaldiya, Baniyala,
@@ -151,13 +152,15 @@ component key is given in the first column. Every class is defined once in `scre
   says so. The PRD's colour-by choices are a question for the design project, not this folder.
 - **Tabs at 360.** Title, three screen tabs at DESIGN.md's tab padding and the offline chip
   do not fit in 360px, and neither do the four filter tabs above the map. Both rows scroll
-  horizontally, which is what DESIGN.md says tabs do when they overflow, but in a static file
-  nothing scrolls the selected tab into view, so in the phone frame the selected "Share" tab
-  and the selected "Licensed mast, no coverage map" filter sit past the right edge. The app
-  would scroll them into view; the rulebook question is whether three screen tabs belong in a
-  56px bar at 360px at all.
+  horizontally, as DESIGN.md says tabs do when they overflow. In a static file nothing scrolls
+  the selected tab into view, so in the phone frame the selected "Share" tab and the selected
+  "Licensed mast, no coverage map" filter sit past the right edge. Decided 2026-09-13: the app
+  scrolls the selected tab into view on load; DESIGN.md is unchanged. Moving the screen tabs to
+  their own row is a v1.1 candidate in `BACKLOG.md`.
 - **Map height at 768.** The mirror's map is `width: 100%; height: auto` on a 300 × 480 view box,
-  so inside the 640px content column it is 1024px tall. DESIGN.md sets no cap; none was added.
+  so inside the 640px content column it would be 1024px tall and the selected label would scale
+  with it. Decided 2026-09-13: `screens.css` caps the map at `--size-viewport-min-height` and
+  centres it. DESIGN.md sets no cap, so no rule is contradicted; the token is reused, not added.
 
 ## Rebuilding
 
