@@ -1,4 +1,4 @@
-# CLAUDE.md — CDU IT Code Fair 2026 — Data Innovation Challenge (Python + geospatial/data stack; pinned in Part 2)
+# CLAUDE.md — Crosscheck — CDU IT Code Fair 2026, Data Innovation Challenge (Python 3.13 pipeline + single-file vanilla JS app; pinned in Part 2)
 
 > **Competition context lives in this repo, not in your memory.** Read `README.md`
 > at the root of this folder before doing anything, and the files under `docs/` that it
@@ -262,130 +262,188 @@ user's call, and `create-architecture` is what amends it.
 
 ## Part 2: Technical Architecture
 
-> ## ⚠️ Part 2 is a placeholder — write it for THIS project before anything else runs
->
-> Part 2 is the only project-specific section of this file, and once written it is
-> **binding on every task**. Do not adapt another project's Part 2 by editing values
-> inside it: a carried-over Part 2 silently imports that project's stack, its folder
-> layout and its verification commands, and every task written afterwards inherits them.
->
-> **Write it with `create-architecture`, from `docs/PRD.md`, before `generate-tasks`.**
-> Delete this whole block — the marker line below included — once it is written.
->
-> Two things decide whether the Verification Rules you write catch anything at all:
-> **the working directory** each command runs from (many tools only find their config
-> from the current directory), and **cross-platform commands** (a POSIX-only idiom fails
-> for whoever is on Windows). Name both explicitly.
-
-<!-- PART-2-PLACEHOLDER -->
-
-The headings below are the skeleton to fill. Keep them; replace every line under them.
-Delete a whole section only when this project genuinely has no such surface — and say
-that you deleted it, rather than leaving it empty.
-
-Apply one test to every line written here: **would removing it cause a mistake?** If not,
-cut it. Part 2 is loaded into every session, so anything that steers no decision is
-paying no rent.
+Written 2026-09-13 with `create-architecture` from `docs/PRD.md`, the 20-community spike
+(`reports/2026-09-12-spike-20.md`) and the design files in `design/`. Three calls were put to
+Tarik and decided that day: vanilla JS with a Python build (not Preact over the mirror's JSX),
+GitHub Pages as the host the QR points at, and `.venv` as the environment name.
 
 ### Stack
 
-The language/framework version, pinned, and **verified installed on this machine** — say
-so, with the date.
+**Python 3.13.5** through **uv 0.12.13**, environment `.venv/` at the project root, verified
+installed 2026-09-13. `pyproject.toml` lists the dependencies; `uv.lock` is the resolved graph and
+the only place a version is read from. Every command in this file runs **from the project root**
+with `PYTHONUTF8=1` (Windows OEM code page mangles UTF-8 otherwise). Node 26.7.0 is on the machine
+but is used only by `design/screens/assets/build.mjs`, a design-time tool; nothing in the gate or
+the pipeline needs Node.
 
-Then a table: `| Package | Version | Why it is here |`. Four rules survive from project to
-project:
+The app is **vanilla ES2020 JavaScript in one HTML file**, no framework, no library, no bundler.
+The pipeline is Python; the build that produces the HTML is Python. One toolchain.
 
-- **Versions are resolved, not invented.** Install first, then read the versions back out
-  of the real lockfile. A version written from memory is a guess that looks like a fact.
-- **What a lockfile cannot tell you, `research` can** — whether a package is still
-  maintained, whether the API still exists, whether the approach has a known trap. Carry
-  its dated sources into the reason column.
-- **Every deliberate pin or downgrade records its reason here** — what breaks otherwise.
-  Without the reason attached, a later session bumps it "helpfully".
-- **Every rejected option gets one line too.** A table listing only winners reads as
-  though there was never a choice, and the same option is re-proposed in three weeks.
+| Package | Version (uv.lock, 2026-09-13) | Why it is here |
+|---|---|---|
+| geopandas | 1.1.4 | point-in-footprint and distance-to-polygon for NBN, ACCC and ACMA layers |
+| shapely | 2.1.2 | geometry predicates; simplifies the NT outline to a byte budget |
+| pyogrio | 0.13.0 | geopandas 1.x default IO engine; reads the NBN shapefiles and the ACCC KML |
+| pyproj | 3.8.0 | metre distances in GDA2020 MGA zones |
+| pandas | 3.0.5 | the capability table; **pandas 3**: copy-on-write is the default, so chained assignment never writes back; do not carry pandas-2 idioms over from the spike |
+| openpyxl | 3.1.5 | NT Government xlsx in; capability table xlsx out |
+| lxml | 6.1.3 | ACCC KML parsing, kept from the spike |
+| requests | 2.34.2 | `pipeline/fetch/` only; nothing else in the repo may import it |
+| matplotlib | 3.11.2 | the two static PNG maps for the report's Findings |
+| qrcode | 8.2 | build-time QR; compared module for module with the mirror's `qr.js` on 2026-09-12, 0 differences, so the build needs no Node |
+| pytest | 9.1.1 (dev) | unit and browser tests |
+| ruff | 0.16.7 (dev) | lint; config in `pyproject.toml`, excludes `spike/` and `design/` |
+| playwright | 1.62.0 (dev) | headless Chromium opens `dist/index.html` from `file://`; verified 2026-09-13. Browser build in `~/AppData/Local/ms-playwright/` |
+
+Rejected, one line each:
+- **Preact or React with the mirror's `.jsx` components**: a second toolchain, and the components carry literal sizes the screens deliberately do not copy.
+- **esbuild/Vite for a vanilla app**: minification saves nothing that matters at ~30 KB of JS.
+- **Flutter, Streamlit, any server**: a tool that needs a connection to explain where there is none (notes.md, 2026-09-12).
+- **pydeck/folium/Leaflet**: tile and CDN requests at runtime; the map is inline SVG.
+- **duckdb**: in the spike venv, imported nowhere; dropped by `uv sync`.
+- **Web fonts, icon fonts, images**: DESIGN.md forbids them and the byte budget agrees.
+- **`venv` as the environment name**: uv and VS Code default to `.venv`; decided 2026-09-13.
 
 ### Architecture
 
-- **Where the code lives** — the directory tree that matters, one line each.
-- **The layer rule** — the tiers, and which direction imports are allowed to run. State it
-  as something checkable ("no framework import ever appears in this folder"), not as an
-  aspiration.
-- **The seams** — the interfaces a *later phase* actually needs, named, with what sits
-  behind each one today. Nothing else gets an interface "for later": that is speculative
-  generality and Part 1 rule 2 forbids it.
-- **Entry points** — how the app is composed, and how a screen or endpoint is reached.
-- **Spikes** — where a risky, hard-to-reverse call was settled by running something rather
-  than by arguing, record the question, the spike and what it returned.
+**Where the code lives** (folders not yet present are created by the task that first needs them):
+
+```
+pipeline/            Python package, offline after data/raw/ is frozen
+  fetch/             one script per source; the ONLY place the network is touched; writes data/raw/<source>_<date>.*
+  sources/           one module per publisher or layer (nbn, accc, rrl, ntg, bushtel); each emits a 96-row frame keyed on bushtel_id
+  rules.py           best-available-path rule and the service verdict rules: pure functions over plain dicts
+  thresholds.csv     requirement figures with source URL and date (promoted from spike/thresholds.csv)
+  merge.py           joins the source frames into the capability table
+  pack.py            capability table -> data/out/data_pack.json, the subset the app shows, every citation kept
+  figures.py         the two PNG maps and the report tables
+  provenance.py      data/out/PROVENANCE.md from the source registry (URL, fetch date, size, licence, attribution line)
+  outline.py         NT boundary (ABS ASGS 2021 STE, CC BY 4.0) simplified to one SVG path for the pack
+data/raw/            frozen snapshots; files over 10 MB are gitignored and re-fetched by pipeline/fetch/
+data/out/            capability_table.csv/.xlsx, data_pack.json, PROVENANCE.md, figures/
+app/                 index.html (template), app.js (render only), app.css (app-only rules, tokens only), sw.js, manifest.webmanifest
+scripts/             gate.py, build_app.py, run_pipeline.py
+tests/               unit tests; tests/browser/ holds the Playwright smoke test (marker "browser")
+dist/                build output, gitignored; dist/index.html is the deliverable
+design/              brief.md, ds/ (read-only mirror of the design project), screens/ (the three reference screens)
+spike/               frozen 2026-09-12 throwaway; imported by nothing; deleted once the pipeline reproduces spike/out/capability_table.csv
+docs/ reports/       PRD, competition brief, dated research and spike reports
+```
+
+**The layer rule**, each line checkable:
+1. `pipeline/rules.py` imports only the standard library. `grep -E "^(import|from) (pandas|geopandas|shapely|numpy)" pipeline/rules.py` prints nothing. Rules take and return plain dicts so they are unit-tested with hand-built rows.
+2. Modules in `pipeline/sources/` never import each other; they meet only in `merge.py` on `bushtel_id`. `grep -E "from pipeline.sources" pipeline/sources/*.py` prints nothing.
+3. `requests` appears only under `pipeline/fetch/`. `grep -rl "import requests" pipeline app scripts tests | grep -v pipeline/fetch/` prints nothing.
+4. `app/` computes nothing. The pack carries the verdict word, the reason sentence and the sources per service; `thresholds.csv` is not in the pack and `app.js` contains no comparison of a figure against a requirement. The app renders, routes and shares.
+5. Colours, sizes, radii and fonts exist only as the custom properties in `design/ds/design/tokens/*.css`. `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js` prints nothing; SVG geometry inside the pack is data, not CSS.
+6. Nothing in the repo imports from `spike/` or `design/ds/components/`.
+
+**Pushed down, out of the browser.** Everything deterministic runs once in the pipeline or the build, never on the phone: the path rule and all verdicts, the agreement count, the reason sentences, the "who does what" lines, the projected SVG coordinates of the 96 points, the simplified NT outline, the QR modules, the two PNG maps. The browser does three things: pick a community, show its pack row, share the file. Nothing is left with a model: the product contains no model (PRD §3).
+
+**The seams**, only those a PRD phase names, with what sits behind each today:
+- **Publisher line** `{publisher, kind, says_covered, detail, source, date}` in `pipeline/sources/*` and the pack. Today: `accc` (predicted), `ntg2022` (listed), `rrl` (licensed, 5 km), `bushtel` (portal). D1's modelled publisher is a new module emitting `kind: "modelled"`; the app renders any kind it is given.
+- **Flag** `{name, value, source, date}` per community. Today: `road_seasonal_cut` (BushTel), `backhaul_2019` (NTG). OQ2 audit tiles and OQ3 cyclone count are new flag emitters, no app change.
+- **Requirement row** in `pipeline/thresholds.csv`. OQ8 and OQ11 add rows; `rules.py` reads the table and never embeds a figure.
+- **Pack header** `{pack_version, built, app_url, communities: 96}`; the app refuses a pack whose `pack_version` it does not know. Today: version 1.
+No seam exists for D2 (measurements), D3 (more communities) or D5 (national): they are v1.1 and get their seams when they are planned.
+
+**Entry points**
+- `PYTHONUTF8=1 .venv/Scripts/python scripts/run_pipeline.py` from the root: reads `data/raw/`, writes `data/out/`. No network; `pipeline/fetch/*.py` are run by hand and their results committed or logged in `PROVENANCE.md`.
+- `PYTHONUTF8=1 .venv/Scripts/python scripts/build_app.py` from the root: inlines, in this order, `design/ds/design/tokens/colors.css`, `typography.css`, `spacing.css`, `design/ds/design/base.css`, `design/screens/screens.css`, `app/app.css`, then `app/app.js`, then `data/out/data_pack.json` as `<script type="application/json" id="pack">`, into `app/index.html` → `dist/index.html`. Also copies `sw.js` and `manifest.webmanifest` to `dist/` for the host; the HTML never depends on them.
+- The app routes by hash: `#/community/<bushtel_id>`, `#/map?filter=<id>`, `#/share`. The three screens are the reference: `design/screens/community.html`, `map.html`, `share.html`. On load the selected tab is scrolled into view (decision 2026-09-13, PRD §11).
+- Hosting: GitHub Pages from `dist/` of `github.com/Estaed/CDU_IT_CODEFAIR_DATA_2026`. The repo is **private as of 2026-09-13** (API returns 404 unauthenticated); Pages needs it public or a Pro plan, Tarik's call before the QR is final. Until then `APP_URL` in `constants.md` is the intended Pages address and the QR encodes it.
+- Team number, `APP_URL`, dates: read from `constants.md`, never retyped.
+
+**Spikes** that settled a call:
+- *Does the capability table vary across 96 communities, or is the map one colour?* Spike 2026-09-12, all 96: NBN is satellite for 95 of 96, but publishers disagree on 31 and telehealth splits 1/58/11/26. **Result:** the capability column is "best available path", not NBN technology (PRD §5).
+- *Is 40 km or 5 km the right radius for "licensed site nearby"?* 40 km is true for 96 of 96 and carries no information; 5 km (NTG's own small-cell radius) splits the set. **5 km.**
+- *Can the build generate the QR without Node?* `qrcode` 8.2 vs the mirror's `qr.js`, version 3 level M mask 0: 444 dark modules in both, 0 differences (2026-09-12). **Python build.**
+- *Do the 96 real coordinates fit the mirror's projection?* Lat −25.58…−11.15, lon 129.08…137.85 project inside the 300×480 view box (2026-09-12, `design/screens/assets/build.mjs`). **Projection reused; outline replaced by ABS in the pipeline.**
+- *Can Playwright open a local file on this machine?* Chromium 1234 opened `design/screens/share.html` from `file://` and read its title (2026-09-13). **Browser smoke test is feasible.**
 
 ### Fidelity & UI
 
-*Delete this section if nothing this project produces is ever looked at.*
-
-- **What the source of truth is** — a design file on disk, or the PRD's own prose. Say
-  which; task files get written against it. Where the output is an image rather than a
-  screen — a detection overlay, a generated frame, a plotted result — name the expected
-  result instead.
-- **Tokens are defined once and referenced by name** — where they live, plus the rule that
-  no component hardcodes a colour, size, radius or duration.
-- **Where deviations are recorded** — the one list that makes a visual difference legal
-  instead of a defect. Anything not on that list is a defect.
-- **What `review-visual` compares against, and whether it can ever gate.** It reads the two
-  lines above. Say here whether its findings stay advisory, or whether this project has
-  decided visual fidelity is verifiable at all — that ruling is the skill's ceiling.
+- **Source of truth**: `design/ds/design/DESIGN.md` with `design/ds/design/tokens/*.css` (a byte-exact mirror of the claude.ai design project; never edited here), and the three reference screens in `design/screens/`. Task files are written against the screens. Where a screen departs from a literal reading of DESIGN.md, `design/screens/README.md` says how and why.
+- **Tokens** are the custom properties in `design/ds/design/tokens/*.css`, inlined at build. No file under `app/` writes a colour, size, radius or duration as a literal; the check is layer rule 5.
+- **Deviations** are legal only if listed under "Where the screens depart from a literal reading" in `design/screens/README.md` or in the PRD decision log. Anything else that differs from the reference screens is a defect.
+- **`review-visual`** compares `dist/index.html` at 360×780 and 768×1024 against the three screen files. Its findings are advisory and never gate: PRD §6 ruled visual fidelity "advisory review by eye, not a gate", and DESIGN.md's Known gaps say the verdict colours were checked by calculation, not on a phone in sunlight.
 
 ### Verification Rules
 
 #### Quality gate
 
-*Placeholder — `create-architecture` names the real command for this project's stack.*
+```
+PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py
+```
 
-`verify-task` and `otopilot` call **exactly one command**, by name, from the directory
-named here — e.g. `npm run gate`, `make gate`, `python scripts/gate.py`. This template
-ships no working script on purpose: a stack-agnostic template that embeds a Node or
-Python script silently assumes every project is Node or Python. `create-architecture`
-either writes the real script for this stack and names it here, or names an existing
-command and lists what it must run internally.
+from the project root, no arguments. It runs, stopping at the first failure: `ruff check .`,
+`pytest -m "not browser"`, `python scripts/build_app.py`, the size check (`dist/index.html` ≤
+1,048,576 bytes and `data/out/data_pack.json` ≤ 307,200 bytes), then `pytest -m browser`. The
+build sits before the browser step because that step tests the built file. Exit code non-zero
+on any failure; `verify-task` reads the exit code.
 
-The gate command must:
-1. Run lint/static-analysis, unit tests, integration tests and the build, in that order,
-   stopping at the first failure.
-2. Exit non-zero on any failure and zero only when every step passed — `verify-task`
-   reads the exit code, not the output text.
-3. Be runnable with no arguments from the directory named here, so a lane or an
-   unattended `otopilot` run can call it without knowing the stack.
-
-**No DONE without a green gate.** `verify-task` runs it, fixes what fails, and re-runs
-it; nothing marks a task DONE on a red or unrun gate, and nothing marks DONE by reading
-the diff and reasoning that it "should" pass.
+Run 2026-09-13, before any task: `ruff check .` is clean; `pytest` exits 5 because `tests/` does
+not exist yet, so **the gate is red until Task-01 lands the first tests and `build_app.py`**. A
+red gate at the start is expected; a task marked DONE on a red gate is not.
 
 #### Per-check detail
 
-A numbered list of what must hold before a task is DONE — what the gate command above
-actually checks. Write real commands, each with **the directory it runs from**, and run
-each one once before writing it down:
-
-1. The static-analysis / lint command, and what "clean" means — zero errors *and* zero
-   warnings, never "only the pre-existing ones".
-2. What must have a unit test — name the actual functions and algorithms, not "the logic".
-3. What must have a runtime or integration test, and at what size or configuration.
-4. Resource rules — whatever is started must be stopped, and a test asserts it.
-5. What is explicitly **not** in the Definition of Done, and why. This line is
-   load-bearing: without it, every review re-litigates it.
+1. **Lint**: `PYTHONUTF8=1 .venv/Scripts/python -m ruff check .` from the root. Clean means the
+   literal output `All checks passed!`: zero errors, zero warnings, nothing "pre-existing".
+   Rules E, F, W, I, B, UP; line length 100; `spike/` and `design/` excluded.
+2. **Unit tests must exist for** `rules.best_path`, `rules.telehealth_video`,
+   `rules.school_video_meeting`, `rules.mygov_text`, `rules.voice_sms`, `rules.agreement`,
+   `pack.build_pack` (every figure carries a source and a date; no BushTel free text while
+   OQ1 is open; exactly 96 communities), `build_app.inline` (output contains no `http://` or
+   `https://` outside the pack's citation URLs, contains the pack once, stays under the byte
+   limits). Rule tests use hand-built rows for every pattern the spike found: unanimous
+   covered, unanimous not covered, the six disagreement patterns, the fixed-line case
+   (Yirrkala), the WiFi-only case.
+3. **Integration**: (a) regression, `tests/test_regression.py`: the pipeline run from the frozen
+   `data/raw/` reproduces `spike/out/capability_table.csv` for every column the pipeline keeps,
+   all 96 rows, until `spike/` is deleted and the check moves to a committed
+   `tests/fixtures/capability_table_2026-09-12.csv`; (b) browser smoke, `tests/browser/`, marker
+   `browser`: Playwright Chromium opens `dist/index.html` over `file://` with every non-`file:`
+   request aborted and counted; the test asserts zero such requests, 96 result rows on the
+   community screen, Wadeye's four verdict badges with glyph and word, 96 `.map__community`
+   groups on the map, and a `.qr` element on the share screen.
+4. **Resources**: the Playwright browser is opened and closed by one pytest fixture; every file
+   in the pipeline is opened in a `with` block; nothing starts a server, a thread or a
+   subprocess except `gate.py` itself. The browser test asserts the browser object is closed at
+   teardown.
+5. **Not in the Definition of Done**: visual fidelity (advisory, above); the flight-mode check
+   on a real phone and the phone-to-phone transfer (Tarik's manual checklist, PRD §6); the
+   report, slides and pitch; the BushTel licence outcome (OQ1); the Pages deployment itself;
+   the optional cyclone and audit flags (OQ2, OQ3). Each of these is real work, and none of
+   them can be turned green by the gate.
 
 ### Key Constraints
 
-Forbidden, not preferred. Each line is a forbid-or-require sentence naming a concrete
-thing — never a slogan like "write clean code" or "keep it DRY", which changes no
-decision. Cover at least: what the project must not depend on, what must never be
-hardcoded, what is out of scope for this phase, and any hard platform limit.
+- The built app must not request anything over the network at runtime: no tiles, fonts, scripts,
+  analytics, or data. The browser test fails on the first request.
+- The app must not contain a JavaScript framework or library, a service-worker dependency for
+  first render, or any computation of a verdict; it renders `data_pack.json`.
+- The product must not contain a model of any kind, LLM or ML. AI used in building it is declared
+  in the report appendix.
+- Never hardcode: the team number or `APP_URL` (`constants.md`), a colour, size or radius (tokens),
+  a requirement figure (`pipeline/thresholds.csv`), a source URL, date or licence (the provenance
+  registry in `pipeline/provenance.py`).
+- No synthetic rows, no invented community names, exactly the 96 BushTel Major/Minor communities.
+  Empty is `Not recorded`, unverified is `Unverified`, never blank.
+- No BushTel free text in the pack until OQ1 is answered; presence flags with attribution only.
+- Hard limits, measured by the gate: `dist/index.html` ≤ 1,048,576 bytes; `data/out/data_pack.json`
+  ≤ 307,200 bytes.
+- Out of scope for v1: everything in PRD §8 and the deferred decisions D1–D5. Do not build a seam
+  for them beyond the four named above.
+- Platform: development is on Windows 11. Scripts use `pathlib` and `subprocess` argument lists,
+  never shell strings or POSIX-only idioms; every command in this file is runnable from the root
+  as written.
+- The repository is English-only, including comments, commits and this file.
 
 ### Why this section exists
 
 `docs/PRD.md` says *what* to build and *why*. `tasks/Task-XX.md` says *how* to build one
-slice. Neither survives as ambient context — they are read on demand. `CLAUDE.md` is
-loaded into **every** session automatically, so Part 2 is the only place where the
-project's technical invariants are always present.
-
-Without it, each session re-derives the stack, and 30 tasks drift into 30 slightly
-different architectures. Part 2 is what makes task 27 look like task 3 wrote it.
+slice. Neither survives as ambient context; they are read on demand. `CLAUDE.md` is loaded into
+**every** session, so Part 2 is the only place where the project's technical invariants are
+always present. Without it, each session re-derives the stack and 30 tasks drift into 30
+slightly different architectures. Part 2 is what makes task 27 look like task 3 wrote it.

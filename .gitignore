@@ -17,3 +17,6 @@ data/raw/
 
 # Regenerable from design/ds/ (see BACKLOG.md 2026-09-12)
 design/*.zip
+
+# Build output; dist/index.html is rebuilt by scripts/build_app.py
+dist/

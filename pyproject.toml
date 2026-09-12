@@ -1,0 +1,40 @@
+[project]
+name = "crosscheck"
+version = "0.1.0"
+description = "Crosscheck: what published sources say about 96 remote NT communities' connectivity, and what that allows. CDU IT Code Fair 2026, Data Innovation Challenge, team DIC005."
+requires-python = ">=3.13"
+dependencies = [
+    "geopandas",
+    "pandas",
+    "shapely",
+    "pyogrio",
+    "pyproj",
+    "openpyxl",
+    "lxml",
+    "requests",
+    "matplotlib",
+    "qrcode",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",
+    "playwright",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["spike", "design", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = ["browser: needs the Playwright Chromium build and the built dist/index.html"]
