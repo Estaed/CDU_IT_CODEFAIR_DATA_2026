@@ -117,3 +117,15 @@ tarik.bulut@cdu.edu.au
 
 **Status:** not sent. Only needed if the cyclone-exposure flag is kept; the core table does not
 depend on it.
+
+## Status
+
+| # | Source | Sent | Reply |
+|---|---|---|---|
+| 1 | BushTel (NTG) | 2026-09-12 | awaited |
+| 2 | DITRDCSA National Audit non-alignment CSV | 2026-09-12 | awaited |
+| 3 | Bureau of Meteorology cyclone track CSV | 2026-09-12 | awaited |
+
+All three sent by Tarik from his CDU address on 2026-09-12. Reply dates go in the last column
+as they arrive; the report's References section cites this table. PRD open question 2 drops the
+non-alignment column if #2 is unanswered by 2026-09-26.
