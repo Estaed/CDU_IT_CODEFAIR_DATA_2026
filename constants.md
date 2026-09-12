@@ -17,7 +17,7 @@ verified later.
 | `SUBMISSION_EMAIL` | itcodefair@cdu.edu.au | Where the zipped entry is sent | `docs/competition-brief.md` |
 | `SUBMISSION_DEADLINE` | 2026-09-30 | The hard date every plan is measured against | `docs/competition-brief.md` |
 | `CHALLENGE_DAY` | 2026-10-07 | Presentation and judging day | `docs/competition-brief.md` |
-| `APP_URL` | https://estaed.github.io/CDU_IT_CODEFAIR_DATA_2026/ | What the QR code and the share card encode; GitHub Pages from `dist/`. Intended address: the repo is private as of 2026-09-13 and Pages is not enabled yet | Decided 2026-09-13 (hosting = GitHub Pages) |
+| `APP_URL` | https://estaed.github.io/CDU_IT_CODEFAIR_DATA_2026/ | What the QR code and the share card encode; GitHub Pages from `dist/`. Pages not enabled yet (private repo, GitHub Pro account, so no need to go public) | Decided 2026-09-13 (hosting = GitHub Pages) |
 
 **Not this project's number:** the CDU IT Code Fair AI Challenge entry, a separate project
 in the sibling `AI Challenge 2026/` folder, is team **AIC014**. It must never appear here.

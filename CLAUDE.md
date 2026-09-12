@@ -351,7 +351,7 @@ No seam exists for D2 (measurements), D3 (more communities) or D5 (national): th
 - `PYTHONUTF8=1 .venv/Scripts/python scripts/run_pipeline.py` from the root: reads `data/raw/`, writes `data/out/`. No network; `pipeline/fetch/*.py` are run by hand and their results committed or logged in `PROVENANCE.md`.
 - `PYTHONUTF8=1 .venv/Scripts/python scripts/build_app.py` from the root: inlines, in this order, `design/ds/design/tokens/colors.css`, `typography.css`, `spacing.css`, `design/ds/design/base.css`, `design/screens/screens.css`, `app/app.css`, then `app/app.js`, then `data/out/data_pack.json` as `<script type="application/json" id="pack">`, into `app/index.html` → `dist/index.html`. Also copies `sw.js` and `manifest.webmanifest` to `dist/` for the host; the HTML never depends on them.
 - The app routes by hash: `#/community/<bushtel_id>`, `#/map?filter=<id>`, `#/share`. The three screens are the reference: `design/screens/community.html`, `map.html`, `share.html`. On load the selected tab is scrolled into view (decision 2026-09-13, PRD §11).
-- Hosting: GitHub Pages from `dist/` of `github.com/Estaed/CDU_IT_CODEFAIR_DATA_2026`. The repo is **private as of 2026-09-13** (API returns 404 unauthenticated); Pages needs it public or a Pro plan, Tarik's call before the QR is final. Until then `APP_URL` in `constants.md` is the intended Pages address and the QR encodes it.
+- Hosting: GitHub Pages from `dist/` of `github.com/Estaed/CDU_IT_CODEFAIR_DATA_2026`. The repo is private; the account is GitHub Pro, so Pages serves from a private repo once it is enabled (Tarik, later). `APP_URL` in `constants.md` is that Pages address and the QR encodes it.
 - Team number, `APP_URL`, dates: read from `constants.md`, never retyped.
 
 **Spikes** that settled a call:
