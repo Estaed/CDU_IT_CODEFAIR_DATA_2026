@@ -1,0 +1,16 @@
+/* Harness for the three screen files: two labelled frames that show the same <template> at the
+   two sizes design/brief.md step 2 asks for. The four frame figures below are the brief's
+   viewport sizes, not design tokens, which is why they live here and not in screens.css. */
+:root {
+  --frame-phone-w: var(--size-design-width);
+  --frame-phone-h: 780px;
+  --frame-wide-w: 768px;
+  --frame-wide-h: 1024px;
+}
+.harness { margin: 0; padding: var(--space-lg); background: var(--surface-block); }
+.frames { display: flex; flex-wrap: wrap; gap: var(--space-lg); align-items: flex-start; }
+.frame { display: grid; gap: var(--space-xs); }
+.frame__label { margin: 0; font: var(--text-label); color: var(--text-secondary); }
+.frame__viewport { box-sizing: content-box; overflow: auto; background: var(--surface-page); border: var(--size-hairline) solid var(--border-hairline); }
+.frame--phone .frame__viewport { width: var(--frame-phone-w); height: var(--frame-phone-h); }
+.frame--wide .frame__viewport { width: var(--frame-wide-w); height: var(--frame-wide-h); }

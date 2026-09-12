@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crosscheck · Map screen</title>
+  <link rel="stylesheet" href="../ds/styles.css">
+  <link rel="stylesheet" href="screens.css">
+  <link rel="stylesheet" href="harness.css">
+</head>
+<body class="harness">
+  <template id="screen">
+    <div class="screen">
+      <header class="top-bar">
+        <div class="top-bar__inner">
+          <span class="top-bar__title">Crosscheck</span>
+          <nav class="tabs" role="tablist" aria-label="Screens">
+            <a class="tab" role="tab" aria-selected="false" href="community.html">Community</a>
+            <a class="tab" role="tab" aria-selected="true" href="map.html">Map</a>
+            <a class="tab" role="tab" aria-selected="false" href="share.html">Share</a>
+          </nav>
+          <span class="offline-chip">Offline</span>
+        </div>
+      </header>
+      <div class="content">
+        <main>
+          <div class="tabs filter-tabs" role="tablist" aria-label="Filters">
+            <button type="button" class="tab" role="tab" aria-selected="false">All <span class="tab__count">96</span></button>
+            <button type="button" class="tab" role="tab" aria-selected="false">Clinic, no terrestrial path <span class="tab__count">12</span></button>
+            <button type="button" class="tab" role="tab" aria-selected="false">Carrier says covered, list does not <span class="tab__count">14</span></button>
+            <button type="button" class="tab" role="tab" aria-selected="true">Licensed mast, no coverage map <span class="tab__count">11</span></button>
+          </div>
+<svg class="map" role="img" aria-label="Map of the Northern Territory, 11 of 96 communities shown" viewBox="0 0 300 480">
+<g class="map__land"><path d="M15.0 131.1L33.0 121.5L36.0 105.0L45.0 84.0L54.0 72.0L69.0 58.5L78.0 51.0L90.0 52.5L105.0 48.0L120.0 24.0L132.0 18.0L135.0 27.0L150.0 39.0L171.0 45.0L195.0 48.0L225.0 45.0L243.0 51.0L252.0 54.0L243.0 72.0L231.0 81.0L222.0 93.0L225.0 111.0L216.0 129.0L225.0 141.0L243.0 153.0L258.0 162.0L279.0 180.0L285.0 186.0L285.0 465.0L15.0 465.0Z"/><path d="M45.0 39.0L51.0 24.0L63.0 24.0L75.0 21.0L90.0 27.0L93.0 39.0L75.0 42.0L57.0 42.0Z"/><path d="M237.0 96.0L252.0 96.0L255.0 111.0L240.0 111.0Z"/></g>
+<g class="map__community" tabindex="0"><title>Orrtipa-Thurra · Fails</title><circle class="map__hit" cx="230.0" cy="368.5" r="16"/><rect class="map__pt map__pt--fails" x="225.0" y="363.5" width="10" height="10"/></g>
+<g class="map__community" tabindex="0"><title>Manmoyi · No data</title><circle class="map__hit" cx="168.3" cy="61.2" r="16"/><rect class="map__pt map__pt--nodata" x="163.3" y="59.7" width="10" height="3"/></g>
+<g class="map__community" tabindex="0"><title>Woodycupaldiya · Fails</title><circle class="map__hit" cx="45.0" cy="100.8" r="16"/><rect class="map__pt map__pt--fails" x="40.0" y="95.8" width="10" height="10"/></g>
+<g class="map__community" tabindex="0"><title>Birany Birany · No data</title><circle class="map__hit" cx="239.3" cy="69.5" r="16"/><rect class="map__pt map__pt--nodata" x="234.3" y="68.0" width="10" height="3"/></g>
+<g class="map__community" tabindex="0"><title>Rorruwuy · No data</title><circle class="map__hit" cx="233.9" cy="51.1" r="16"/><rect class="map__pt map__pt--nodata" x="228.9" y="49.6" width="10" height="3"/></g>
+<g class="map__community" tabindex="0"><title>Mapuru · No data</title><circle class="map__hit" cx="208.1" cy="52.6" r="16"/><rect class="map__pt map__pt--nodata" x="203.1" y="51.1" width="10" height="3"/></g>
+<g class="map__community" tabindex="0"><title>Amanbidji · Fails</title><circle class="map__hit" cx="33.6" cy="177.8" r="16"/><rect class="map__pt map__pt--fails" x="28.6" y="172.8" width="10" height="10"/></g>
+<g class="map__community" tabindex="0"><title>Nitjpurru · Fails</title><circle class="map__hit" cx="81.6" cy="189.4" r="16"/><rect class="map__pt map__pt--fails" x="76.6" y="184.4" width="10" height="10"/></g>
+<g class="map__community" tabindex="0"><title>Rittarangu · Fails</title><circle class="map__hit" cx="182.0" cy="126.3" r="16"/><rect class="map__pt map__pt--fails" x="177.0" y="121.3" width="10" height="10"/></g>
+<g class="map__community" tabindex="0"><title>Wurankuwu · No data</title><circle class="map__hit" cx="53.3" cy="33.5" r="16"/><rect class="map__pt map__pt--nodata" x="48.3" y="32.0" width="10" height="3"/></g>
+<g class="map__community map__community--selected" tabindex="0"><title>Baniyala · Fails</title><circle class="map__hit" cx="231.8" cy="81.0" r="16"/><rect class="map__pt map__pt--fails" x="226.8" y="76.0" width="10" height="10"/><circle class="map__ring" cx="231.8" cy="81.0" r="9"/><text class="map__label" x="218.8" y="85.0" text-anchor="end">Baniyala</text></g>
+</svg>
+          <div class="map-legend">
+            <div class="map-legend__row">
+              <span class="map-legend__item"><span class="map-legend__glyph--works" aria-hidden="true">●</span>Works <span class="map-legend__count">1</span></span>
+              <span class="map-legend__item"><span class="map-legend__glyph--degraded" aria-hidden="true">▲</span>Degraded <span class="map-legend__count">58</span></span>
+              <span class="map-legend__item"><span class="map-legend__glyph--fails" aria-hidden="true">■</span>Fails <span class="map-legend__count">11</span></span>
+              <span class="map-legend__item"><span class="map-legend__glyph--nodata" aria-hidden="true">–</span>No data <span class="map-legend__count">26</span></span>
+            </div>
+            <div class="map-legend__subject">Telehealth video · all <span class="fig fig--xs">96</span> communities</div>
+            <div class="map-legend__subject">Showing <span class="fig fig--xs">11</span> of <span class="fig fig--xs">96</span>: a carrier cellular site licensed within <span class="fig fig--xs">5 km</span> and no carrier 4G polygon over the community</div>
+          </div>
+          <div class="community-header">
+            <h2 class="community-header__name">Baniyala</h2>
+            <div class="community-header__meta">East Arnhem · Minor community</div>
+            <div class="community-header__population"><span class="fig fig--md">138</span> <span class="community-header__unit">people</span></div>
+            <span class="source-line">ABS 2021 SA1 via BushTel · <span class="fig fig--xs">2025-08-06</span></span>
+          </div>
+          <section class="section">
+            <h2 class="section__title">What the sources say</h2>
+            <div class="agreement"><div class="agreement__headline"><span class="fig fig--lg">1</span> of <span class="fig fig--lg">4</span> sources say covered</div><div class="agreement__note">Sources disagree</div></div>
+            <div class="publisher-row">
+              <div class="publisher-row__top"><span class="publisher-row__name">ACCC Mobile Infrastructure Report 2025</span><span class="kind-chip">predicted</span><span class="says">Not covered</span></div>
+              <div class="publisher-row__detail">No carrier 4G polygon over the community, carrier prediction; nearest Telstra 4G polygon <span class="fig fig--xs">16.367 km</span></div>
+              <span class="source-line">ACCC MIR 2025 · <span class="fig fig--xs">2025-11-10</span></span>
+            </div>
+            <div class="publisher-row">
+              <div class="publisher-row__top"><span class="publisher-row__name">NT Government 2022 coverage list</span><span class="kind-chip">listed</span><span class="says">Not covered</span></div>
+              <div class="publisher-row__detail">Not on the list</div>
+              <span class="source-line">NT Government 2022 list · <span class="fig fig--xs">2022-07-04</span></span>
+            </div>
+            <div class="publisher-row">
+              <div class="publisher-row__top"><span class="publisher-row__name">ACMA licence register</span><span class="kind-chip">licensed</span><span class="says">Covered</span></div>
+              <div class="publisher-row__detail">Telstra <span class="fig fig--xs">19 m</span> mast at <span class="fig fig--xs">0.17 km</span>, Baniyala Community</div>
+              <span class="source-line">ACMA RRL · <span class="fig fig--xs">2026-09-12</span></span>
+            </div>
+            <div class="publisher-row">
+              <div class="publisher-row__top"><span class="publisher-row__name">BushTel</span><span class="kind-chip">portal</span><span class="says">Not recorded</span></div>
+              <div class="publisher-row__detail">Mobile phone row not recorded</div>
+              <span class="source-line">BushTel profile · <span class="fig fig--xs">2025-08-06</span></span>
+            </div>
+          </section>
+          <section class="section">
+            <h2 class="section__title">What the connection allows</h2>
+            <div class="service-row">
+              <button type="button" class="service-row__button" aria-expanded="false"><span class="service-row__top"><span class="service-row__name">Telehealth video</span><span class="verdict-badge verdict-badge--fails"><span aria-hidden="true">■</span>Fails</span></span><span class="service-row__reason">Latency <span class="fig">664.9 ms</span> on satellite vs <span class="fig">100 ms</span> required; no carrier 4G polygon</span></button>
+            </div>
+            <div class="link-row"><a class="text-link" href="community.html">Open Baniyala</a></div>
+          </section>
+        </main>
+        <footer class="footer">
+          <span>ACCC Mobile Infrastructure Report 2025 · CC BY 2.5 AU · <span class="fig fig--xs">2025-11-10</span></span>
+          <span>ACCC Measuring Broadband Australia, satellite latency · CC BY 2.5 AU · <span class="fig fig--xs">2024-12-05</span></span>
+          <span>Based on Australian Communications and Media Authority information · <span class="fig fig--xs">2026-09-12</span></span>
+          <span>NT Government mobile coverage lists 2019 and 2022 · CC BY · <span class="fig fig--xs">2022-07-04</span></span>
+          <span>BushTel community profiles, Northern Territory Government · reuse requested <span class="fig fig--xs">2026-09-12</span></span>
+          <span>ABS Census 2021 SA1 population via BushTel · CC BY 4.0</span>
+          <span>healthdirect Video Call technical requirements · <span class="fig fig--xs">2026-09-12</span></span>
+          <span class="footer__team">CDU IT Code Fair 2026 · Data Innovation Challenge · Team DIC005</span>
+          <span>Crosscheck does not measure signal.</span>
+        </footer>
+      </div>
+    </div>
+  </template>
+  <div class="frames">
+    <section class="frame frame--phone">
+      <h2 class="frame__label">Phone · <span class="fig fig--xs">360 × 780</span></h2>
+      <div class="frame__viewport"></div>
+    </section>
+    <section class="frame frame--wide">
+      <h2 class="frame__label">Wide · <span class="fig fig--xs">768 × 1024</span></h2>
+      <div class="frame__viewport"></div>
+    </section>
+  </div>
+  <script>
+    const screen = document.getElementById('screen');
+    for (const viewport of document.querySelectorAll('.frame__viewport')) {
+      viewport.appendChild(screen.content.cloneNode(true));
+    }
+  </script>
+</body>
+</html>

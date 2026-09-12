@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crosscheck · Community screen</title>
+  <link rel="stylesheet" href="../ds/styles.css">
+  <link rel="stylesheet" href="screens.css">
+  <link rel="stylesheet" href="harness.css">
+</head>
+<body class="harness">
+  <template id="screen">
+    <div class="screen">
+      <header class="top-bar">
+        <div class="top-bar__inner">
+          <span class="top-bar__title">Crosscheck</span>
+          <nav class="tabs" role="tablist" aria-label="Screens">
+            <a class="tab" role="tab" aria-selected="true" href="community.html">Community</a>
+            <a class="tab" role="tab" aria-selected="false" href="map.html">Map</a>
+            <a class="tab" role="tab" aria-selected="false" href="share.html">Share</a>
+          </nav>
+          <span class="offline-chip">Offline</span>
+        </div>
+      </header>
+      <div class="content">
+        <main>
+          <div class="search">
+            <input class="search-input" type="search" placeholder="Search 96 communities" aria-label="Search communities">
+          </div>
+          <div class="community-header">
+            <h1 class="community-header__name">Wadeye</h1>
+            <div class="community-header__meta">Top End · Major community</div>
+            <div class="community-header__population"><span class="fig fig--md">2,259</span> <span class="community-header__unit">people</span></div>
+            <span class="source-line">ABS 2021 SA1 via BushTel · <span class="fig fig--xs">2026-07-03</span></span>
+          </div>
+          <section class="section">
+            <h2 class="section__title">What exists here</h2>
+            <div class="chips">
+              <span class="chip">Health centre</span>
+              <span class="chip">School</span>
+              <span class="chip">Store</span>
+              <span class="chip">Police</span>
+              <span class="chip">Library</span>
+              <span class="chip">Council service centre</span>
+              <span class="chip">Employment services</span>
+              <span class="chip">Public WiFi Mon–Sat 8am–8pm</span>
+              <span class="chip">STAND site</span>
+              <span class="chip">Aerodrome</span>
+            </div>
+            <div class="fact">
+              Public WiFi in the vicinity of the council offices, Mon–Sat 8am–8pm, Sun off
+              <span class="source-line">BushTel profile · <span class="fig fig--xs">2026-07-03</span></span>
+            </div>
+            <div class="fact">
+              STAND site at OLSH Thamarrurr Catholic College
+              <span class="source-line">BushTel profile · <span class="fig fig--xs">2026-07-03</span></span>
+            </div>
+            <div class="fact">
+              Licensed mast: Telstra site <span class="fig">0.064 km</span> away, 74 Perdjert Street
+              <span class="source-line">ACMA licence register · <span class="fig fig--xs">2026-09-12</span></span>
+            </div>
+            <div class="fact">
+              Road: Daly River Road, unsealed from the Daly River crossing, open in the Dry Season (May to October)
+              <span class="source-line">BushTel profile · <span class="fig fig--xs">2026-07-03</span></span>
+            </div>
+            <div class="fact">
+              Backhaul: optic fibre
+              <span class="source-line">NT Government 2019 coverage list · <span class="fig fig--xs">2019</span></span>
+            </div>
+          </section>
+          <section class="section">
+            <h2 class="section__title">What the sources say</h2>
+            <div class="agreement">
+              <div class="agreement__headline"><span class="fig fig--lg">4</span> of <span class="fig fig--lg">4</span> sources say covered</div>
+              <div class="agreement__note">Sources agree</div>
+            </div>
+            <div class="publisher-row">
+              <div class="publisher-row__top">
+                <span class="publisher-row__name">ACCC Mobile Infrastructure Report 2025</span>
+                <span class="kind-chip">predicted</span>
+                <span class="says">Covered</span>
+              </div>
+              <div class="publisher-row__detail">Telstra 4G outdoor polygon, carrier prediction</div>
+              <span class="source-line">ACCC MIR 2025 · <span class="fig fig--xs">2025-11-10</span></span>
+            </div>
+            <div class="publisher-row">
+              <div class="publisher-row__top">
+                <span class="publisher-row__name">NT Government 2022 coverage list</span>
+                <span class="kind-chip">listed</span>
+                <span class="says">Covered</span>
+              </div>
+              <div class="publisher-row__detail">Macro cell, Telstra</div>
+              <span class="source-line">NT Government 2022 list · <span class="fig fig--xs">2022-07-04</span></span>
+            </div>
+            <div class="publisher-row">
+              <div class="publisher-row__top">
+                <span class="publisher-row__name">ACMA licence register</span>
+                <span class="kind-chip">licensed</span>
+                <span class="says">Covered</span>
+              </div>
+              <div class="publisher-row__detail">Telstra site at <span class="fig fig--xs">0.064 km</span>, 74 Perdjert Street</div>
+              <span class="source-line">ACMA RRL · <span class="fig fig--xs">2026-09-12</span></span>
+            </div>
+            <div class="publisher-row">
+              <div class="publisher-row__top">
+                <span class="publisher-row__name">BushTel</span>
+                <span class="kind-chip">portal</span>
+                <span class="says">Covered</span>
+              </div>
+              <div class="publisher-row__detail">Mobile phone row: yes, links to Telstra's coverage map</div>
+              <span class="source-line">BushTel profile · <span class="fig fig--xs">2026-07-03</span></span>
+            </div>
+          </section>
+          <section class="section">
+            <h2 class="section__title">What the connection allows</h2>
+            <div class="section__note">Best available path: satellite (nbn satellite residual); Telstra 4G is predicted here · spike rule <span class="fig fig--xs">2026-09-12</span></div>
+            <div class="service-row">
+              <button type="button" class="service-row__button" aria-expanded="true">
+                <span class="service-row__top">
+                  <span class="service-row__name">Telehealth video</span>
+                  <span class="verdict-badge verdict-badge--degraded"><span aria-hidden="true">▲</span>Degraded</span>
+                </span>
+                <span class="service-row__reason">Latency <span class="fig">664.9 ms</span> on satellite vs <span class="fig">100 ms</span> required</span>
+              </button>
+              <div class="service-row__sources">
+                <span class="source-line">Failing figure: ACCC Measuring Broadband Australia · <span class="fig fig--xs">2024-12-05</span></span>
+                <span class="source-line">Required figure: healthdirect Video Call · <span class="fig fig--xs">2026-09-12</span></span>
+                <span class="source-line">Path: satellite, spike rule · <span class="fig fig--xs">2026-09-12</span></span>
+              </div>
+              <div class="assumption-note"><span class="assumption-note__label">Assumption</span> Could work over Telstra 4G if latency is under <span class="fig">100 ms</span>. No measurement exists here.</div>
+            </div>
+            <div class="service-row">
+              <button type="button" class="service-row__button" aria-expanded="false">
+                <span class="service-row__top">
+                  <span class="service-row__name">School video meeting</span>
+                  <span class="verdict-badge verdict-badge--degraded"><span aria-hidden="true">▲</span>Degraded</span>
+                </span>
+                <span class="service-row__reason">Upload <span class="fig">5,000 kbps</span> on satellite vs <span class="fig">150 kbps</span> required; the latency requirement is not published</span>
+              </button>
+              <div class="assumption-note"><span class="assumption-note__label">Assumption</span> Microsoft Teams publishes no latency requirement. Treated as Degraded on satellite until one is sourced.</div>
+            </div>
+            <div class="service-row">
+              <button type="button" class="service-row__button" aria-expanded="false">
+                <span class="service-row__top">
+                  <span class="service-row__name">myGov and banking</span>
+                  <span class="verdict-badge verdict-badge--works"><span aria-hidden="true">●</span>Works</span>
+                </span>
+                <span class="service-row__reason">Text-first services reach any working link; no published requirement</span>
+              </button>
+            </div>
+            <div class="service-row">
+              <button type="button" class="service-row__button" aria-expanded="false">
+                <span class="service-row__top">
+                  <span class="service-row__name">Voice and SMS</span>
+                  <span class="verdict-badge verdict-badge--works"><span aria-hidden="true">●</span>Works</span>
+                </span>
+                <span class="service-row__reason">Telstra 4G is predicted here and the community is on the 2022 list</span>
+              </button>
+            </div>
+          </section>
+          <section class="section">
+            <h2 class="section__title">Who does what</h2>
+            <ul class="actions">
+              <li class="actions__item"><span class="actions__who">Carrier:</span> publish measured latency for this site.</li>
+              <li class="actions__item"><span class="actions__who">DCDD:</span> confirm the clinic's enterprise link technology.</li>
+            </ul>
+          </section>
+        </main>
+        <footer class="footer">
+          <span>ACCC Mobile Infrastructure Report 2025 · CC BY 2.5 AU · <span class="fig fig--xs">2025-11-10</span></span>
+          <span>ACCC Measuring Broadband Australia, satellite latency · CC BY 2.5 AU · <span class="fig fig--xs">2024-12-05</span></span>
+          <span>Based on Australian Communications and Media Authority information · <span class="fig fig--xs">2026-09-12</span></span>
+          <span>NT Government mobile coverage lists 2019 and 2022 · CC BY · <span class="fig fig--xs">2022-07-04</span></span>
+          <span>BushTel community profiles, Northern Territory Government · reuse requested <span class="fig fig--xs">2026-09-12</span></span>
+          <span>ABS Census 2021 SA1 population via BushTel · CC BY 4.0</span>
+          <span>healthdirect Video Call technical requirements · <span class="fig fig--xs">2026-09-12</span></span>
+          <span>Microsoft Teams network requirements · <span class="fig fig--xs">2026-09-12</span></span>
+          <span class="footer__team">CDU IT Code Fair 2026 · Data Innovation Challenge · Team DIC005</span>
+          <span>Crosscheck does not measure signal.</span>
+        </footer>
+      </div>
+    </div>
+  </template>
+  <div class="frames">
+    <section class="frame frame--phone">
+      <h2 class="frame__label">Phone · <span class="fig fig--xs">360 × 780</span></h2>
+      <div class="frame__viewport"></div>
+    </section>
+    <section class="frame frame--wide">
+      <h2 class="frame__label">Wide · <span class="fig fig--xs">768 × 1024</span></h2>
+      <div class="frame__viewport"></div>
+    </section>
+  </div>
+  <script>
+    const screen = document.getElementById('screen');
+    for (const viewport of document.querySelectorAll('.frame__viewport')) {
+      viewport.appendChild(screen.content.cloneNode(true));
+    }
+  </script>
+</body>
+</html>
