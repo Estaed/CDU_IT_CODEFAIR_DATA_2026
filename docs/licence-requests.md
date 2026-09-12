@@ -1,8 +1,9 @@
 # Licence requests — drafts for Tarik to send from his CDU address
 
 Drafted 2026-09-12 after the 20-community spike showed which sources ship in the app.
-Fill in `[team number]` once registration confirms it. Send all three the same day; log the
-send date and any reply under "Status" so the report's References section can cite it.
+Team number DIC005, confirmed 12 September 2026 (the AI Challenge entry is AIC014; not this one).
+Send all three the same day; log the send date and any reply under "Status" so the report's
+References section can cite it.
 
 Sources that need no email: ACCC (CC BY 2.5 AU), ACMA RRL (licence permits derivatives and
 their redistribution, attribution "Based on Australian Communications and Media Authority
@@ -18,7 +19,7 @@ information"), NT Government coverage lists (CC BY), NBN footprints (CC BY 4.0),
 
 Dear BushTel team,
 
-I am an IT student at Charles Darwin University and part of Team [team number] in the CDU IT
+I am an IT student at Charles Darwin University and part of Team DIC005 in the CDU IT
 Code Fair 2026 Data Innovation Challenge (theme: Remote Connectivity), judged on 7 October
 2026 with a submission deadline of 30 September 2026.
 
@@ -50,9 +51,9 @@ Thank you for your time. A reply before 26 September would let us reflect your a
 submitted version.
 
 Kind regards,
-Tarik [surname]
-Team [team number], CDU IT Code Fair 2026 — Data Innovation Challenge
-[CDU student email] · [phone, optional]
+Tarik Bulut
+Team DIC005, CDU IT Code Fair 2026 — Data Innovation Challenge
+tarik.bulut@cdu.edu.au
 
 **Status:** not sent.
 
@@ -65,7 +66,7 @@ Team [team number], CDU IT Code Fair 2026 — Data Innovation Challenge
 
 Dear Audit team,
 
-I am an IT student at Charles Darwin University, part of Team [team number] in the CDU IT Code
+I am an IT student at Charles Darwin University, part of Team DIC005 in the CDU IT Code
 Fair 2026 Data Innovation Challenge (Remote Connectivity), submission due 30 September 2026.
 
 We are building a non-commercial, offline-first app and report that compare published mobile
@@ -85,9 +86,9 @@ The CSV carries no licence statement that we could find. Could you confirm:
 We will cite the Audit and its methodology in the report's References in any case.
 
 Kind regards,
-Tarik [surname]
-Team [team number], CDU IT Code Fair 2026 — Data Innovation Challenge
-[CDU student email]
+Tarik Bulut
+Team DIC005, CDU IT Code Fair 2026 — Data Innovation Challenge
+tarik.bulut@cdu.edu.au
 
 **Status:** not sent. Only needed if the Audit tiles are kept as an optional column; the core
 table does not depend on it.
@@ -101,7 +102,7 @@ table does not depend on it.
 
 Dear Bureau of Meteorology,
 
-I am an IT student at Charles Darwin University, part of Team [team number] in the CDU IT Code
+I am an IT student at Charles Darwin University, part of Team DIC005 in the CDU IT Code
 Fair 2026 Data Innovation Challenge (Remote Connectivity), submission due 30 September 2026.
 
 Our non-commercial entry is a report and an offline-first app about connectivity in remote
@@ -119,9 +120,9 @@ a Creative Commons statement for this file. Could you confirm:
    competition entry with attribution?
 
 Kind regards,
-Tarik [surname]
-Team [team number], CDU IT Code Fair 2026 — Data Innovation Challenge
-[CDU student email]
+Tarik Bulut
+Team DIC005, CDU IT Code Fair 2026 — Data Innovation Challenge
+tarik.bulut@cdu.edu.au
 
 **Status:** not sent. Only needed if the cyclone-exposure flag is kept; the core table does not
 depend on it.

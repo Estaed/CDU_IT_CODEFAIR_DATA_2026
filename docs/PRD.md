@@ -210,7 +210,8 @@ What the app shows for one community; not a schema.
     the report says so.
 11. **A sourced latency figure for 4G and for NBN fixed wireless.** Needed to turn the amber
     assumption into a rule; ACCC MBA reports are the likely source.
-12. **Team number** — arrives with registration; header, footer and file name depend on it.
+12. **Team number** — ANSWERED 2026-09-12: **DIC005**. Held in `constants.md`; header, footer
+    and file name read it from there. (The sibling AI Challenge entry is AIC014, not this one.)
 
 ## 10. Deferred decisions (later phases; unanswered on purpose, block nothing today)
 
@@ -230,6 +231,7 @@ D5. **National scope** — only if the NT is finished early; the brief allows it
 |---|---|---|
 | 2026-09-12 | D + A combination: service-gap table as spine, agreement count as a column | arena verdict |
 | 2026-09-12 | Name: Crosscheck | Tarik |
+| 2026-09-12 | Team number DIC005; entrant Tarik Bulut, tarik.bulut@cdu.edu.au | Tarik |
 | 2026-09-12 | Capability is "best available path", not NBN technology | spike: 95/96 satellite residual |
 | 2026-09-12 | Publishers are data with a `kind`, so a modelled publisher is additive | Tarik, on the upgrade path |
 | 2026-09-12 | ACMA "licensed" publisher defined at 5 km, not 40 km | spike: 40 km is true for 96/96 |
