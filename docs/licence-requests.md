@@ -1,9 +1,14 @@
 # Licence requests — drafts for Tarik to send from his CDU address
 
-Drafted 2026-09-12 after the 20-community spike showed which sources ship in the app.
-Team number DIC005, confirmed 12 September 2026 (the AI Challenge entry is AIC014; not this one).
+Drafted 2026-09-12 after the 20-community spike showed which sources ship in the app;
+shortened the same day. Team number DIC005 (the AI Challenge entry is AIC014, not this one).
 Send all three the same day; log the send date and any reply under "Status" so the report's
 References section can cite it.
+
+**House style for these drafts: the ask comes first, the context after.** A government inbox
+triages on the first two lines, and a request that opens with three paragraphs about a student
+project gets read as an introduction rather than as a question needing an answer. Numbered
+questions so the reply can answer them in order. Do not re-inflate these.
 
 Sources that need no email: ACCC (CC BY 2.5 AU), ACMA RRL (licence permits derivatives and
 their redistribution, attribution "Based on Australian Communications and Media Authority
@@ -15,40 +20,32 @@ information"), NT Government coverage lists (CC BY), NBN footprints (CC BY 4.0),
 
 **To:** Bushtel@nt.gov.au
 **Cc:** opendata@nt.gov.au
-**Subject:** Reuse of BushTel community profile data in a student competition entry (CDU IT Code Fair 2026)
+**Subject:** Permission to reuse BushTel community data in a student competition entry
 
 Dear BushTel team,
 
-I am an IT student at Charles Darwin University and part of Team DIC005 in the CDU IT
-Code Fair 2026 Data Innovation Challenge (theme: Remote Connectivity), judged on 7 October
-2026 with a submission deadline of 30 September 2026.
+May we republish a derived per-community table built from BushTel profiles, with attribution,
+in a non-commercial student competition entry? BushTel carries a disclaimer but no licence
+statement, so we are asking rather than assuming.
 
-Our entry is a non-commercial, offline-first web app and an 8-page report that show, for each
-of the 96 BushTel "Major" and "Minor" communities, which digital services (telehealth video,
-online schooling, government services) the community's connectivity can support, and how the
-published coverage sources (ACCC, ACMA, NT Government lists) agree or disagree.
-
-We would like to use the following BushTel profile fields, retrieved from bushtel.nt.gov.au on
-12 September 2026:
-
-- community name, aliases, coordinates, community type, NT region, ABS 2021 SA1 population;
-- the "Services" list (health centre, school, community store, police station, library,
-  council service centre, public WiFi and its hours, STAND site, mobile phone, internet, road
-  access and the seasonal-access note).
-
-BushTel publishes a disclaimer but no licence statement, so we are asking:
-
-1. May we redistribute a derived per-community table containing the fields above, with
-   attribution to BushTel / Northern Territory Government, inside the app and the report?
+1. May we redistribute the derived table described below, attributed to BushTel / Northern
+   Territory Government?
 2. What attribution wording do you prefer?
-3. If the free-text fields (WiFi hours, operator names, road notes) cannot be redistributed,
-   may we still publish the presence/absence flags derived from them?
+3. If the free-text fields cannot be redistributed, may we still publish presence or absence
+   flags derived from them?
 
-The raw profile JSON will not be redistributed either way. The entry is for assessment and
-public presentation at the Code Fair only; there is no commercial use.
+The fields, retrieved from bushtel.nt.gov.au on 12 September 2026 for the 96 Major and Minor
+communities: name, aliases, coordinates, community type, NT region, ABS 2021 SA1 population,
+and the Services list (health centre, school, store, police station, library, council service
+centre, public WiFi and its hours, STAND site, mobile phone, internet, road access and the
+seasonal-access note). The raw profile JSON will not be redistributed either way.
 
-Thank you for your time. A reply before 26 September would let us reflect your answer in the
-submitted version.
+We are Team DIC005 in the CDU IT Code Fair 2026 Data Innovation Challenge: an offline web app
+and a report showing which digital services each community's connectivity can support, and
+where published coverage sources disagree. Non-commercial, for assessment and public
+presentation on 7 October 2026.
+
+A reply before 26 September would let us reflect your answer in the submitted version.
 
 Kind regards,
 Tarik Bulut
@@ -62,28 +59,24 @@ tarik.bulut@cdu.edu.au
 ## 2. DITRDCSA — National Audit of Mobile Coverage, non-alignment CSV
 
 **To:** [contact address on the Audit's data page or the department's data enquiries inbox — verify before sending]
-**Subject:** Licence of the National Audit of Mobile Coverage non-alignment data (27 May 2026 release)
+**Subject:** Licence of the National Audit of Mobile Coverage non-alignment data
 
 Dear Audit team,
 
-I am an IT student at Charles Darwin University, part of Team DIC005 in the CDU IT Code
-Fair 2026 Data Innovation Challenge (Remote Connectivity), submission due 30 September 2026.
+Two questions about the non-alignment dataset (the CSV release of 27 May 2026). We could find
+no licence statement on the file or its page.
 
-We are building a non-commercial, offline-first app and report that compare published mobile
-coverage claims with independent evidence for 96 remote Northern Territory communities. The
-Audit's non-alignment dataset (the ~1 km tiles where drive testing found no coverage while a
-carrier map claims coverage; CSV release of 27 May 2026) is the only independent measurement of
-its kind, and we would like to show, per community, how many non-alignment tiles fall within
-5 km.
+1. Under what licence is the non-alignment CSV published?
+2. May a derived count per community, attributed to the Department and the Audit, be
+   redistributed in a non-commercial student competition entry and its report?
 
-The CSV carries no licence statement that we could find. Could you confirm:
+We are Team DIC005 in the CDU IT Code Fair 2026 Data Innovation Challenge, comparing published
+mobile coverage claims with independent evidence for 96 remote Northern Territory communities.
+The Audit is the only drive-tested evidence of its kind; we would show, per community, how many
+non-alignment tiles fall within 5 km. The Audit and its methodology are cited in our References
+either way.
 
-1. under what licence the non-alignment CSV is published (for example Creative Commons
-   Attribution 4.0), and
-2. whether a derived count per community, with attribution to the Department and the Audit,
-   may be redistributed in a competition entry and its accompanying report?
-
-We will cite the Audit and its methodology in the report's References in any case.
+A reply before 26 September would let us include the column. Without one we will leave it out.
 
 Kind regards,
 Tarik Bulut
@@ -98,26 +91,24 @@ table does not depend on it.
 ## 3. Bureau of Meteorology — Southern Hemisphere tropical cyclone track CSV
 
 **To:** webreg@bom.gov.au
-**Subject:** Reuse of the tropical cyclone track dataset (IDCKMSTM0S.csv) in a student competition entry
+**Subject:** Licence of the tropical cyclone best-track dataset (IDCKMSTM0S.csv)
 
 Dear Bureau of Meteorology,
 
-I am an IT student at Charles Darwin University, part of Team DIC005 in the CDU IT Code
-Fair 2026 Data Innovation Challenge (Remote Connectivity), submission due 30 September 2026.
+Two questions about `http://www.bom.gov.au/clim_data/IDCKMSTM0S.csv`. Your default terms of use
+restrict supplying content to others, and we could not find a Creative Commons statement for
+this file.
 
-Our non-commercial entry is a report and an offline-first app about connectivity in remote
-Northern Territory communities. We would like to derive, from the Bureau's Southern Hemisphere
-tropical cyclone best-track dataset (`http://www.bom.gov.au/clim_data/IDCKMSTM0S.csv`), a
-single number per community: how many cyclone tracks passed within 100 km since 1970. Only
-that derived count, not the track data itself, would be included in the app and report, with
-attribution to the Bureau.
+1. Is IDCKMSTM0S.csv published under Creative Commons Attribution, and if so which version?
+2. If not, may we redistribute one derived number per community, attributed to the Bureau: how
+   many cyclone tracks passed within 100 km since 1970?
 
-The Bureau's default terms of use restrict supplying content to others, and we could not find
-a Creative Commons statement for this file. Could you confirm:
+Only that count would appear in our output, never the track data itself. We are Team DIC005 in
+the CDU IT Code Fair 2026 Data Innovation Challenge, a non-commercial student entry: a report
+and an offline app about connectivity in remote Northern Territory communities, submitted
+30 September 2026.
 
-1. whether IDCKMSTM0S.csv is published under Creative Commons Attribution (and which version), and
-2. if not, whether the derived per-community count described above may be redistributed in a
-   competition entry with attribution?
+A reply before 26 September would let us keep the figure. Without one we will drop it.
 
 Kind regards,
 Tarik Bulut
