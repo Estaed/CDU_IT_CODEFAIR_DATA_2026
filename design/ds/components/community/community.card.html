@@ -1,0 +1,20 @@
+<!-- @dsCard group="Components" viewport="700x400" name="Community" subtitle="Community header with source line, agreement headline, publisher rows" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{padding:16px;display:grid;gap:16px;grid-template-columns:328px 328px;align-items:start}.frame{border:1px solid var(--border-hairline)}</style>
+</head><body><div id="root" style="display:contents"></div>
+<script type="text/babel">
+const { CommunityHeader, AgreementHeadline, PublisherRow, Chip } = window.CrosscheckDesignSystem_469d70;
+function App(){return <>
+<div className="frame"><CommunityHeader name="Wadeye" region="Top End" type="Major community" population={2259} populationDate="2026-06-26"><Chip>Health centre</Chip><Chip>School</Chip><Chip>Two stores</Chip><Chip>Police</Chip><Chip>Public WiFi Mon–Sat 8am–8pm</Chip><Chip>STAND site</Chip></CommunityHeader><AgreementHeadline covered={4} total={4}/></div>
+<div className="frame"><AgreementHeadline covered={1} total={4}/>
+<PublisherRow publisher="ACCC 2025" kind="predicted" saysCovered="not-covered" detail="No carrier 4G outdoor polygon" source="ACCC Mobile Infrastructure Report" date="2025-11-10"/>
+<PublisherRow publisher="NT Government 2022" kind="listed" saysCovered="not-covered" detail="Not on the 2022 list" source="NTG mobile coverage list" date="2022-07-04"/>
+<PublisherRow publisher="ACMA licence register" kind="licensed" saysCovered="covered" detail="`19 m` Telstra mast at `0.17 km`" source="ACMA RRL" date="2026-09-12"/>
+<PublisherRow publisher="BushTel" kind="portal" saysCovered="not-recorded" source="BushTel mobile phone row" date="2026-06-26"/></div>
+</>}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script></body></html>

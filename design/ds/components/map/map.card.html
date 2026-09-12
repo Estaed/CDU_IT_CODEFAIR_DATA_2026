@@ -1,0 +1,23 @@
+<!-- @dsCard group="Components" viewport="700x400" name="Map" subtitle="Inline-SVG NT map, 96 verdict-shaped points, selected ring, legend" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{padding:16px;display:grid;gap:16px;grid-template-columns:230px 1fr;align-items:start}</style>
+</head><body><div id="root" style="display:contents"></div>
+<script type="text/babel">
+const { NtMap, MapLegend } = window.CrosscheckDesignSystem_469d70;
+// Illustrative points: a few real community positions (approximate) plus seeded filler to reach 96. The pipeline supplies the real set.
+const named=[['wadeye','Wadeye',129.52,-14.24,'degraded'],['baniyala','Baniyala',136.2,-13.2,'fails'],['maningrida','Maningrida',134.23,-12.05,'degraded'],['galiwinku','Galiwinku',135.57,-12.02,'degraded'],['ngukurr','Ngukurr',134.73,-14.73,'degraded'],['borroloola','Borroloola',136.3,-16.07,'degraded'],['hermannsburg','Ntaria',132.77,-23.94,'degraded'],['papunya','Papunya',131.9,-23.2,'nodata'],['lajamanu','Lajamanu',130.63,-18.33,'degraded'],['kalkarindji','Kalkarindji',130.83,-17.45,'degraded'],['yuendumu','Yuendumu',131.8,-22.25,'degraded'],['elliott','Elliott',133.54,-17.55,'works'],['numbulwar','Numbulwar',135.73,-14.27,'nodata'],['wurrumiyanga','Wurrumiyanga',130.63,-11.76,'degraded'],['santateresa','Ltyentye Apurte',134.38,-24.13,'degraded'],['mutitjulu','Mutitjulu',131.08,-25.35,'nodata']];
+let seed=7;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff};
+const pts=named.map(([id,name,lon,lat,verdict])=>({id,name,lon,lat,verdict}));
+const want={works:1,degraded:58,fails:11,nodata:26};pts.forEach(p=>want[p.verdict]--);
+const pool=[];Object.keys(want).forEach(k=>{for(let i=0;i<want[k];i++)pool.push(k)});
+while(pts.length<96){const lat=-12.4-rnd()*13;const lon=lat>-16.5?129.8+rnd()*6:129.5+rnd()*8;pts.push({id:'c'+pts.length,lon,lat,verdict:pool.splice(Math.floor(rnd()*pool.length),1)[0]||'nodata'})}
+function App(){const [sel,setSel]=React.useState('baniyala');return <>
+<div><NtMap points={pts} selectedId={sel} onSelect={p=>setSel(p.id)}/></div>
+<div><MapLegend counts={{works:1,degraded:58,fails:11,nodata:26}} subject="Telehealth video · 96 communities"/><p style={{font:'var(--text-caption)',color:'var(--text-secondary)',padding:'0 16px'}}>Selected: {pts.find(p=>p.id===sel)?.name||sel}. Points are illustrative; the pipeline supplies coordinates and the outline.</p></div>
+</>}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script></body></html>

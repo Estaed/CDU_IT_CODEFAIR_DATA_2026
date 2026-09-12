@@ -1,0 +1,20 @@
+:root{
+/* neutrals (kept from the source rulebook) */
+--color-primary:#111111;--color-primary-pressed:#242424;--color-primary-disabled:#e5e7eb;
+--color-ink:#111111;--color-body:#374151;--color-muted:#6b7280;--color-muted-soft:#898989;
+--color-hairline:#e5e7eb;--color-hairline-soft:#f3f4f6;
+--color-canvas:#ffffff;--color-surface-soft:#f8f9fa;--color-surface-card:#f5f5f5;--color-surface-strong:#e5e7eb;
+--color-on-primary:#ffffff;
+/* verdicts: the only chromatic colour in the system */
+--verdict-works-text:#157a3a;--verdict-works-fill:#e6f4ea;
+--verdict-degraded-text:#8a5a00;--verdict-degraded-fill:#f6ead0;
+--verdict-fails-text:#b42318;--verdict-fails-fill:#fbe4e0;
+--verdict-nodata-text:#596270;--verdict-nodata-fill:#f3f4f6;
+/* semantic aliases */
+--text-heading:var(--color-ink);--text-body:var(--color-body);--text-secondary:var(--color-muted);--text-tertiary:var(--color-muted-soft);--text-on-primary:var(--color-on-primary);
+--surface-page:var(--color-canvas);--surface-block:var(--color-surface-card);--surface-soft:var(--color-surface-soft);--surface-pressed:var(--color-surface-strong);
+--border-hairline:var(--color-hairline);--border-hairline-soft:var(--color-hairline-soft);
+--action-primary:var(--color-primary);--action-primary-pressed:var(--color-primary-pressed);--action-disabled:var(--color-primary-disabled);
+--link:var(--color-ink);--focus-ring:var(--color-ink);--tab-selected:var(--color-ink);
+--map-outline:var(--color-muted);--map-land:var(--color-surface-soft);
+}

@@ -1,0 +1,24 @@
+<!-- @dsCard group="Components" viewport="700x400" name="Services" subtitle="Service rows (collapsed and expanded), verdict badges, assumption note" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{padding:16px;display:grid;gap:16px;grid-template-columns:328px 328px;align-items:start}.frame{border:1px solid var(--border-hairline)}</style>
+</head><body><div id="root" style="display:contents"></div>
+<script type="text/babel">
+const { ServiceRow, AssumptionNote } = window.CrosscheckDesignSystem_469d70;
+function App(){return <>
+<div className="frame">
+<ServiceRow service="Telehealth video" verdict="degraded" reason="Latency `665 ms` on satellite vs `100 ms` required" sources={[{label:'Failing figure:',source:'ACCC MBA',date:'2024-12-05'},{label:'Required figure:',source:'healthdirect',date:'2025-03-14'}]}><AssumptionNote text="Could work over Telstra 4G if latency is under `100 ms`. No measurement exists here."/></ServiceRow>
+<ServiceRow service="School video meeting" verdict="degraded" reason="Latency `665 ms` on satellite vs `150 ms` required"/>
+<ServiceRow service="myGov and banking" verdict="works" reason="Latency `665 ms` on satellite vs `1,000 ms` required"/>
+<ServiceRow service="Voice and SMS" verdict="works" reason="Telstra 4G predicted and licensed site at `0.06 km`"/>
+</div>
+<div className="frame">
+<ServiceRow service="Telehealth video" verdict="fails" defaultExpanded reason="No terrestrial path; satellite latency `665 ms` vs `100 ms` required" sources={[{label:'Failing figure:',source:'ACCC MBA',date:'2024-12-05'},{label:'Required figure:',source:'healthdirect',date:'2025-03-14'}]} path="Best path: satellite (NBN residual) · rule `v1`"/>
+<ServiceRow service="Community store EFTPOS" verdict="nodata" reason="Requirement not published"/>
+</div>
+</>}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script></body></html>

@@ -1,0 +1,429 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": []
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": [
+              "components/community/**",
+              "components/core/**",
+              "components/map/**",
+              "components/navigation/**",
+              "components/search/**",
+              "components/services/**",
+              "components/share/**"
+            ],
+            "message": "Import design-system components from 'index.js', not component internals."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/\\b\\d+px\\b/]",
+        "message": "Raw px value — use a design-system spacing token via var()."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='AgreementHeadline'] > JSXAttribute > JSXIdentifier[name!=/^(?:covered|total|subject|key|ref|className|style|children)$/]",
+        "message": "<AgreementHeadline> doesn't accept that prop. Declared props: covered, total, subject."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='AssumptionNote'] > JSXAttribute > JSXIdentifier[name!=/^(?:text|children|label|key|ref|className|style|children)$/]",
+        "message": "<AssumptionNote> doesn't accept that prop. Declared props: text, children, label."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute > JSXIdentifier[name!=/^(?:variant|disabled|fullWidth|onClick|children|key|ref|className|style|children)$/]",
+        "message": "<Button> doesn't accept that prop. Declared props: variant, disabled, fullWidth, onClick, children."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='variant'] > Literal[value!=/^(?:primary|secondary)$/]",
+        "message": "<Button> variant must be one of 'primary' | 'secondary'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Chip'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|onClick|selected|key|ref|className|style|children)$/]",
+        "message": "<Chip> doesn't accept that prop. Declared props: children, onClick, selected."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='CommunityHeader'] > JSXAttribute > JSXIdentifier[name!=/^(?:name|region|type|population|populationSource|populationDate|children|key|ref|className|style|children)$/]",
+        "message": "<CommunityHeader> doesn't accept that prop. Declared props: name, region, type, population, populationSource, populationDate, children."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Figures'] > JSXAttribute > JSXIdentifier[name!=/^(?:text|size|key|ref|className|style|children)$/]",
+        "message": "<Figures> doesn't accept that prop. Declared props: text, size."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Figures'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:xs|sm|md|lg)$/]",
+        "message": "<Figures> size must be one of 'xs' | 'sm' | 'md' | 'lg'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='FilterTab'] > JSXAttribute > JSXIdentifier[name!=/^(?:id|label|count|key|ref|className|style|children)$/]",
+        "message": "<FilterTab> doesn't accept that prop. Declared props: id, label, count."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Footer'] > JSXAttribute > JSXIdentifier[name!=/^(?:attributions|team|statement|key|ref|className|style|children)$/]",
+        "message": "<Footer> doesn't accept that prop. Declared props: attributions, team, statement."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MapLegend'] > JSXAttribute > JSXIdentifier[name!=/^(?:counts|subject|key|ref|className|style|children)$/]",
+        "message": "<MapLegend> doesn't accept that prop. Declared props: counts, subject."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MapPoint'] > JSXAttribute > JSXIdentifier[name!=/^(?:id|name|lon|lat|verdict|key|ref|className|style|children)$/]",
+        "message": "<MapPoint> doesn't accept that prop. Declared props: id, name, lon, lat, verdict."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MapPoint'] > JSXAttribute[name.name='verdict'] > Literal[value!=/^(?:works|degraded|fails|nodata)$/]",
+        "message": "<MapPoint> verdict must be one of 'works' | 'degraded' | 'fails' | 'nodata'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='PublisherRow'] > JSXAttribute > JSXIdentifier[name!=/^(?:publisher|kind|saysCovered|detail|source|date|key|ref|className|style|children)$/]",
+        "message": "<PublisherRow> doesn't accept that prop. Declared props: publisher, kind, saysCovered, detail, source, date."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='PublisherRow'] > JSXAttribute[name.name='kind'] > Literal[value!=/^(?:predicted|licensed|listed|portal)$/]",
+        "message": "<PublisherRow> kind must be one of 'predicted' | 'licensed' | 'listed' | 'portal'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='PublisherRow'] > JSXAttribute[name.name='saysCovered'] > Literal[value!=/^(?:covered|not-covered|not-recorded)$/]",
+        "message": "<PublisherRow> saysCovered must be one of 'covered' | 'not-covered' | 'not-recorded'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='QrCode'] > JSXAttribute > JSXIdentifier[name!=/^(?:text|modules|level|size|label|key|ref|className|style|children)$/]",
+        "message": "<QrCode> doesn't accept that prop. Declared props: text, modules, level, size, label."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='QrCode'] > JSXAttribute[name.name='level'] > Literal[value!=/^(?:L|M)$/]",
+        "message": "<QrCode> level must be one of 'L' | 'M'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SearchResult'] > JSXAttribute > JSXIdentifier[name!=/^(?:id|name|aliases|region|population|key|ref|className|style|children)$/]",
+        "message": "<SearchResult> doesn't accept that prop. Declared props: id, name, aliases, region, population."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ServiceSource'] > JSXAttribute > JSXIdentifier[name!=/^(?:label|source|date|key|ref|className|style|children)$/]",
+        "message": "<ServiceSource> doesn't accept that prop. Declared props: label, source, date."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='ShareCard'] > JSXAttribute > JSXIdentifier[name!=/^(?:qrText|qrModules|packDate|packSize|appSize|buildSource|onShare|onSave|shareLabel|saveLabel|statement|key|ref|className|style|children)$/]",
+        "message": "<ShareCard> doesn't accept that prop. Declared props: qrText, qrModules, packDate, packSize, appSize, buildSource, onShare, onSave, shareLabel, saveLabel, statement."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SourceLine'] > JSXAttribute > JSXIdentifier[name!=/^(?:label|source|date|key|ref|className|style|children)$/]",
+        "message": "<SourceLine> doesn't accept that prop. Declared props: label, source, date."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='TopBar'] > JSXAttribute > JSXIdentifier[name!=/^(?:title|offline|sticky|children|key|ref|className|style|children)$/]",
+        "message": "<TopBar> doesn't accept that prop. Declared props: title, offline, sticky, children."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='VerdictBadge'] > JSXAttribute > JSXIdentifier[name!=/^(?:verdict|key|ref|className|style|children)$/]",
+        "message": "<VerdictBadge> doesn't accept that prop. Declared props: verdict."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='VerdictBadge'] > JSXAttribute[name.name='verdict'] > Literal[value!=/^(?:works|degraded|fails|nodata)$/]",
+        "message": "<VerdictBadge> verdict must be one of 'works' | 'degraded' | 'fails' | 'nodata'."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {
+      "AgreementHeadline": {
+        "replaces": []
+      },
+      "AssumptionNote": {
+        "replaces": []
+      },
+      "Button": {
+        "replaces": []
+      },
+      "Chip": {
+        "replaces": []
+      },
+      "CommunityHeader": {
+        "replaces": []
+      },
+      "Figures": {
+        "replaces": []
+      },
+      "FilterTab": {
+        "replaces": []
+      },
+      "Footer": {
+        "replaces": []
+      },
+      "MapLegend": {
+        "replaces": []
+      },
+      "MapPoint": {
+        "replaces": []
+      },
+      "PublisherRow": {
+        "replaces": []
+      },
+      "QrCode": {
+        "replaces": []
+      },
+      "SearchResult": {
+        "replaces": []
+      },
+      "ServiceSource": {
+        "replaces": []
+      },
+      "ShareCard": {
+        "replaces": []
+      },
+      "SourceLine": {
+        "replaces": []
+      },
+      "TopBar": {
+        "replaces": []
+      },
+      "VerdictBadge": {
+        "replaces": []
+      }
+    },
+    "tokens": [
+      "--action-disabled",
+      "--action-primary",
+      "--action-primary-pressed",
+      "--border-hairline",
+      "--border-hairline-soft",
+      "--color-body",
+      "--color-canvas",
+      "--color-hairline",
+      "--color-hairline-soft",
+      "--color-ink",
+      "--color-muted",
+      "--color-muted-soft",
+      "--color-on-primary",
+      "--color-primary",
+      "--color-primary-disabled",
+      "--color-primary-pressed",
+      "--color-surface-card",
+      "--color-surface-soft",
+      "--color-surface-strong",
+      "--focus-ring",
+      "--font-mono",
+      "--font-sans",
+      "--leading-none",
+      "--leading-normal",
+      "--leading-snug",
+      "--leading-tight",
+      "--link",
+      "--map-land",
+      "--map-outline",
+      "--radius-full",
+      "--radius-lg",
+      "--radius-md",
+      "--radius-pill",
+      "--radius-sm",
+      "--radius-xl",
+      "--radius-xs",
+      "--size-badge",
+      "--size-body-md",
+      "--size-body-sm",
+      "--size-button",
+      "--size-caption",
+      "--size-chip",
+      "--size-content-max",
+      "--size-control",
+      "--size-design-width",
+      "--size-figure-lg",
+      "--size-figure-md",
+      "--size-figure-sm",
+      "--size-figure-xs",
+      "--size-focus-ring",
+      "--size-hairline",
+      "--size-label",
+      "--size-map-point",
+      "--size-map-point-ring",
+      "--size-qr",
+      "--size-rule",
+      "--size-screen-pad",
+      "--size-tab",
+      "--size-title-lg",
+      "--size-title-md",
+      "--size-title-sm",
+      "--size-topbar",
+      "--size-touch",
+      "--size-viewport-min-height",
+      "--space-lg",
+      "--space-md",
+      "--space-sm",
+      "--space-xl",
+      "--space-xs",
+      "--space-xxl",
+      "--space-xxs",
+      "--surface-block",
+      "--surface-page",
+      "--surface-pressed",
+      "--surface-soft",
+      "--tab-selected",
+      "--text-body",
+      "--text-body-md",
+      "--text-body-sm",
+      "--text-button",
+      "--text-caption",
+      "--text-figure-lg",
+      "--text-figure-md",
+      "--text-figure-sm",
+      "--text-figure-xs",
+      "--text-heading",
+      "--text-label",
+      "--text-on-primary",
+      "--text-secondary",
+      "--text-tab",
+      "--text-tertiary",
+      "--text-title-lg",
+      "--text-title-md",
+      "--text-title-sm",
+      "--tracking-none",
+      "--tracking-title-lg",
+      "--verdict-degraded-fill",
+      "--verdict-degraded-text",
+      "--verdict-fails-fill",
+      "--verdict-fails-text",
+      "--verdict-nodata-fill",
+      "--verdict-nodata-text",
+      "--verdict-works-fill",
+      "--verdict-works-text",
+      "--weight-regular",
+      "--weight-semibold"
+    ],
+    "tokenKinds": {
+      "--color-primary": "color",
+      "--color-primary-pressed": "color",
+      "--color-primary-disabled": "color",
+      "--color-ink": "color",
+      "--color-body": "color",
+      "--color-muted": "color",
+      "--color-muted-soft": "color",
+      "--color-hairline": "color",
+      "--color-hairline-soft": "color",
+      "--color-canvas": "color",
+      "--color-surface-soft": "color",
+      "--color-surface-card": "color",
+      "--color-surface-strong": "color",
+      "--color-on-primary": "color",
+      "--verdict-works-text": "font",
+      "--verdict-works-fill": "color",
+      "--verdict-degraded-text": "font",
+      "--verdict-degraded-fill": "color",
+      "--verdict-fails-text": "font",
+      "--verdict-fails-fill": "color",
+      "--verdict-nodata-text": "font",
+      "--verdict-nodata-fill": "color",
+      "--text-heading": "font",
+      "--text-body": "font",
+      "--text-secondary": "font",
+      "--text-tertiary": "font",
+      "--text-on-primary": "font",
+      "--surface-page": "color",
+      "--surface-block": "color",
+      "--surface-soft": "color",
+      "--surface-pressed": "color",
+      "--border-hairline": "color",
+      "--border-hairline-soft": "color",
+      "--action-primary": "color",
+      "--action-primary-pressed": "color",
+      "--action-disabled": "color",
+      "--link": "color",
+      "--focus-ring": "color",
+      "--tab-selected": "color",
+      "--map-outline": "color",
+      "--map-land": "color",
+      "--font-sans": "font",
+      "--font-mono": "font",
+      "--weight-regular": "font",
+      "--weight-semibold": "font",
+      "--size-title-lg": "spacing",
+      "--size-title-md": "spacing",
+      "--size-title-sm": "spacing",
+      "--size-body-md": "spacing",
+      "--size-body-sm": "spacing",
+      "--size-caption": "spacing",
+      "--size-label": "spacing",
+      "--size-button": "spacing",
+      "--size-tab": "spacing",
+      "--size-figure-lg": "spacing",
+      "--size-figure-md": "spacing",
+      "--size-figure-sm": "spacing",
+      "--size-figure-xs": "spacing",
+      "--leading-tight": "font",
+      "--leading-snug": "font",
+      "--leading-normal": "font",
+      "--leading-none": "font",
+      "--tracking-title-lg": "font",
+      "--tracking-none": "font",
+      "--text-title-lg": "font",
+      "--text-title-md": "font",
+      "--text-title-sm": "font",
+      "--text-body-md": "font",
+      "--text-body-sm": "font",
+      "--text-caption": "font",
+      "--text-label": "font",
+      "--text-button": "font",
+      "--text-tab": "font",
+      "--text-figure-lg": "font",
+      "--text-figure-md": "font",
+      "--text-figure-sm": "font",
+      "--text-figure-xs": "font",
+      "--space-xxs": "spacing",
+      "--space-xs": "spacing",
+      "--space-sm": "spacing",
+      "--space-md": "spacing",
+      "--space-lg": "spacing",
+      "--space-xl": "spacing",
+      "--space-xxl": "spacing",
+      "--radius-xs": "radius",
+      "--radius-sm": "radius",
+      "--radius-md": "radius",
+      "--radius-lg": "radius",
+      "--radius-xl": "radius",
+      "--radius-pill": "radius",
+      "--radius-full": "radius",
+      "--size-touch": "spacing",
+      "--size-control": "spacing",
+      "--size-topbar": "spacing",
+      "--size-chip": "spacing",
+      "--size-badge": "spacing",
+      "--size-screen-pad": "spacing",
+      "--size-content-max": "spacing",
+      "--size-design-width": "spacing",
+      "--size-viewport-min-height": "spacing",
+      "--size-hairline": "spacing",
+      "--size-rule": "spacing",
+      "--size-focus-ring": "spacing",
+      "--size-map-point": "spacing",
+      "--size-map-point-ring": "spacing",
+      "--size-qr": "spacing"
+    },
+    "fontFamilies": []
+  }
+}

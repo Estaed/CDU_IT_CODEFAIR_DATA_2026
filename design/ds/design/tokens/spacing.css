@@ -1,0 +1,11 @@
+:root{
+/* 4px base */
+--space-xxs:4px;--space-xs:8px;--space-sm:12px;--space-md:16px;--space-lg:24px;--space-xl:32px;--space-xxl:48px;
+/* radius */
+--radius-xs:4px;--radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;--radius-pill:9999px;--radius-full:9999px;
+/* sizes */
+--size-touch:44px;--size-control:44px;--size-topbar:56px;--size-chip:28px;--size-badge:24px;
+--size-screen-pad:16px;--size-content-max:640px;--size-design-width:360px;--size-viewport-min-height:640px;
+--size-hairline:1px;--size-rule:3px;--size-focus-ring:2px;
+--size-map-point:10px;--size-map-point-ring:18px;--size-qr:200px;
+}

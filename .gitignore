@@ -14,3 +14,6 @@ spike/raw/
 # Raw source snapshots (20 MB BushTel detail JSON; re-fetchable with spike/lane_bushtel.py,
 # and BushTel reuse terms are still Open Question 1 in docs/PRD.md)
 data/raw/
+
+# Regenerable from design/ds/ (see BACKLOG.md 2026-09-12)
+design/*.zip
