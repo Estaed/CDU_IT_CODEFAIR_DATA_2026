@@ -1,0 +1,97 @@
+bushtel_id,name,telstra_within_5km,telstra_within_10km,telstra_within_40km,optus_within_5km,optus_within_10km,optus_within_40km,tpg_within_5km,tpg_within_10km,tpg_within_40km,jv_within_5km,jv_within_10km,jv_within_40km,any_within_5km,any_within_10km,any_within_40km,nearest_site_km,nearest_site_carrier,nearest_site_name,nearest_site_precision
+9,Amoonguna,0,1,1,0,1,1,0,1,1,0,0,0,0,1,1,5.213,Telstra,Telstra CDMA site Miller Rd Airport ALICE SPRINGS,Within 10 metres
+10,Ampilatwatja,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.25,Telstra,Telstra Terminal Adj Lot 18  Ampilatwatja 10 km N of AMMAROO,Within 10 metres
+20,Areyonga,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,39.345,Telstra,Telstra Site 13.4 km SW of HERMANNSBURG,Within 10 metres
+26,Orrtipa-Thurra,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.349,Telstra,"Telstra Street Cell, Orrtip-Thurra Community ANATYE",Within 10 metres
+33,Engawala,1,1,1,0,0,1,0,0,0,0,0,0,1,1,1,0.151,Telstra,"Telstra Site, 9 Price Street Engawala",Within 10 metres
+36,Finke,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.642,Telstra,Telstra Site  FINKE,Within 10 metres
+41,Haasts Bluff,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,28.832,Telstra,Telstra Radio Terminal PAPUNYA,Unknown
+42,Atitjere,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1.103,Telstra,Telstra Comms Site 266 Plenty Hwy (Adj Power Stn) Hart,Within 100 metres
+43,Hermannsburg,1,1,1,0,0,1,0,0,0,0,0,0,1,1,1,0.222,Telstra,Telstra Exchange  HERMANNSBURG,Within 10 metres
+51,Imanpa,1,1,1,0,0,1,0,0,0,0,0,0,1,1,1,0.171,Telstra,Telstra Site 109 Waterhole Road IMANPA,Within 10 metres
+63,Irrultja,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,36.563,Telstra,Telstra Terminal LOT 17 Arlparra Comm SANDOVER,Within 10 metres
+65,Iwupataka,0,1,1,0,0,1,0,0,1,0,0,0,0,1,1,8.365,Telstra,"Telstra Site, Standley Creek Kiosk Hugh",Within 10 metres
+66,Kaltukatjara,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.393,Telstra,Telstra Radio Terminal DOCKER RIVER EAST,Within 100 metres
+72,Kintore,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.314,Telstra,Kintore Rd KINTORE,Within 10 metres
+86,Laramba,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.174,Telstra,"Telstra Site, 12 Ayerrer Street Laramba",Within 10 metres
+112,Mount Liebig,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1.354,Telstra,Telstra Site MT LIEBIG,Unknown
+120,Mutitjulu,1,1,1,0,0,1,0,0,1,0,0,0,1,1,1,0.42,Telstra,Telstra Site Mutitjulu Comm MUTITJULU,Within 10 metres
+127,Nturiya,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,18.273,Telstra,Telstra Repeater 8391 8 km S of TI TREE,Within 100 metres
+128,Nyirripi,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.21,Telstra,Telstra Radio Site 29 Manja Street NYIRRIPI,Within 100 metres
+131,Papunya,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1.83,Telstra,Telstra Radio Terminal PAPUNYA,Unknown
+138,Pmara Jutunta,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1.218,Telstra,Telstra Repeater 8391 8 km S of TI TREE,Within 100 metres
+145,Santa Teresa,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.32,Telstra,Telstra Comsite SANTA TERESA,Within 100 metres
+147,Arawerr,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,10.896,Telstra,Telstra Terminal LOT 17 Arlparra Comm SANDOVER,Within 10 metres
+148,Titjikala,1,1,1,0,0,1,0,0,0,0,0,0,1,1,1,0.385,Telstra,Telstra Radio Terminal 110 km SSE of Alice Springs MARYVALE,Within 10 metres
+174,Wallace Rockhole,1,1,1,0,0,1,0,0,0,0,0,0,1,1,1,0.135,Telstra,Telstra Site WALLACE ROCKHOLE,Unknown
+186,Willowra,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.422,Telstra,"Telstra Radio Site Willowra Community, 5 Kakarrara Road Willowra",Within 10 metres
+187,Wilora,1,1,1,0,0,1,0,0,0,0,0,0,1,1,1,0.174,Telstra,"20 m monopole, 126 Ilewarr Road Wilora",Within 100 metres
+197,Yuelamu,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.059,Telstra,"Telstra Exchange Yuelamu, Yerramp Road Yuelamu",Within 10 metres
+198,Yuendumu,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.431,Telstra,Telstra Radio Terminal YUENDUMU,Unknown
+202,Ali Curung,1,1,1,0,0,1,0,0,0,0,0,0,1,1,1,0.092,Telstra,Telstra Radio Terminal ALI CURUNG,Within 10 metres
+203,Alpurrurulam,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.332,Telstra,Telstra Site 11 Antyiper Street Alpurrurulam,Within 10 metres
+219,Canteen Creek,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.203,Telstra,"Telstra Site, Corner of Canteen Creek Road and Mick Street Canteen Creek",Within 10 metres
+227,Wutunugurra,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.222,Telstra,"Telstra Site, 6 Blackman Court, Epenarra Community Wutunugurra",Within 10 metres
+244,Mungkarta,0,0,1,0,0,1,0,0,0,0,0,0,0,0,1,25.428,Optus,Optus Small Cell Site Devils Marbles DAVENPORT,Within 10 metres
+250,Imangara,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,28.912,Telstra,Telstra Radio Terminal ALI CURUNG,Within 10 metres
+252,Marlinja,1,1,1,0,0,1,0,0,0,0,0,0,1,1,1,0.652,Telstra,Telstra Site 28 Drovers Drive NEWCASTLE WATERS,Within 10 metres
+256,Wandangula,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,4.199,Telstra,Telstra Exchange BORROLOOLA,Within 100 metres
+258,Robinson River,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.452,Telstra,Broadcast/Telstra Site Lot 105 Robinson River Rd ROBINSON RIVER,Unknown
+264,Tara,1,1,1,0,0,1,0,0,0,0,0,0,1,1,1,0.148,Telstra,"20 m seesaw pole, behind 3 Kelye Court Tara",Within 10 metres
+294,Belyuen,1,1,1,0,0,1,0,0,1,0,0,0,1,1,1,0.242,Telstra,"Telstra Site, 289 Plan 901078 Belyuen",Within 10 metres
+319,Gochan Jiny Jirra,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,23.407,Telstra,"9 m monopole, Western end of Ji-Marda Landing Ground WESTERN ARNHEM",Within 10 metres
+329,Gunbalanya,1,1,1,0,0,1,0,0,0,0,0,0,1,1,1,0.082,Telstra,Telstra Radio Terminal OENPELLI,Within 100 metres
+362,Maningrida,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.945,Telstra,Telstra Radio Terminal MANINGRIDA,Unknown
+363,Manmoyi,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.101,Telstra,"9 m pole, Manmoyi Community WEST ARNHEM",Within 10 metres
+374,Milikapiti,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,0.909,Telstra,Telstra Site Milikapiti MELVILLE ISLAND,Unknown
+375,Minjilang,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.597,Telstra,Telstra Radio Terminal Minjilang CROKER ISLAND,Within 100 metres
+397,Nauiyu,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,0.075,Telstra,BAI Comms Site Lot 103 NAUIYU,Within 10 metres
+400,Wurrumiyanga,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,0.209,Telstra,Telstra Site Ngiuiu BATHURST ISLAND,Unknown
+404,Nganmarriyanga,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.338,Telstra,Telstra RBS Palumpa Community NGANMARRIYANGA,Within 10 metres
+410,Peppimenarti,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.903,Telstra,Telstra RBS Site Lot 15 Peppimenarti Community PEPPEMENARTI,Within 10 metres
+411,Pirlangimpi,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,0.384,Telstra,Telstra Site Pularumpi MELVILLE ISLAND,Unknown
+426,Wadeye,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.064,Telstra,74 Perdjert Street WADEYE,Unknown
+429,Warruwi,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.504,Telstra,Telstra Radio Terminal Warruwi GOULBURN ISLAND,Within 100 metres
+434,Woodycupaldiya,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.038,Telstra,"9 m pole, Woodycupaldiya Community NEMARLUK",Within 10 metres
+451,Angurugu,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.072,Telstra,"Groote Eylandt Language Centre, Townsite of Angurugu Angurugu",Within 10 metres
+458,Baniyala,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.17,Telstra,"19 m Mast, Baniyala Community EAST ARNHEM",Within 10 metres
+464,Birany Birany,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.092,Telstra,"9 m seesaw monopole, Birany Birany Community EAST ARNHEM",Within 10 metres
+469,Rorruwuy,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.055,Telstra,"9 m seesaw monopole, Rorruwuy Community WEST ARNHEM",Within 10 metres
+473,Dhalinybuy,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,25.396,Telstra,"9 m seesaw monopole, Rorruwuy Community WEST ARNHEM",Within 10 metres
+492,Galiwinku,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.175,Telstra,Telstra Radio Terminal South Elcho Island Galiwinku ELCHO ISLAND,Within 100 metres
+498,Gan Gan,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,35.165,Telstra,"19 m Mast, Baniyala Community EAST ARNHEM",Within 10 metres
+500,Gapuwiyak,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.198,Telstra,Telstra Radio Terminal GAPUWIYAK,Unknown
+514,Gunyangara,1,1,1,0,1,1,0,1,1,0,0,0,1,1,1,3.075,Telstra,Nabalco Processing Plant Melville Bay Rd GOVE PENINSULA,Within 10 metres
+517,Gurrumuru,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,36.46,Telstra,"9 m seesaw monopole, Birany Birany Community EAST ARNHEM",Within 10 metres
+524,Mapuru,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.068,Telstra,"9 m Ingal seesaw monopole, Mapuru Community EAST ARNHEM",Within 10 metres
+531,Milingimbi,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,2.303,Telstra,Telstra Radio Terminal 2 km SW of Milingimbi Mission MILINGIMBI,Unknown
+532,Milyakburra,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.157,Telstra,Telstra Site Business Centre Lot 7 MilyakBurra,Within 10 metres
+542,Ngangalala,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,7.883,Telstra,Telstra Radio Terminal RAMINGINING,Unknown
+549,Numbulwar,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.044,Telstra,Telstra Radio Terminal NUMBULWAR,Unknown
+550,Ramingining,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.391,Telstra,Telstra Radio Terminal RAMINGINING,Unknown
+555,Umbakumba,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.334,Telstra,Telstra Hut Umbakumba GROOTE EYLANDT,Unknown
+571,Yathalamarra,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,6.0,Telstra,Telstra Radio Terminal RAMINGINING,Unknown
+576,Yirrkala,1,1,1,0,1,1,0,0,1,0,0,0,1,1,1,0.491,Telstra,Telstra Repeater Site YIRRKALA,Unknown
+580,Barunga,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.449,Telstra,Telstra Barunga CMTS Central Arnhem Rd NE of BARUNGA,Within 10 metres
+581,Wugularr,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.239,Telstra,Telstra Beswick CMTS Myilly St BESWICK,Within 10 metres
+582,Binjari,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,4.031,Optus,Telstra RBS Lot 3112 Ivanoff Rd COSSACK,Within 10 metres
+586,Bulla,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.258,Telstra,"30m Mast, behind 44 Goorbidigum Rd Baines",Within 10 metres
+587,Bulman,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1.107,Telstra,Telstra Site Sewerage Ponds Access 1km SE of Bulman,Within 10 metres
+591,Daguragu,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,5.266,Telstra,Telstra Radio Terminal KALKARINGI,Unknown
+593,Jilkminggan,1,1,1,0,1,1,0,0,0,0,0,0,1,1,1,0.024,Telstra,"Telstra Exchange Jilkminggan Jilkminggan, Roper Gulf",Within 10 metres
+595,Manyallaluk,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1.716,Telstra,Telstra Radio Terminal 28 km N of Tandangle EVA VALLEY,Within 10 metres
+600,Hodgson River Station,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,39.427,Telstra,Telstra Site 4 Plan 921080 Minyerri Comm Minyerri,Within 10 metres
+603,Kalkarindji,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.588,Telstra,Telstra Radio Terminal KALKARINGI,Unknown
+608,Kybrook Farm,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,4.124,Optus,Pine Creek 37 Moule Street PINE CREEK,Within 10 metres
+609,Lajamanu,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.663,Telstra,"Telstra Site, Lot 233 Plan 901070 Lajamanu Road Lajamanu",Within 100 metres
+622,Amanbidji,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.258,Telstra,"20 m seesaw monopole, Amanbidji Community BAINES",Within 10 metres
+624,Minyerri,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.111,Telstra,Telstra Site 4 Plan 921080 Minyerri Comm Minyerri,Within 10 metres
+633,Ngukurr,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.276,Telstra,Telstra Radio Terminal NGUKURR,Unknown
+639,Nitjpurru,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.846,Telstra,"20 m seesaw monopole, Pigeon Hole Community near Sewage Ponds EAST ARNHEM",Within 10 metres
+641,Rittarangu,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0.212,Telstra,"20 m seesaw monopole, Urapunga Community 85 m SW of Water Tank WILTON",Within 10 metres
+642,Rockhole,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1.63,Telstra,"40 m Amplitel monopole, 220 Murnburlu Road COSSACK",Within 100 metres
+654,Weemol,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,4.662,Telstra,Telstra Site Sewerage Ponds Access 1km SE of Bulman,Within 10 metres
+658,Yarralin,1,1,1,0,0,1,0,0,0,0,0,0,1,1,1,0.155,Telstra,Telstra Radio Site Lot 41 Yarralin,Within 100 metres
+721,Likkaparta,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,35.811,Telstra,Telstra Site 24 km N of Tennant Creek THREEWAYS ROADHOUSE,Unknown
+744,Pickertaramoor,1,1,1,0,0,1,0,0,0,0,0,0,1,1,1,0.664,Telstra,"Telstra Site, Pickataramoor Tiwi Islands",Within 10 metres
+868,Wurankuwu,1,1,1,0,0,1,0,0,0,0,0,0,1,1,1,0.174,Telstra,Broadcast Site  WURANKUWU,Unknown

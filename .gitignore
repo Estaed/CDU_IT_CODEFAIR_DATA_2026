@@ -6,3 +6,11 @@
 # Generated per clone by render_codex_hooks.py — carries an absolute, machine-specific
 # path, so it must never be committed (in the template or in a project cloned from it).
 .codex/hooks.json
+
+# Spike downloads (hundreds of MB, re-fetchable from the URLs in spike/README.md)
+spike/raw/
+.venv/
+
+# Raw source snapshots (20 MB BushTel detail JSON; re-fetchable with spike/lane_bushtel.py,
+# and BushTel reuse terms are still Open Question 1 in docs/PRD.md)
+data/raw/

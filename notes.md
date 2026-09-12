@@ -123,30 +123,40 @@ deck with a 5-min cut, interactive prototype, Python source with remarks, README
 reproduction steps. Zip, email to itcodefair@cdu.edu.au, deadline 30 Sep 2026, Challenge
 Day 7 Oct 2026.
 
-## Where we are — 2026-09-12 (end of session, Claude limit exhausted)
+## Where we are — 2026-09-12 (afternoon: spike done)
 
 **Decision (Tarik, 2026-09-12): build the D + A combination** from
 `reports/2026-09-12-arena-verdict.md` — per-community service-gap table (D, spine) with the
 mobile source-agreement count (A) as one input column. Candidate concept above is superseded.
 
-Done this session: notes dump, idea-arena (4 Opus research lanes, verdict written).
+Done this session: notes dump, idea-arena (4 Opus research lanes, verdict written), and the
+**20-community spike** (`reports/2026-09-12-spike-20.md`, code and table in `spike/`, three
+Sonnet lanes + main loop). Kill criterion passed: publishers disagree on 31 of 96 communities.
+But the fixed-access column is one colour (95/96 NBN satellite residual), so the PRD must
+define capability as "best available path" (terrestrial mobile where a publisher and a licensed
+site agree, satellite otherwise), not "NBN technology". Six disagreement patterns, 11
+licensed-site-but-no-map communities, three town-fringe communities, and the "what link does the
+clinic actually use" question are the PRD's raw material.
+
+Also done 2026-09-12 (evening): name **Crosscheck** (Tarik); `docs/PRD.md` written (12 open
+questions, 5 deferred decisions, decision log); licence email drafts in
+`docs/licence-requests.md` (not sent).
+
 Next, in order:
-1. 20-community spike (one day): build the capability table for 20 BushTel Major/Minor
-   communities — NBN technology by CC-BY footprint, mobile agreement count from ACCC 2025 +
-   NTG 2022 + ACMA RRL, services from BushTel, healthdirect/Teams thresholds. Kill if the
-   table shows no variation.
-2. `create-prd` from this file + the verdict, carrying the verdict's TBD list as open questions.
-3. Claude Design, three screens, into `design/`.
-4. `create-architecture` (Part 2), then `generate-tasks`.
+1. Claude Design, three screens (Community, Map, Share) per PRD §4.2, into `design/`.
+2. `create-architecture` (Part 2), then `generate-tasks`. Part 2 inherits the spike's data facts
+   (ACCC Optus 4G = 1.1 M placemarks, clip once; NBN FW is Darwin-only; RRL join recipe) and the
+   PRD's size bar (HTML ≤ 1 MB, data pack ≤ 300 KB).
 
 Licence emails to send early (they gate what ships offline): Bushtel@nt.gov.au (terms),
 DITRDCSA (Audit non-alignment CSV licence), BoM webreg@bom.gov.au (cyclone CSV, only if the
-fragility flag is kept).
+fragility flag is kept). The spike confirms BushTel, ACCC, ACMA, NTG and NBN all ship in the
+app; BushTel is the only one without a licence.
 
 Quota note: Codex weekly at 99 % until ~2026-09-15; Claude live quota unreadable (429). Code
 bees this week are Claude-side (Opus/Sonnet), not Codex.
 
 Reminders Eko owes Tarik (asked 2026-09-12): (1) say explicitly when it is time to open Claude
-Design — after the PRD and the 20-community spike, before generate-tasks; (2) draft the three
-licence emails (BushTel, DITRDCSA, BoM) as files for Tarik to send from his CDU address, and
-remind him when the spike shows which sources actually ship in the app.
+Design — after the PRD, before generate-tasks; (2) draft the three licence emails (BushTel,
+DITRDCSA, BoM) as files for Tarik to send from his CDU address — the spike has now shown which
+sources ship, so this is due.
