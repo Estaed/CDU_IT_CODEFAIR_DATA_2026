@@ -12,13 +12,14 @@ import re
 from datetime import date
 from pathlib import Path
 
-from pipeline import provenance, rules
+from pipeline import outline, provenance, rules
 
 ROOT = Path(__file__).resolve().parent.parent
 TABLE = ROOT / "data/out/capability_table.csv"
 THRESHOLDS = ROOT / "pipeline/thresholds.csv"
 OUT_PACK = ROOT / "data/out/data_pack.json"
 CONSTANTS = ROOT / "constants.md"
+BOUNDARY_RAW = ROOT / "data/raw" / outline.RAW_NAME
 
 PACK_VERSION = 1
 POPULATION_SOURCE = "ABS 2021 SA1 via BushTel"
@@ -58,6 +59,82 @@ POLYGON_DISTANCES = (
 )
 
 TRAILING_CAPS = re.compile(r"(\s+[A-Z][A-Z'-]*)+$")
+
+# The "who does what" sentences per disagreement pattern (PRD section 4.3), keyed on the
+# exact ``mobile_says`` string ``merge.py`` writes. Sentence text is data, authored once here;
+# any pattern not listed falls back to the generic reconciliation line.
+ACTIONS_BY_PATTERN: dict[str, list[dict[str, str]]] = {
+    "accc=1;ntg2022=1;rrl5=1;bushtel=1": [
+        {"who": "Carrier", "text": "publish measured latency for this site."},
+    ],
+    "accc=0;ntg2022=0;rrl5=0;bushtel=0": [
+        {
+            "who": "Carrier",
+            "text": (
+                "no footprint, list entry or licensed site here; "
+                "state the nearest planned site."
+            ),
+        },
+        {"who": "Community", "text": "record the public WiFi hours; satellite is the only path."},
+    ],
+    "accc=0;ntg2022=0;rrl5=1;bushtel=0": [
+        {"who": "DCDD", "text": "verify the licensed site on the ground."},
+        {"who": "Carrier", "text": "publish a coverage map for the licensed site within 5 km."},
+    ],
+    "accc=0;ntg2022=0;rrl5=1;bushtel=1": [
+        {"who": "DCDD", "text": "verify the licensed site on the ground."},
+        {"who": "Carrier", "text": "publish a coverage map for the site BushTel links to."},
+    ],
+    "accc=1;ntg2022=0;rrl5=0;bushtel=0": [
+        {"who": "DCDD", "text": "refresh the 2022 list for this community."},
+        {"who": "Carrier", "text": "name the licensed site serving this polygon."},
+    ],
+    "accc=1;ntg2022=0;rrl5=1;bushtel=0": [
+        {"who": "DCDD", "text": "refresh the 2022 list for this community."},
+        {"who": "DCDD", "text": "ask BushTel to update the mobile phone row."},
+    ],
+    "accc=1;ntg2022=0;rrl5=1;bushtel=1": [
+        {"who": "DCDD", "text": "refresh the 2022 list for this community."},
+    ],
+    "accc=1;ntg2022=1;rrl5=0;bushtel=0": [
+        {"who": "Carrier", "text": "name the licensed site serving this polygon."},
+        {"who": "DCDD", "text": "ask BushTel to update the mobile phone row."},
+    ],
+    "accc=1;ntg2022=1;rrl5=0;bushtel=1": [
+        {"who": "Carrier", "text": "name the licensed site serving this polygon."},
+    ],
+    "accc=1;ntg2022=1;rrl5=1;bushtel=0": [
+        {"who": "DCDD", "text": "ask BushTel to update the mobile phone row."},
+    ],
+}
+ACTIONS_FALLBACK: list[dict[str, str]] = [
+    {"who": "DCDD", "text": "reconcile the four publishers for this community."}
+]
+# The 1/1/1/1 pattern is followed by a health-centre-only DCDD sentence (Wadeye,
+# design/screens/community.html lines 164-165), not by ``ACTIONS_FALLBACK``.
+CLINIC_ACTION = {"who": "DCDD", "text": "confirm the clinic's enterprise link technology."}
+
+# The three analyst filters (design/screens/README.md "filters"), each a predicate over one
+# capability-table row; membership is derived from the table, never a hand-picked id list.
+FILTER_DEFS = (
+    ("all", "All", lambda row: True),
+    (
+        "clinic-no-terrestrial",
+        "Clinic, no terrestrial path",
+        lambda row: row["svc_health_centre"] == "Y" and row["best_path"] == "satellite",
+    ),
+    (
+        "carrier-yes-list-no",
+        "Carrier says covered, list does not",
+        lambda row: row["mobile_says"].startswith("accc=1;")
+        and ";ntg2022=0;" in row["mobile_says"],
+    ),
+    (
+        "licensed-no-map",
+        "Licensed mast, no coverage map",
+        lambda row: row["mobile_says"].startswith("accc=0;") and ";rrl5=1;" in row["mobile_says"],
+    ),
+)
 
 
 def read_constant(name: str) -> str:
@@ -199,11 +276,26 @@ def _path_note(row: dict[str, str], path: str) -> str:
     return note
 
 
+def actions_for(row: dict[str, str]) -> list[dict[str, str]]:
+    """The "who does what" sentences for one row's disagreement pattern.
+
+    Every community carries at least one action: the fallback line stands in for a pattern
+    the table has not named, and the 1/1/1/1 pattern adds a clinic-only DCDD line when the
+    community has a health centre (Wadeye's second sentence).
+    """
+    actions = list(ACTIONS_BY_PATTERN.get(row["mobile_says"], ACTIONS_FALLBACK))
+    unanimous = row["mobile_says"] == "accc=1;ntg2022=1;rrl5=1;bushtel=1"
+    if unanimous and row["svc_health_centre"] == "Y":
+        actions = actions + [CLINIC_ACTION]
+    return actions
+
+
 def _community(row: dict[str, str], thresholds: dict[str, dict], cited: dict) -> dict:
     profile = row["profile_last_updated"]
     publishers = [_dated(line, profile, cited) for line in publisher_lines(row, profile)]
     covered, available = rules.agreement(publishers)
     path = rules.best_path(row)
+    x, y = outline.project(float(row["lat"]), float(row["lon"]))
     services = []
     for name, result in (
         ("telehealth_video", rules.telehealth_video(row, thresholds)),
@@ -227,6 +319,8 @@ def _community(row: dict[str, str], thresholds: dict[str, dict], cited: dict) ->
         ),
         "lat": float(row["lat"]),
         "lon": float(row["lon"]),
+        "x": x,
+        "y": y,
         "present": [{"name": label} for column, label in PRESENT_SERVICES if row[column] == "Y"],
         "publishers": publishers,
         "agreement": {
@@ -258,7 +352,7 @@ def _community(row: dict[str, str], thresholds: dict[str, dict], cited: dict) ->
                 },
             )
         ],
-        "actions": [],
+        "actions": actions_for(row),
     }
     if BUSHTEL_TEXT_ALLOWED:
         community["notes"] = [
@@ -301,8 +395,34 @@ def source_table(communities: list[dict], cited: dict[str, dict[str, str]]) -> d
     return table
 
 
+def filters(rows: list[dict[str, str]]) -> list[dict]:
+    """The four map filters (design/screens/README.md "filters"), membership from the table."""
+    return [
+        {
+            "id": filter_id,
+            "label": label,
+            "ids": sorted(int(row["bushtel_id"]) for row in rows if predicate(row)),
+        }
+        for filter_id, label, predicate in FILTER_DEFS
+    ]
+
+
+def legend(communities: list[dict]) -> dict[str, int]:
+    """Telehealth video verdict counts over all 96 communities."""
+    counts = {"works": 0, "degraded": 0, "fails": 0, "nodata": 0}
+    for community in communities:
+        for service in community["services"]:
+            if service["service"] == "telehealth_video":
+                counts[service["verdict"]] += 1
+    return counts
+
+
 def build_pack(
-    rows: list[dict[str, str]], thresholds: dict[str, dict], app_url: str, built: str
+    rows: list[dict[str, str]],
+    thresholds: dict[str, dict],
+    app_url: str,
+    built: str,
+    boundary_path: Path = BOUNDARY_RAW,
 ) -> dict:
     """The whole pack, version 1, communities sorted by BushTel id."""
     cited = citations(thresholds)
@@ -314,12 +434,20 @@ def build_pack(
         "built": built,
         "app_url": app_url,
         "count": len(communities),
+        "outline": outline.outline_path(boundary_path),
+        "filters": filters(rows),
+        "legend": legend(communities),
         "sources": source_table(communities, cited),
         "communities": communities,
     }
 
 
 def main() -> None:
+    if not BOUNDARY_RAW.is_file():
+        raise FileNotFoundError(
+            f"{BOUNDARY_RAW.relative_to(ROOT)} is missing. Re-fetch it with: "
+            f"{outline.FETCH_COMMAND}"
+        )
     with TABLE.open(newline="", encoding="utf-8-sig") as handle:
         rows = list(csv.DictReader(handle))
     pack = build_pack(
@@ -327,6 +455,7 @@ def main() -> None:
         rules.load_thresholds(THRESHOLDS),
         read_constant("APP_URL"),
         date.today().isoformat(),
+        BOUNDARY_RAW,
     )
     OUT_PACK.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps(pack, ensure_ascii=False, separators=(",", ":")) + "\n"

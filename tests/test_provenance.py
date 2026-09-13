@@ -26,6 +26,7 @@ EXPECTED_IDS = {
     "ntg_2021",
     "ntg_2022",
     "ntg_smallcell",
+    "abs_ste_2021",
 }
 NON_EMPTY_KEYS = {"id", "name", "url", "licence", "attribution", "pattern", "date"}
 

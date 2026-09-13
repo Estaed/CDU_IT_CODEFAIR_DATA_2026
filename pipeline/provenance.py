@@ -121,6 +121,23 @@ SOURCES = (
         "module": "ntg",
     },
     {
+        "id": "abs_ste_2021",
+        "name": "ABS ASGS Edition 3 State and Territory boundary 2021",
+        "pack_source": "",
+        "url": (
+            "https://www.abs.gov.au/statistics/standards/"
+            "australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/"
+            "access-and-downloads/digital-boundary-files/STE_2021_AUST_SHP_GDA2020.zip"
+        ),
+        "licence": "CC BY 4.0",
+        "attribution": (
+            "Australian Bureau of Statistics, ASGS Edition 3 State and Territory boundaries 2021"
+        ),
+        "pattern": "abs_ste_20*",
+        "date": "2021-07-20",
+        "fetch_command": "PYTHONUTF8=1 .venv/Scripts/python -m pipeline.fetch.abs_boundary",
+    },
+    {
         "id": "ntg_smallcell",
         "name": "Remote Sites with Mobile Phone Small Cell Coverage",
         "pack_source": "",
@@ -188,7 +205,9 @@ def citations() -> dict[str, dict[str, str]]:
 
 
 def fetch_command(entry: dict) -> str:
-    """The command that re-fetches this source, read from its source module."""
+    """The command that re-fetches this source: a literal string, or its source module's."""
+    if "fetch_command" in entry:
+        return entry["fetch_command"]
     module = importlib.import_module(f"pipeline.sources.{entry['module']}")
     return module.FETCH_COMMAND
 

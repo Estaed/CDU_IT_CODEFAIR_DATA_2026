@@ -23,7 +23,7 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-03: ACCC source — carrier predicted coverage polygons 2025
 - [x] Task-04: ACMA RRL and NT Government sources — licensed sites and the coverage lists
 - [x] Task-05: Merge, provenance, and the pipeline entry point
-- [ ] Task-06: NT outline, projected points, filters and actions in the pack
+- [x] Task-06: NT outline, projected points, filters and actions in the pack
 - [ ] Task-07: Community screen in the app
 - [ ] Task-08: Map screen in the app
 - [ ] Task-09: Share screen, QR, save-as-file, and the host-only PWA files

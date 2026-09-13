@@ -158,11 +158,6 @@ def test_no_bushtel_free_text(data_pack):
     assert '"stand_comment"' not in serialised
 
 
-def test_actions_empty(data_pack):
-    for community in data_pack["communities"]:
-        assert community["actions"] == []
-
-
 def test_verdicts_and_reasons_match_task00_pack(data_pack):
     """Moving off the frozen interim table must not change a verdict or a sentence."""
     with TASK00_PACK.open(encoding="utf-8") as f:
@@ -205,3 +200,71 @@ def test_committed_data_pack_file():
     assert committed["pack_version"] == 1
     assert committed["count"] == 96
     assert path.stat().st_size <= 307_200
+
+
+def test_filters_order_labels_and_counts(data_pack):
+    filters = data_pack["filters"]
+    ids_and_labels = [(entry["id"], entry["label"]) for entry in filters]
+    assert ids_and_labels == [
+        ("all", "All"),
+        ("clinic-no-terrestrial", "Clinic, no terrestrial path"),
+        ("carrier-yes-list-no", "Carrier says covered, list does not"),
+        ("licensed-no-map", "Licensed mast, no coverage map"),
+    ]
+    counts = {entry["id"]: len(entry["ids"]) for entry in filters}
+    assert counts == {
+        "all": 96,
+        "clinic-no-terrestrial": 12,
+        "carrier-yes-list-no": 14,
+        "licensed-no-map": 11,
+    }
+
+
+def test_filter_ids_are_community_ids(data_pack):
+    all_ids = {community["id"] for community in data_pack["communities"]}
+    filters_by_id = {entry["id"]: entry["ids"] for entry in data_pack["filters"]}
+    for ids in filters_by_id.values():
+        assert set(ids) <= all_ids
+    assert filters_by_id["all"] == sorted(all_ids)
+
+
+def test_legend_matches_telehealth_video_counts(data_pack):
+    counts = {"works": 0, "degraded": 0, "fails": 0, "nodata": 0}
+    for community in data_pack["communities"]:
+        service = next(s for s in community["services"] if s["service"] == "telehealth_video")
+        counts[service["verdict"]] += 1
+    assert counts == {"works": 1, "degraded": 58, "fails": 11, "nodata": 26}
+    assert data_pack["legend"] == counts
+
+
+def test_every_community_has_at_least_one_action(data_pack):
+    allowed_who = {"Carrier", "DCDD", "Community"}
+    for community in data_pack["communities"]:
+        assert len(community["actions"]) >= 1
+        for action in community["actions"]:
+            assert action["who"] in allowed_who
+            assert action["text"]
+            assert action["text"].endswith(".")
+
+
+def test_wadeye_426_actions(data_pack):
+    # Sentences copied verbatim from design/screens/community.html lines 164-165.
+    wadeye = _by_id(data_pack, 426)
+    assert wadeye["actions"] == [
+        {"who": "Carrier", "text": "publish measured latency for this site."},
+        {"who": "DCDD", "text": "confirm the clinic's enterprise link technology."},
+    ]
+
+
+def test_pack_header_has_outline(data_pack):
+    assert isinstance(data_pack["outline"], str)
+    assert data_pack["outline"]
+
+
+def test_pack_build_imports_no_fetch_module():
+    # Layer rule 3: requests lives under pipeline/fetch/ only, so the pack build (and with it
+    # scripts/run_pipeline.py) must not import a fetch module even for a constant.
+    for name in ("pipeline/pack.py", "pipeline/outline.py", "pipeline/provenance.py"):
+        with (ROOT / name).open(encoding="utf-8") as handle:
+            text = handle.read()
+        assert not re.search(r"^(import|from) pipeline\.fetch", text, re.MULTILINE), name
