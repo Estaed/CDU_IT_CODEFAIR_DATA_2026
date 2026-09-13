@@ -9,7 +9,7 @@ Distances are measured in EPSG:3577 (GDA94 / Australian Albers): the regression 
 computed in that CRS, and one CRS for the whole NT beats a per-zone MGA split for a 3-dp
 regression.
 
-Ported from ``spike/lane_nbn.py`` (2026-09-12) without changing the maths.
+Ported from the 2026-09-12 throwaway lane script without changing the maths.
 """
 
 from __future__ import annotations

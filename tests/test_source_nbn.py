@@ -111,3 +111,4 @@ def test_layer_rules():
     text = Path(nbn.__file__).read_text(encoding="utf-8")
     for line in text.splitlines():
         assert not re.match(r"^(import|from) (pipeline\.sources|spike|requests)", line)
+    assert "spike" not in text
