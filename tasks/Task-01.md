@@ -1,5 +1,7 @@
 # Task-01: BushTel source — identity, services present, capability flags
 
+Status: DONE (verify-task, 2026-09-13; gate GREEN: ruff clean, 37 unit + 1 browser test; regression 96 rows x 34 columns, 0 differences)
+
 > **Execution:** agent `claude-worker` · effort `medium` · plan mode **no**
 > *Why:* promotion of `spike/lane_bushtel.py` into a module with a fixed output contract; the criterion is a row-for-row regression against the spike's output.
 
@@ -37,11 +39,11 @@ name it and a later re-fetch is one command.
 
 ## Acceptance Criteria (DoD)
 
-- [ ] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
-- [ ] `tests/test_source_bushtel.py`: `load()` returns exactly 96 rows, unique `bushtel_id`, and equals `tests/fixtures/bushtel_2026-09-12.csv` joined with `communities_2026-09-12.csv` on every shared column (string compare after ISO date conversion).
-- [ ] Wadeye row: `svc_health_centre == "Y"`, `svc_wifi == "Y"`, `road_seasonal_cut == 1`, `profile_last_updated == "2026-07-03"`; Baniyala row: `svc_mobile_phone == ""`, `profile_last_updated == "2025-08-06"`.
-- [ ] `grep -rl "import requests" pipeline | grep -v pipeline/fetch/` prints nothing.
-- [ ] `pipeline/sources/bushtel.py` imports nothing from `pipeline.sources` or `spike`.
+- [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
+- [x] `tests/test_source_bushtel.py`: `load()` returns exactly 96 rows, unique `bushtel_id`, and equals `tests/fixtures/bushtel_2026-09-12.csv` joined with `communities_2026-09-12.csv` on every shared column (string compare after ISO date conversion).
+- [x] Wadeye row: `svc_health_centre == "Y"`, `svc_wifi == "Y"`, `road_seasonal_cut == 1`, `profile_last_updated == "2026-07-03"`; Baniyala row: `svc_mobile_phone == ""`, `profile_last_updated == "2025-08-06"`.
+- [x] `grep -rl "import requests" pipeline | grep -v pipeline/fetch/` prints nothing.
+- [x] `pipeline/sources/bushtel.py` imports nothing from `pipeline.sources` or `spike`.
 
 ## Contract (main loop, 2026-09-13)
 
