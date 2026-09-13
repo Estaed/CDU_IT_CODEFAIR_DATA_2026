@@ -1,5 +1,7 @@
 # Task-04: ACMA RRL and NT Government sources — licensed sites and the coverage lists
 
+Status: DONE (verify-task, 2026-09-13; gate GREEN on main at integration: ruff clean, 53 unit + 1 browser test; rrl regression 96 x 19 and site table 576 rows byte-equal, ntg regression 96 x 18, 0 differences; `test_source_rrl.py` 22.8 s, `test_source_ntg.py` 1.4 s; mutations: 5 km threshold red, 700 MHz band dropped red, aliases ignored red; Hutchison exclusion and 2022 header offset unobservable in this data)
+
 > **Execution:** agent `claude-worker` · effort `medium` · plan mode **no**
 > *Why:* promotion of `spike/lane_rrl_ntg.py` into two modules; regression against the spike's `rrl.csv` and `ntg.csv`.
 
@@ -39,10 +41,10 @@ cell / proximity basis, provider, 2019 backhaul type.
 
 ## Acceptance Criteria (DoD)
 
-- [ ] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
-- [ ] `tests/test_source_rrl.py`: 96 rows equal to the fixture; `any_within_5km` sums to the fixture's count; Wadeye `nearest_site_km == 0.064` and `nearest_site_name == "74 Perdjert Street WADEYE"`; Baniyala `nearest_site_km == 0.17`.
-- [ ] `tests/test_source_ntg.py`: 96 rows equal to the fixture; `ntg2022_listed` sums to the fixture's count; Wadeye `ntg2022_macro == 1`, `ntg2019_backhaul == "Optic fibre"`; Baniyala `ntg2022_listed == 0`.
-- [ ] Neither module imports the other or anything under `spike/`.
+- [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
+- [x] `tests/test_source_rrl.py`: 96 rows equal to the fixture; `any_within_5km` sums to the fixture's count; Wadeye `nearest_site_km == 0.064` and `nearest_site_name == "74 Perdjert Street WADEYE"`; Baniyala `nearest_site_km == 0.17`.
+- [x] `tests/test_source_ntg.py`: 96 rows equal to the fixture; `ntg2022_listed` sums to the fixture's count; Wadeye `ntg2022_macro == 1`, `ntg2019_backhaul == "Optic fibre"`; Baniyala `ntg2022_listed == 0`.
+- [x] Neither module imports the other or anything under `spike/`.
 
 ## Contract (main loop, 2026-09-13)
 
