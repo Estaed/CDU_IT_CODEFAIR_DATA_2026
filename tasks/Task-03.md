@@ -1,5 +1,7 @@
 # Task-03: ACCC source — carrier predicted coverage polygons 2025
 
+Status: DONE (verify-task, 2026-09-13; gate GREEN on main at integration: ruff clean, 59 unit + 1 browser test; regression 96 rows x 13 columns against the fixture, 0 differences, on the real KMLs; cold parse 3,531 s once, warm run 6.8 s; mutations: km-per-degree red, contains->touches red, REQUIRED emptied red, MOCN-as-fourth-carrier unobservable because TPG 4G is 0 for all 96)
+
 > **Execution:** agent `claude-worker` · effort `medium` · plan mode **no**
 > *Why:* promotion of `spike/lane_accc.py`; regression against the spike's `accc.csv`. The KMLs are large (GB range), so the spike's streaming approach is kept, not redesigned.
 
@@ -33,10 +35,10 @@ community point is inside, the distance in km to the nearest 4G polygon per carr
 
 ## Acceptance Criteria (DoD)
 
-- [ ] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
-- [ ] `tests/test_source_accc.py`: 96 rows; the nine coverage flags and `carriers_4g_count` equal the fixture for all 96; Wadeye `telstra_4g_2025 == 1`, Baniyala `carriers_4g_count == 0` and `dist_km_telstra_4g == 16.367`.
-- [ ] The test runs under 120 s on this machine against the raw KMLs, or reads a cached intermediate the module writes to `data/out/cache/` and invalidates by KML mtime; whichever, the DoD names the measured time.
-- [ ] `grep -n "spike" pipeline/sources/accc.py` prints nothing.
+- [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
+- [x] `tests/test_source_accc.py`: 96 rows; the nine coverage flags and `carriers_4g_count` equal the fixture for all 96; Wadeye `telstra_4g_2025 == 1`, Baniyala `carriers_4g_count == 0` and `dist_km_telstra_4g == 16.367`.
+- [x] The test runs under 120 s on this machine against the raw KMLs, or reads a cached intermediate the module writes to `data/out/cache/` and invalidates by KML mtime; whichever, the DoD names the measured time. Measured 2026-09-13: cold cache 3,531 s for the six KMLs (once), warm cache 6.8 s for the whole module.
+- [x] `grep -n "spike" pipeline/sources/accc.py` prints nothing.
 
 ## Contract (main loop, 2026-09-13)
 
