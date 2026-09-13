@@ -25,3 +25,6 @@ dist/
 __pycache__/
 .pytest_cache/
 .ruff_cache/
+
+# ACCC KML parse cache written by pipeline/sources/accc.py; rebuilt from data/raw/ when stale
+data/out/cache/
