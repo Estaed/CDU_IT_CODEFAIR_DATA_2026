@@ -30,7 +30,9 @@ def test_offline_smoke(browser):
     assert blocked == []
     assert page.evaluate("JSON.parse(document.getElementById('pack').textContent).count") == 96
     assert page.locator("[role=tab]").count() == 3
-    assert "96 communities" in page.locator("main").inner_text()
+    # Task-07 replaced the Task-00 placeholder line with the community screen.
+    assert "96" in page.locator(".search-input").get_attribute("placeholder")
+    assert page.locator("h1.community-header__name").count() == 1
     assert page.evaluate("location.hash") == "#/community/426"
 
     page.close()

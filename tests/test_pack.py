@@ -35,7 +35,7 @@ def thresholds():
 @pytest.fixture(scope="module")
 def data_pack(thresholds):
     rows = _load_rows()
-    return pack.build_pack(rows, thresholds, "https://example.invalid/", "2026-09-13")
+    return pack.build_pack(rows, thresholds, "https://example.invalid/", "DIC005", "2026-09-13")
 
 
 def _cited(data_pack, line: dict) -> dict:
@@ -259,6 +259,17 @@ def test_wadeye_426_actions(data_pack):
 def test_pack_header_has_outline(data_pack):
     assert isinstance(data_pack["outline"], str)
     assert data_pack["outline"]
+
+
+def test_header_team_and_attributions(data_pack):
+    assert data_pack["team"] == pack.read_constant("TEAM_NUMBER")
+    items = data_pack["attributions"]
+    assert items
+    for item in items:
+        assert set(item) == {"text", "licence", "date"}
+        assert item["text"]
+    texts = [item["text"] for item in items]
+    assert "ACCC Mobile Infrastructure Report 2025" in texts
 
 
 def test_pack_build_imports_no_fetch_module():

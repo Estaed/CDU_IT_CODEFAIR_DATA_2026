@@ -1,1 +1,29 @@
 /* App-only rules: everything the three reference screens already style lives in screens.css. */
+/* The reference community.html carries a static search-input with no result list markup:
+   these rules add the live results dropdown DESIGN.md's result-row describes (line 282). */
+
+.search-results { list-style: none; margin: 0; padding: 0; }
+
+.result-row {
+  display: block;
+  width: 100%;
+  min-height: var(--size-touch);
+  padding: var(--space-sm) var(--space-md);
+  text-align: left;
+  font: var(--text-body-md);
+  color: var(--text-heading);
+  background: var(--surface-page);
+  border: 0;
+  border-bottom: var(--size-hairline) solid var(--border-hairline-soft);
+  cursor: pointer;
+}
+
+.result-row:active { background: var(--surface-block); }
+
+.result-row__alias,
+.result-row__meta {
+  display: block;
+  margin-top: var(--space-xxs);
+  font: var(--text-caption);
+  color: var(--text-secondary);
+}

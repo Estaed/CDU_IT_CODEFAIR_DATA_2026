@@ -395,6 +395,31 @@ def source_table(communities: list[dict], cited: dict[str, dict[str, str]]) -> d
     return table
 
 
+def attributions(thresholds: dict[str, dict]) -> list[dict[str, str]]:
+    """Footer attribution lines: the provenance registry, then the thresholds' requirement rows.
+
+    Order: every ``provenance.SOURCES`` then ``provenance.PACK_SOURCES`` entry whose
+    ``pack_source`` is non-empty (the sources the pack actually cites), then every distinct
+    ``requirement``-kind source in ``thresholds.csv`` that carries a URL, "none published"
+    excluded.
+    """
+    items = [
+        {"text": entry["attribution"], "licence": entry["licence"], "date": entry["date"]}
+        for entry in (*provenance.SOURCES, *provenance.PACK_SOURCES)
+        if entry["pack_source"]
+    ]
+    seen: set[str] = set()
+    for key, entry in thresholds.items():
+        if not key.startswith("requirement."):
+            continue
+        source = entry["source"]
+        if not entry["source_url"] or source == "none published" or source in seen:
+            continue
+        seen.add(source)
+        items.append({"text": source, "licence": "", "date": entry["checked"]})
+    return items
+
+
 def filters(rows: list[dict[str, str]]) -> list[dict]:
     """The four map filters (design/screens/README.md "filters"), membership from the table."""
     return [
@@ -421,6 +446,7 @@ def build_pack(
     rows: list[dict[str, str]],
     thresholds: dict[str, dict],
     app_url: str,
+    team: str,
     built: str,
     boundary_path: Path = BOUNDARY_RAW,
 ) -> dict:
@@ -433,11 +459,13 @@ def build_pack(
         "pack_version": PACK_VERSION,
         "built": built,
         "app_url": app_url,
+        "team": team,
         "count": len(communities),
         "outline": outline.outline_path(boundary_path),
         "filters": filters(rows),
         "legend": legend(communities),
         "sources": source_table(communities, cited),
+        "attributions": attributions(thresholds),
         "communities": communities,
     }
 
@@ -454,6 +482,7 @@ def main() -> None:
         rows,
         rules.load_thresholds(THRESHOLDS),
         read_constant("APP_URL"),
+        read_constant("TEAM_NUMBER"),
         date.today().isoformat(),
         BOUNDARY_RAW,
     )
