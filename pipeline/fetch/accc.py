@@ -25,13 +25,14 @@ from pathlib import Path
 
 import requests
 
+from pipeline.fetch._download import present_at, stream_to_file
+
 RAW = Path(__file__).resolve().parents[2] / "data" / "raw"
 PACKAGE_ID = "4b472a18-d0fa-409c-994a-ab17162bcb90"
 PACKAGE_SHOW_URL = f"https://data.gov.au/data/api/3/action/package_show?id={PACKAGE_ID}"
 DATASET_PAGE = f"https://data.gov.au/data/dataset/{PACKAGE_ID}"
 HEADERS = {"User-Agent": "Crosscheck-research/0.1 (CDU IT Code Fair 2026; one-off snapshot)"}
 TIMEOUT_SECONDS = 120
-CHUNK_BYTES = 1 << 20
 
 # (job key, MNO name as it appears in the resource name, technology)
 JOBS = (
@@ -69,15 +70,11 @@ def get(url: str, stream: bool = False) -> requests.Response:
 
 
 def download(url: str, dest: Path, expected_size: int | None) -> str:
-    if dest.is_file() and (not expected_size or dest.stat().st_size == expected_size):
+    if present_at(dest, expected_size):
         return f"skipped, present at {dest.stat().st_size} bytes"
-    partial = dest.with_name(dest.name + ".part")
-    with get(url, stream=True) as response, partial.open("wb") as f:
-        for chunk in response.iter_content(chunk_size=CHUNK_BYTES):
-            if chunk:
-                f.write(chunk)
-    partial.replace(dest)
-    return f"downloaded {dest.stat().st_size} bytes"
+    with get(url, stream=True) as response:
+        size = stream_to_file(response, dest)
+    return f"downloaded {size} bytes"
 
 
 def extract_kml(zip_path: Path, dest: Path) -> None:

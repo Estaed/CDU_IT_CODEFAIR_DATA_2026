@@ -16,6 +16,8 @@ from pathlib import Path
 
 import requests
 
+from pipeline.fetch._download import present_at, stream_to_file
+
 RAW = Path(__file__).resolve().parents[2] / "data" / "raw"
 HEADERS = {"User-Agent": "CDU-ITCodeFair-2026/0.1 (Crosscheck)"}
 TIMEOUT_SECONDS = 300
@@ -44,21 +46,15 @@ SOURCES = {
 
 def download(name: str, spec: dict) -> Path:
     dest = RAW / spec["zip_name"]
-    if dest.exists() and dest.stat().st_size == spec["expected_bytes"]:
+    if present_at(dest, spec["expected_bytes"]):
         print(f"[{name}] already downloaded: {dest.name} ({dest.stat().st_size} bytes)")
         return dest
 
     RAW.mkdir(parents=True, exist_ok=True)
     print(f"[{name}] downloading {spec['url']} ...")
-    tmp = dest.with_suffix(dest.suffix + ".part")
     with requests.get(spec["url"], headers=HEADERS, stream=True, timeout=TIMEOUT_SECONDS) as resp:
         resp.raise_for_status()
-        with open(tmp, "wb") as f:
-            for chunk in resp.iter_content(chunk_size=1024 * 1024):
-                if chunk:
-                    f.write(chunk)
-    tmp.replace(dest)
-    size = dest.stat().st_size
+        size = stream_to_file(resp, dest)
     print(f"[{name}] downloaded {size} bytes -> {dest}")
     if size != spec["expected_bytes"]:
         print(f"[{name}] WARNING: size {size} does not match expected {spec['expected_bytes']}")
