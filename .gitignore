@@ -20,3 +20,8 @@ design/*.zip
 
 # Build output; dist/index.html is rebuilt by scripts/build_app.py
 dist/
+
+# Python and tool caches
+__pycache__/
+.pytest_cache/
+.ruff_cache/
