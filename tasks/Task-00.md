@@ -90,7 +90,7 @@ value `{"value": float | None, "unit", "direction", "source", "source_url", "che
 `` `664.9 ms` ``, `` `100 ms` ``: thousands separator, no trailing `.0`, one space, wrapped in
 backticks. Every number inside a reason, detail or note string goes through it.
 
-**Module constants in `rules.py`:** `RULE_NAME = "spike rule"`, `RULE_DATE = "2026-09-12"`,
+**Module constants in `rules.py`:** `RULE_NAME = "best-path rule"` (was `"spike rule"` until 2026-09-13: the name is shown in the app as the path source, and the spike is not a citable source), `RULE_DATE = "2026-09-12"`,
 `LICENSED_RADIUS_KM = 5` (PRD decision 2026-09-12; a rule parameter, not a requirement figure).
 Verdict words: `works`, `degraded`, `fails`, `nodata` (spike GREEN/AMBER/RED/n-a/no-data).
 

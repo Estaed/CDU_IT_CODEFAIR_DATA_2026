@@ -1,5 +1,7 @@
 # Task-05: Merge, provenance, and the pipeline entry point
 
+Status: DONE (2026-09-13, verify-task; gate green, 75 unit + 1 browser tests, run_pipeline 39 s, five mutations caught)
+
 > **Note (2026-09-13, PRD decision log):** the provenance registry also ships inside the pack as a `sources` table in the header keyed by short ids; every `{source, date}` pair on a population, publisher, service-source or flag line becomes a single `src` key. Measured on the Task-00 pack: 288,193 -> 225,841 bytes. `pack_version` stays 1.
 
 > **Decisions (2026-09-13, main loop, before spawning; these bind the lane and the tests):**
@@ -53,5 +55,5 @@ nothing.
 - [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/run_pipeline.py` from the root, with networking irrelevant (no `requests` import reachable from it), writes the four outputs and exits 0.
 - [x] `tests/test_merge.py`: the merged table equals `tests/fixtures/capability_table_2026-09-12.csv` on every shared column for all 96 rows (after verdict-word mapping); telehealth counts are works 1, degraded 58, fails 11, nodata 26; `mobile_sources_disagree` sums to 31; `best_path == "satellite"` for 29 rows.
 - [x] `tests/test_provenance.py`: every source id referenced by any pack `source` field exists in `SOURCES`; every `SOURCES` entry has a non-empty url, licence and attribution line; `PROVENANCE.md` lists every file under `data/raw/` and no file that is absent.
-- [ ] `grep -rn "spike" pipeline scripts app tests --include=*.py --include=*.js` prints only the fixture-copy comment in `tests/test_merge.py`.
+- [x] `grep -rnE "^\s*(import|from) .*spike|['\"]spike/" pipeline scripts app tests --include=*.py --include=*.js` prints nothing: no code imports from or opens a path under `spike/`. (Reworded 2026-09-13, Tarik: the literal `grep -rn "spike"` form is unreachable because of the `spike20` column name in the fixture and the "ported from" docstrings in Task-01/04 modules.)
 - [x] `data/out/data_pack.json` regenerated from the pipeline table is identical in verdicts and reasons to the Task-00 pack (assert in `test_pack.py`, which now reads the pipeline table).

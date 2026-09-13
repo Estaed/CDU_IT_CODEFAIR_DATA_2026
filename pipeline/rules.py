@@ -10,7 +10,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-RULE_NAME = "spike rule"
+RULE_NAME = "best-path rule"  # PRD section 5; was "spike rule" until 2026-09-13
 RULE_DATE = "2026-09-12"
 LICENSED_RADIUS_KM = 5
 
