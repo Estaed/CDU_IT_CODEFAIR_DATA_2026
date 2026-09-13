@@ -1,5 +1,7 @@
 # Task-05: Merge, provenance, and the pipeline entry point
 
+> **Note (2026-09-13, PRD decision log):** the provenance registry also ships inside the pack as a `sources` table in the header keyed by short ids; every `{source, date}` pair on a population, publisher, service-source or flag line becomes a single `src` key. Measured on the Task-00 pack: 288,193 -> 225,841 bytes. `pack_version` stays 1.
+
 > **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
 > *Why:* the join and the provenance registry are fully specified by the spike's `merge.py` and Part 2; the criterion is the 96-row regression against the frozen spike table plus a provenance completeness check.
 
