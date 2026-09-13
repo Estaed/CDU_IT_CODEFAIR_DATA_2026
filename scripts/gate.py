@@ -1,7 +1,9 @@
 """The quality gate. Run from the project root: ``.venv/Scripts/python scripts/gate.py``.
 
 Steps run in order and stop at the first failure; the exit code is what verify-task reads.
-  1. ruff check .                      static analysis, zero errors and zero warnings
+  1. ruff check --no-cache .           static analysis, zero errors and zero warnings; no cache
+                                       because a stale .ruff_cache reported green on a red tree
+                                       (2026-09-13)
   2. pytest -m "not browser"           unit tests (pipeline rules, data pack, build helpers)
   3. python scripts/build_app.py       the single-file app -> dist/index.html
   4. size check                        dist/index.html <= 1 MiB, data/out/data_pack.json <= 300 KiB
@@ -47,7 +49,7 @@ def main() -> None:
     if not (ROOT / "pyproject.toml").exists():
         sys.exit("gate.py must live in scripts/ under the project root")
     py = sys.executable
-    run("lint", [py, "-m", "ruff", "check", "."])
+    run("lint", [py, "-m", "ruff", "check", "--no-cache", "."])
     run("unit tests", [py, "-m", "pytest", "-m", "not browser"])
     run("build", [py, "scripts/build_app.py"])
     print("\n== size", flush=True)

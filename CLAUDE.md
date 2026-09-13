@@ -376,7 +376,7 @@ No seam exists for D2 (measurements), D3 (more communities) or D5 (national): th
 PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py
 ```
 
-from the project root, no arguments. It runs, stopping at the first failure: `ruff check .`,
+from the project root, no arguments. It runs, stopping at the first failure: `ruff check --no-cache .`,
 `pytest -m "not browser"`, `python scripts/build_app.py`, the size check (`dist/index.html` ≤
 1,048,576 bytes and `data/out/data_pack.json` ≤ 307,200 bytes), then `pytest -m browser`. The
 build sits before the browser step because that step tests the built file. Exit code non-zero
@@ -388,8 +388,10 @@ red gate at the start is expected; a task marked DONE on a red gate is not.
 
 #### Per-check detail
 
-1. **Lint**: `PYTHONUTF8=1 .venv/Scripts/python -m ruff check .` from the root. Clean means the
-   literal output `All checks passed!`: zero errors, zero warnings, nothing "pre-existing".
+1. **Lint**: `PYTHONUTF8=1 .venv/Scripts/python -m ruff check --no-cache .` from the root. Clean
+   means the literal output `All checks passed!`: zero errors, zero warnings, nothing
+   "pre-existing". `--no-cache` since 2026-09-13: a stale `.ruff_cache` reported green on a tree
+   that was red without it (Tarik's decision after the Task-02..04 wave).
    Rules E, F, W, I, B, UP; line length 100; `spike/` and `design/` excluded.
 2. **Unit tests must exist for** `rules.best_path`, `rules.telehealth_video`,
    `rules.school_video_meeting`, `rules.mygov_text`, `rules.voice_sms`, `rules.agreement`,

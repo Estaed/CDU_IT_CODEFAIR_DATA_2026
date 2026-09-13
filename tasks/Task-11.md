@@ -21,7 +21,8 @@ and the removal of the spike now that the pipeline reproduces its table from the
   scripts and which snapshots are committed vs re-fetched, `scripts/run_pipeline.py`,
   `scripts/build_app.py`, `scripts/gate.py`, where each output lands, and the offline claim with
   the command that verifies it (the browser smoke test). Every command copied from Part 2, run
-  once while writing.
+  once while writing. Say that the ACCC test builds `data/out/cache/` (290 MB, gitignored) on
+  its first run and that this cold parse took 3,531 s on 2026-09-13; every later run is seconds.
 - `scripts/package_submission.py`: builds `dist/DataChallenge_Team DIC005_Submission.zip`
   (team number read from `constants.md`) containing `dist/index.html`, `README.md`,
   `pyproject.toml`, `uv.lock`, `pipeline/`, `scripts/`, `tests/`, `data/out/`, the committed
