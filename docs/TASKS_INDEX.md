@@ -17,7 +17,7 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 
 ## Tasks, in execution order
 
-- [ ] Task-00: Walking skeleton — rules with tests, interim pack, app shell, build, gate green
+- [x] Task-00: Walking skeleton — rules with tests, interim pack, app shell, build, gate green
 - [ ] Task-01: BushTel source — identity, services present, capability flags
 - [ ] Task-02: NBN source — fixed-line and fixed-wireless footprints
 - [ ] Task-03: ACCC source — carrier predicted coverage polygons 2025

@@ -36,5 +36,6 @@ select = ["E", "F", "W", "I", "B", "UP"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = [".", "scripts"]
 addopts = "-q"
 markers = ["browser: needs the Playwright Chromium build and the built dist/index.html"]
