@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 import pytest
+
 from pipeline import rules
 
 ROOT = Path(__file__).resolve().parent.parent
