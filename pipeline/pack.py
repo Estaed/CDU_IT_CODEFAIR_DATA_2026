@@ -12,10 +12,10 @@ import re
 from datetime import date
 from pathlib import Path
 
-from pipeline import rules
+from pipeline import provenance, rules
 
 ROOT = Path(__file__).resolve().parent.parent
-INTERIM_TABLE = ROOT / "spike/out/capability_table.csv"
+TABLE = ROOT / "data/out/capability_table.csv"
 THRESHOLDS = ROOT / "pipeline/thresholds.csv"
 OUT_PACK = ROOT / "data/out/data_pack.json"
 CONSTANTS = ROOT / "constants.md"
@@ -23,20 +23,14 @@ CONSTANTS = ROOT / "constants.md"
 PACK_VERSION = 1
 POPULATION_SOURCE = "ABS 2021 SA1 via BushTel"
 
+# BushTel publishes no single date for the set: every line citing a profile carries that
+# community's own stamp, so the registry's snapshot date must not stand in for it.
+PER_COMMUNITY_SOURCES = ("BushTel profile",)
+
 # PRD Open Question 1: BushTel reuse terms are unanswered, so the three free-text fields
 # stay out of the pack. Flipping this constant is the whole change once OQ1 is closed.
 BUSHTEL_TEXT_ALLOWED = False
 BUSHTEL_TEXT_FIELDS = ("wifi_comment", "road_access_comment", "stand_comment")
-
-# Publication dates that override the thresholds "checked" column, until Task-05 lands the
-# provenance registry.
-SOURCE_DATES = {
-    "ACCC MIR 2025": "2025-11-10",
-    "NT Government 2022 list": "2022-07-04",
-    "ACMA RRL": "2026-09-12",
-    "ACCC Measuring Broadband Australia release 147/24": "2024-12-05",
-    "NT Government 2019 coverage list": "2019",
-}
 
 PRESENT_SERVICES = (
     ("svc_health_centre", "Health centre"),
@@ -74,12 +68,6 @@ def read_constant(name: str) -> str:
         if len(cells) > 3 and cells[1] == target:
             return cells[2]
     raise KeyError(f"{name} is not in {CONSTANTS.name}")
-
-
-def profile_date(row: dict[str, str]) -> str:
-    """BushTel's 'dd/mm/yyyy, hh:mm:ss AM' profile stamp as an ISO date."""
-    day, month, year = row["profile_last_updated"].split(",")[0].split("/")
-    return f"{year}-{month}-{day}"
 
 
 def site_name(name: str) -> str:
@@ -141,7 +129,7 @@ def publisher_lines(row: dict[str, str], profile: str) -> list[dict]:
             "says_covered": "covered" if rules.carrier_count(row) >= 1 else "not-covered",
             "detail": accc_detail,
             "source": "ACCC MIR 2025",
-            "date": SOURCE_DATES["ACCC MIR 2025"],
+            "date": "",
         },
         {
             "publisher": "NT Government 2022 coverage list",
@@ -149,7 +137,7 @@ def publisher_lines(row: dict[str, str], profile: str) -> list[dict]:
             "says_covered": "covered" if row["ntg2022_listed"] == "1" else "not-covered",
             "detail": ntg_detail,
             "source": "NT Government 2022 list",
-            "date": SOURCE_DATES["NT Government 2022 list"],
+            "date": "",
         },
         {
             "publisher": "ACMA licence register",
@@ -157,7 +145,7 @@ def publisher_lines(row: dict[str, str], profile: str) -> list[dict]:
             "says_covered": "covered" if row["any_within_5km"] == "1" else "not-covered",
             "detail": rrl_detail,
             "source": "ACMA RRL",
-            "date": SOURCE_DATES["ACMA RRL"],
+            "date": "",
         },
         {
             "publisher": "BushTel",
@@ -170,8 +158,29 @@ def publisher_lines(row: dict[str, str], profile: str) -> list[dict]:
     ]
 
 
-def _dated(source: dict, profile: str) -> dict:
-    return {**source, "date": SOURCE_DATES.get(source["source"], source["date"] or profile)}
+def citations(thresholds: dict[str, dict]) -> dict[str, dict[str, str]]:
+    """``{source name: {date, url, licence}}``: the requirement table under the registry.
+
+    ``pipeline/thresholds.csv`` carries a URL and a checked date for every figure it holds;
+    the provenance registry overrides both where it knows the source, so a publication date
+    beats the day the figure was read.
+    """
+    cited: dict[str, dict[str, str]] = {}
+    for entry in thresholds.values():
+        if entry["source"]:
+            cited[entry["source"]] = {"date": entry["checked"], "url": entry["source_url"]}
+    for name, known in provenance.citations().items():
+        cited[name] = {**cited.get(name, {}), **{k: v for k, v in known.items() if v}}
+    return cited
+
+
+def _dated(source: dict, profile: str, cited: dict[str, dict[str, str]]) -> dict:
+    """A citing line's date: the registry's publication date, else its own, else the profile."""
+    if source["source"] in PER_COMMUNITY_SOURCES:
+        published = ""
+    else:
+        published = cited.get(source["source"], {}).get("date", "")
+    return {**source, "date": published or source["date"] or profile}
 
 
 def _path_note(row: dict[str, str], path: str) -> str:
@@ -190,9 +199,9 @@ def _path_note(row: dict[str, str], path: str) -> str:
     return note
 
 
-def _community(row: dict[str, str], thresholds: dict[str, dict]) -> dict:
-    profile = profile_date(row)
-    publishers = publisher_lines(row, profile)
+def _community(row: dict[str, str], thresholds: dict[str, dict], cited: dict) -> dict:
+    profile = row["profile_last_updated"]
+    publishers = [_dated(line, profile, cited) for line in publisher_lines(row, profile)]
     covered, available = rules.agreement(publishers)
     path = rules.best_path(row)
     services = []
@@ -202,7 +211,7 @@ def _community(row: dict[str, str], thresholds: dict[str, dict]) -> dict:
         ("mygov_text", rules.mygov_text(row, thresholds)),
         ("voice_sms", rules.voice_sms(row)),
     ):
-        result["sources"] = [_dated(source, profile) for source in result["sources"]]
+        result["sources"] = [_dated(source, profile, cited) for source in result["sources"]]
         services.append({"service": name, **result})
 
     community = {
@@ -211,11 +220,11 @@ def _community(row: dict[str, str], thresholds: dict[str, dict]) -> dict:
         "aliases": [alias.strip() for alias in row["aliases"].split(",") if alias.strip()],
         "type": row["community_type"],
         "region": row["nt_region"].title(),
-        "population": {
-            "value": int(row["population_abs2021"]),
-            "source": POPULATION_SOURCE,
-            "date": profile,
-        },
+        "population": _dated(
+            {"value": int(row["population_abs2021"]), "source": POPULATION_SOURCE, "date": ""},
+            profile,
+            cited,
+        ),
         "lat": float(row["lat"]),
         "lon": float(row["lon"]),
         "present": [{"name": label} for column, label in PRESENT_SERVICES if row[column] == "Y"],
@@ -233,18 +242,21 @@ def _community(row: dict[str, str], thresholds: dict[str, dict]) -> dict:
         },
         "services": services,
         "flags": [
-            {
-                "name": "road_seasonal_cut",
-                "value": row["road_seasonal_cut"] == "1",
-                "source": "BushTel profile",
-                "date": profile,
-            },
-            {
-                "name": "backhaul_2019",
-                "value": row["ntg2019_backhaul"] or "Not recorded",
-                "source": "NT Government 2019 coverage list",
-                "date": SOURCE_DATES["NT Government 2019 coverage list"],
-            },
+            _dated(flag, profile, cited)
+            for flag in (
+                {
+                    "name": "road_seasonal_cut",
+                    "value": row["road_seasonal_cut"] == "1",
+                    "source": "BushTel profile",
+                    "date": profile,
+                },
+                {
+                    "name": "backhaul_2019",
+                    "value": row["ntg2019_backhaul"] or "Not recorded",
+                    "source": "NT Government 2019 coverage list",
+                    "date": "",
+                },
+            )
         ],
         "actions": [],
     }
@@ -257,24 +269,58 @@ def _community(row: dict[str, str], thresholds: dict[str, dict]) -> dict:
     return community
 
 
+def dated_lines(community: dict):
+    """Every line in one community that cites a source on a date."""
+    yield community["population"]
+    yield from community["publishers"]
+    for service in community["services"]:
+        yield from service["sources"]
+    yield from community["flags"]
+
+
+def source_table(communities: list[dict], cited: dict[str, dict[str, str]]) -> dict[str, dict]:
+    """Fold every (source, date) pair into one header entry and leave an ``src`` id behind.
+
+    The same four publishers and the same requirement figures are cited by all 96
+    communities; naming each of them once and referring to it by ``s<n>`` is what keeps the
+    pack inside its byte budget (PRD decision log, 2026-09-13).
+    """
+    pairs = sorted({(line["source"], line["date"]) for c in communities for line in dated_lines(c)})
+    ids = {pair: f"s{index}" for index, pair in enumerate(pairs, 1)}
+    for community in communities:
+        for line in dated_lines(community):
+            line["src"] = ids[(line.pop("source"), line.pop("date"))]
+    table = {}
+    for (source, published), key in ids.items():
+        entry = {"source": source, "date": published}
+        known = cited.get(source, {})
+        for field in ("url", "licence"):
+            if known.get(field):
+                entry[field] = known[field]
+        table[key] = entry
+    return table
+
+
 def build_pack(
     rows: list[dict[str, str]], thresholds: dict[str, dict], app_url: str, built: str
 ) -> dict:
     """The whole pack, version 1, communities sorted by BushTel id."""
+    cited = citations(thresholds)
     communities = sorted(
-        (_community(row, thresholds) for row in rows), key=lambda entry: entry["id"]
+        (_community(row, thresholds, cited) for row in rows), key=lambda entry: entry["id"]
     )
     return {
         "pack_version": PACK_VERSION,
         "built": built,
         "app_url": app_url,
         "count": len(communities),
+        "sources": source_table(communities, cited),
         "communities": communities,
     }
 
 
 def main() -> None:
-    with INTERIM_TABLE.open(newline="", encoding="utf-8-sig") as handle:
+    with TABLE.open(newline="", encoding="utf-8-sig") as handle:
         rows = list(csv.DictReader(handle))
     pack = build_pack(
         rows,

@@ -28,3 +28,6 @@ __pycache__/
 
 # ACCC KML parse cache written by pipeline/sources/accc.py; rebuilt from data/raw/ when stale
 data/out/cache/
+
+# Lock file left by gardener.py while appending to the friction ledger
+reports/.agent-experience.jsonl.lock

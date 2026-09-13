@@ -1,4 +1,4 @@
-"""Unit tests for pipeline.pack: the interim data pack built from the spike table."""
+"""Unit tests for pipeline.pack: the data pack built from the pipeline capability table."""
 
 from __future__ import annotations
 
@@ -12,11 +12,18 @@ import pytest
 from pipeline import pack, rules
 
 ROOT = Path(__file__).resolve().parent.parent
+TABLE = ROOT / "data/out/capability_table.csv"
+TASK00_PACK = ROOT / "tests/fixtures/data_pack_task00.json"
 DATE_RE = re.compile(r"^\d{4}(-\d{2}-\d{2})?$")
 
 
 def _load_rows() -> list[dict[str, str]]:
-    with (ROOT / "spike/out/capability_table.csv").open(encoding="utf-8", newline="") as f:
+    if not TABLE.exists():
+        raise AssertionError(
+            f"missing {TABLE}; run "
+            "PYTHONUTF8=1 .venv/Scripts/python scripts/run_pipeline.py"
+        )
+    with TABLE.open(encoding="utf-8", newline="") as f:
         return list(csv.DictReader(f))
 
 
@@ -29,6 +36,12 @@ def thresholds():
 def data_pack(thresholds):
     rows = _load_rows()
     return pack.build_pack(rows, thresholds, "https://example.invalid/", "2026-09-13")
+
+
+def _cited(data_pack, line: dict) -> dict:
+    """The header entry a dated line points at; every line carries an id, never a name."""
+    assert "source" not in line and "date" not in line
+    return data_pack["sources"][line["src"]]
 
 
 def _by_id(data_pack, bushtel_id: int) -> dict:
@@ -44,6 +57,20 @@ def test_pack_header(data_pack):
     assert len(data_pack["communities"]) == 96
 
 
+def test_source_table_ids_and_fields(data_pack):
+    sources = data_pack["sources"]
+    assert list(sources) == [f"s{index}" for index in range(1, len(sources) + 1)]
+    pairs = [(entry["source"], entry["date"]) for entry in sources.values()]
+    assert pairs == sorted(pairs)
+    assert len(set(pairs)) == len(pairs)
+    # Only the rule-path labels and the unpublished requirement may go without a URL.
+    without_url = {entry["source"] for entry in sources.values() if "url" not in entry}
+    assert all(
+        name.endswith(f", {rules.RULE_NAME}") or name == "none published"
+        for name in without_url
+    ), without_url
+
+
 def test_communities_sorted_by_id(data_pack):
     ids = [c["id"] for c in data_pack["communities"]]
     assert ids == sorted(ids)
@@ -51,19 +78,11 @@ def test_communities_sorted_by_id(data_pack):
 
 def test_every_dated_field_has_source_and_date(data_pack):
     for community in data_pack["communities"]:
-        population = community["population"]
-        assert population["source"]
-        assert DATE_RE.match(population["date"])
-        for publisher in community["publishers"]:
-            assert publisher["source"]
-            assert DATE_RE.match(publisher["date"])
-        for service in community["services"]:
-            for source in service["sources"]:
-                assert source["source"]
-                assert DATE_RE.match(source["date"])
-        for flag in community["flags"]:
-            assert flag["source"]
-            assert DATE_RE.match(flag["date"])
+        for line in pack.dated_lines(community):
+            entry = _cited(data_pack, line)
+            assert entry["source"]
+            assert DATE_RE.match(entry["date"])
+    assert DATE_RE.match(data_pack["communities"][0]["path"]["date"])
 
 
 def test_publisher_order_and_kinds(data_pack):
@@ -107,7 +126,7 @@ def test_wadeye_426(data_pack):
     assert wadeye["agreement"]["available"] == 4
     assert wadeye["agreement"]["note"] == "Sources agree"
     assert wadeye["population"]["value"] == 2259
-    assert wadeye["population"]["date"] == "2026-07-03"
+    assert _cited(data_pack, wadeye["population"])["date"] == "2026-07-03"
     assert "Health centre" in [p["name"] for p in wadeye["present"]]
 
 
@@ -119,7 +138,7 @@ def test_baniyala_458(data_pack):
     assert baniyala["agreement"]["available"] == 3
     assert baniyala["agreement"]["note"] == "Sources disagree"
     assert baniyala["publishers"][3]["says_covered"] == "not-recorded"
-    assert baniyala["population"]["date"] == "2025-08-06"
+    assert _cited(data_pack, baniyala["population"])["date"] == "2025-08-06"
 
 
 def test_yirrkala_576(data_pack):
@@ -142,6 +161,23 @@ def test_no_bushtel_free_text(data_pack):
 def test_actions_empty(data_pack):
     for community in data_pack["communities"]:
         assert community["actions"] == []
+
+
+def test_verdicts_and_reasons_match_task00_pack(data_pack):
+    """Moving off the frozen interim table must not change a verdict or a sentence."""
+    with TASK00_PACK.open(encoding="utf-8") as f:
+        task00 = json.load(f)
+
+    def services(entry: dict) -> dict:
+        return {
+            community["id"]: [
+                (service["service"], service["verdict"], service["reason"])
+                for service in community["services"]
+            ]
+            for community in entry["communities"]
+        }
+
+    assert services(data_pack) == services(task00)
 
 
 def test_bushtel_text_allowed_is_false():
