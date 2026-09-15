@@ -36,7 +36,11 @@ source is. PRD §4.2 additions, 2026-09-15.
 
 ## Acceptance Criteria (DoD)
 
-- [ ] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
-- [ ] `tests/browser/test_statement.py` (marker `browser`): on `#/community/9` the SMS link's href starts with `sms:?body=` and, decoded, contains the community name, one of `FAILS`/`DEGRADED`/`WORKS`, and the pack date; the decoded text is under 300 characters for all 96 communities (evaluate the builder in the page over the pack); the long statement, read back from the clipboard (grant `clipboard-read` and `clipboard-write`), contains `sources say covered` and the oldest-source date; the freshness line is present with a date.
-- [ ] Zero non-`file:` requests and no console errors.
-- [ ] `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js` prints nothing; `grep -nE "[0-9]+ ?ms|Mbps" app/app.js` prints nothing (no figure lives in a template).
+- [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
+- [x] `tests/browser/test_statement.py` (marker `browser`): on `#/community/9` the SMS link's href starts with `sms:?body=` and, decoded, contains the community name, one of `FAILS`/`DEGRADED`/`WORKS`, and the pack date; the decoded text is under 300 characters for all 96 communities (evaluate the builder in the page over the pack); the long statement, read back from the clipboard (grant `clipboard-read` and `clipboard-write`), contains `sources say covered` and the oldest-source date; the freshness line is present with a date.
+- [x] Zero non-`file:` requests and no console errors.
+- [x] `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js` prints nothing; `grep -nE "[0-9]+ ?ms|Mbps" app/app.js` prints nothing (no figure lives in a template).
+
+## Status
+
+DONE 2026-09-15 (otopilot, lane gate and main gate green at `467f0eb`; 5 browser tests). Bee notes: the fallback textarea uses an inline `position: fixed; opacity: 0`; `window.__statement` exposes the builders for the test; the `·` separator makes the SMS UCS-2 (about 3 segments), a `-` would halve the segment count on prepaid plans, left as specified for Tarik to decide. review-visual pending for the button placement.
