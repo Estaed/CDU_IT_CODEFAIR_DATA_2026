@@ -197,6 +197,24 @@ def test_mesh_statement_under_limit_for_all(context):
     page.close()
 
 
+def test_short_statement_has_no_middle_dot(context):
+    # Task-26: "·" makes the SMS body UCS-2 (about 3 segments); "-" keeps it GSM-7. The "·" the
+    # rest of the UI uses stays everywhere else (BACKLOG 2026-09-15, Task-13).
+    page, blocked, errors = _open_page(context, "#/community/9")
+
+    texts = page.evaluate(
+        """() => JSON.parse(document.getElementById("pack").textContent)
+            .communities.map((c) => window.__statement.short(c))"""
+    )
+    assert len(texts) == 96
+    for text in texts:
+        assert "·" not in text, text
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
 def test_copy_mesh_text(context):
     pack = _pack()
     community = next(c for c in pack["communities"] if c["name"] == "Wadeye")

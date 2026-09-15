@@ -70,6 +70,26 @@ def test_changes_section_lists_milingimbi(context):
     page.close()
 
 
+def test_changes_items_have_no_trailing_dot(context):
+    # Task-26: renderChanges used to join the sentence and the date with " · ", printing a
+    # trailing "·" before the date; the row now carries no separator dot at all.
+    pack = json.loads(PACK.read_text(encoding="utf-8"))
+    changes = pack["changes"]
+    page, blocked, errors = _open_page(context, "#/share")
+
+    rows = page.locator(".section:has(.section__title:has-text('Changes')) .link-row")
+    expect(rows).to_have_count(len(changes["items"]))
+    assert len(changes["items"]) > 0
+
+    for i in range(rows.count()):
+        text = rows.nth(i).locator(".link-row__text").inner_text()
+        assert not text.rstrip().endswith("·"), text
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
 def test_changes_section_shows_no_changes_line_when_items_empty(context):
     pack = json.loads(PACK.read_text(encoding="utf-8"))
     changes = pack["changes"]

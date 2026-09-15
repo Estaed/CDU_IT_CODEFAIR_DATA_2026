@@ -117,6 +117,30 @@ def test_frame_contract_and_round_trip_without_a_camera(context):
     page.close()
 
 
+def test_receive_controls_and_show_stage_hidden_before_use(context):
+    # Task-26: buildReceive() already set the `hidden` attribute on these three elements, but
+    # .transfer__button and .transfer__stage each set their own `display` as normal-author CSS,
+    # which outranks the UA stylesheet's [hidden]{display:none} in the cascade regardless of
+    # specificity -- so `hidden` had no visual effect until app.css added [hidden] overrides.
+    page, blocked, errors = _open_page(context, "#/share")
+
+    stage = page.locator(".transfer__stage")
+    open_button = page.locator("button.transfer__button", has_text="Open received app")
+    download_link = page.locator("a.transfer__button", has_text="Download crosscheck.html")
+
+    expect(stage).to_be_hidden()
+    expect(open_button).to_be_hidden()
+    expect(download_link).to_be_hidden()
+
+    show_button = page.locator(".transfer").get_by_role("button", name="Show", exact=True)
+    show_button.click()
+    expect(stage).to_be_visible()
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
 def test_show_and_stop_controls(context):
     page, blocked, errors = _open_page(context, "#/share")
 

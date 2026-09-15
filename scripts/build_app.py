@@ -8,6 +8,7 @@ Run from the project root: ``PYTHONUTF8=1 .venv/Scripts/python scripts/build_app
 
 from __future__ import annotations
 
+import hashlib
 import json
 import shutil
 from pathlib import Path
@@ -26,8 +27,10 @@ JS_FILES = (
     ROOT / "app/app.js",
 )
 # Served by the host only; dist/index.html never depends on them.
-HOST_FILES = (ROOT / "app/sw.js", ROOT / "app/manifest.webmanifest")
+SW_SRC = ROOT / "app/sw.js"
+MANIFEST_SRC = ROOT / "app/manifest.webmanifest"
 SIZES_PLACEHOLDER = "<!-- SIZES -->"
+BUILD_PLACEHOLDER = b"__BUILD__"
 
 # Order fixed by CLAUDE.md Part 2: tokens, base, the reference screens, then the app.
 CSS_FILES = (
@@ -113,9 +116,14 @@ def main() -> str:
     )
     page = with_sizes(page, PACK.stat().st_size)
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_bytes(page.encode("utf-8"))
-    for path in HOST_FILES:
-        shutil.copyfile(path, OUT.parent / path.name)
+    dist_index_bytes = page.encode("utf-8")
+    OUT.write_bytes(dist_index_bytes)
+    # A new cache name every build (Task-26): a stale __BUILD__ literal would serve one page
+    # forever, so this is the one file that is not a plain copy.
+    build_id = hashlib.sha256(dist_index_bytes).hexdigest()[:12].encode("ascii")
+    sw_bytes = SW_SRC.read_bytes().replace(BUILD_PLACEHOLDER, build_id)
+    (OUT.parent / SW_SRC.name).write_bytes(sw_bytes)
+    shutil.copyfile(MANIFEST_SRC, OUT.parent / MANIFEST_SRC.name)
     print(f"{OUT.relative_to(ROOT)}: {OUT.stat().st_size} bytes")
     return page
 

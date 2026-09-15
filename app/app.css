@@ -1,4 +1,10 @@
 /* App-only rules: everything the three reference screens already style lives in screens.css. */
+
+/* Task-26: base.css's `a{text-decoration:underline}` (design/, never edited here) otherwise
+   wins on the "Send as SMS" link, since screens.css's own .button carries no decoration rule
+   to beat it; a.button's higher specificity settles it regardless of source order. */
+a.button { text-decoration: none; }
+
 /* The reference community.html carries a static search-input with no result list markup:
    these rules add the live results dropdown DESIGN.md's result-row describes (line 282). */
 
@@ -96,6 +102,13 @@
 }
 
 .transfer__button:active { background: var(--surface-block); }
+
+/* Task-26: both rules above set their own `display`, which as normal-author CSS outranks the
+   browser's UA-stylesheet `[hidden]{display:none}` regardless of specificity (cascade compares
+   origin before specificity) -- so the `hidden` attribute transfer.js sets on the Show frame
+   area and the receive-result controls had no visual effect until these two rules said so. */
+.transfer__button[hidden] { display: none; }
+.transfer__stage[hidden] { display: none; }
 
 .transfer__stage { display: grid; justify-items: center; gap: var(--space-xs); }
 
@@ -228,3 +241,11 @@
   transform-origin: center;
   transform: scale(calc(1 / var(--map-zoom, 1)));
 }
+
+/* Task-26: the Share screen's Changes row. screens.css's .link-row is a plain flex row with no
+   wrap, which overflows a 360 px screen and left a trailing "." before app.js stopped joining
+   the sentence and the date with one; this modifier wraps the name+sentence together and puts
+   the date on its own line underneath, tokens only. */
+.link-row--changes { flex-wrap: wrap; row-gap: var(--space-xxs); }
+.link-row--changes .link-row__text { flex: 1 1 100%; min-width: 0; }
+.link-row--changes .link-row__date { flex: 0 0 100%; margin: 0; }

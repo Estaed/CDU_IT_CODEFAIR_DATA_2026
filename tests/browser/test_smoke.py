@@ -36,3 +36,35 @@ def test_offline_smoke(browser):
     assert page.evaluate("location.hash") == "#/community/426"
 
     page.close()
+
+
+def test_offline_chip_reads_offline_ready_then_offline(browser):
+    # Task-26: the chip used to read "Online"/"Offline", which misled testers into thinking the
+    # app needs a connection; it now reads "Offline-ready" while online (the app renders
+    # data_pack.json and requests nothing at runtime either way).
+    context = browser.new_context()
+    page = context.new_page()
+    blocked: list[str] = []
+
+    def handler(route):
+        url = route.request.url
+        if not url.startswith("file:"):
+            blocked.append(url)
+            route.abort()
+        else:
+            route.continue_()
+
+    page.route("**/*", handler)
+    page.goto((ROOT / "dist" / "index.html").resolve().as_uri())
+    page.wait_for_load_state()
+
+    chip = page.locator(".offline-chip")
+    assert chip.text_content() == "Offline-ready"
+
+    context.set_offline(True)
+    page.evaluate("window.dispatchEvent(new Event('offline'))")
+    assert chip.text_content() == "Offline"
+
+    assert blocked == []
+    page.close()
+    context.close()

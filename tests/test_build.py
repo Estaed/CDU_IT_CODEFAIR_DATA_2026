@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -97,8 +98,12 @@ def test_sizes_meta_matches_files():
 
 def test_host_files_copied():
     build_app.main()
-    for name in ("sw.js", "manifest.webmanifest"):
-        assert (ROOT / "dist" / name).read_bytes() == (ROOT / "app" / name).read_bytes()
+    # manifest.webmanifest is still a plain copy; sw.js is not since Task-26 (its cache name
+    # carries this build's own hash so an installed copy updates on the next online open --
+    # see test_sw_cache_name_is_build_hash below).
+    assert (ROOT / "dist" / "manifest.webmanifest").read_bytes() == (
+        ROOT / "app" / "manifest.webmanifest"
+    ).read_bytes()
     manifest = json.loads((ROOT / "dist" / "manifest.webmanifest").read_text(encoding="utf-8"))
     assert manifest["name"] == "Crosscheck"
     assert manifest["display"] == "standalone"
@@ -140,3 +145,18 @@ def test_get_user_media_only_in_transfer_and_nearby():
         if "getUserMedia" in path.read_text(encoding="utf-8")
     )
     assert files == ["nearby.js", "transfer.js"]
+
+
+def test_sw_cache_name_is_build_hash():
+    # Task-26: a phone that opened Pages once kept showing that build forever because the
+    # cache name never changed. dist/sw.js now carries this build's own hash.
+    build_app.main()
+    dist_index_bytes = (ROOT / "dist" / "index.html").read_bytes()
+    build_id = hashlib.sha256(dist_index_bytes).hexdigest()[:12]
+    sw = (ROOT / "dist" / "sw.js").read_text(encoding="utf-8")
+
+    assert f"crosscheck-{build_id}" in sw
+    assert "__BUILD__" not in sw
+    assert "skipWaiting" in sw
+    assert "clients.claim" in sw
+    assert "navigate" in sw

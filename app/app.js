@@ -282,7 +282,9 @@
     `Oldest source: ${pack.sources[community.freshness.source].source} · ${community.freshness.date}`;
 
   // One SMS-sized line from pack strings: the reason only for the first service that does not
-  // work, dropped whole (never cut mid-word) if the text would pass the limit.
+  // work, dropped whole (never cut mid-word) if the text would pass the limit. Services join
+  // with " - ", not the "·" the rest of the UI uses, so the body stays in the GSM-7 alphabet
+  // and the SMS uses fewer segments (Task-26; BACKLOG 2026-09-15, Task-13).
   const statementShort = (community) => {
     const firstNotWorks = community.services.find((service) => service.verdict !== "works");
     const build = (withReason) =>
@@ -291,7 +293,7 @@
           const label = `${SMS_LABEL[service.service] || service.service} ${statementWord(service.verdict)}`;
           return withReason && service === firstNotWorks ? `${label} (${plain(service.reason)})` : label;
         })
-        .join(" · ")}. Crosscheck, data ${pack.built}.`;
+        .join(" - ")}. Crosscheck, data ${pack.built}.`;
     const full = build(true);
     return full.length < SMS_MAX_CHARS ? full : build(false);
   };
@@ -1170,10 +1172,18 @@
       section.appendChild(
         h(
           "div",
-          { class: "link-row" },
-          h("a", { class: "text-link", href: `#/community/${item.id}` }, item.name),
-          `: ${item.text} · `,
-          h("span", { class: "source-line" }, h("span", { class: "fig fig--xs" }, item.date)),
+          { class: "link-row link-row--changes" },
+          h(
+            "span",
+            { class: "link-row__text" },
+            h("a", { class: "text-link", href: `#/community/${item.id}` }, item.name),
+            `: ${item.text}`,
+          ),
+          h(
+            "span",
+            { class: "source-line link-row__date" },
+            h("span", { class: "fig fig--xs" }, item.date),
+          ),
         ),
       );
     }
@@ -1411,8 +1421,11 @@
     }
   };
 
+  // The app works offline either way (it renders data_pack.json, requests nothing at runtime),
+  // so the chip says that rather than "Online", which misled testers into thinking the app
+  // needed a connection (Task-26; BACKLOG 2026-09-15, Task-07).
   const setChip = () => {
-    chip.textContent = navigator.onLine ? "Online" : "Offline";
+    chip.textContent = navigator.onLine ? "Offline-ready" : "Offline";
   };
 
   window.addEventListener("hashchange", route);
