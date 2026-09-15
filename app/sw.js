@@ -5,7 +5,14 @@
 // (scripts/build_app.py replaces __BUILD__), so a new build never serves a stale page from an
 // old cache (Task-26: a phone that opened Pages once kept showing the first build forever).
 const CACHE = "crosscheck-__BUILD__";
-const FILES = ["./", "./index.html", "./manifest.webmanifest"];
+const FILES = [
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./apple-touch-icon.png",
+];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();

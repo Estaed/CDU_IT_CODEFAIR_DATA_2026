@@ -52,11 +52,46 @@ cache already updates the page), and its Turkish app name.
 
 ## Acceptance Criteria (DoD)
 
-- [ ] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
-- [ ] `tests/test_build.py`: `dist/index.html` contains the manifest link, the apple-touch-icon link, `apple-mobile-web-app-capable` and a `theme-color` meta whose content equals `--color-canvas` parsed from the tokens; no `__THEME_COLOR__` remains in `dist/index.html` or `dist/manifest.webmanifest`; the dist manifest parses with `name` `Crosscheck`, `start_url` `./`, `display` `standalone`, both colours equal to `--color-canvas`, and icons 192 and 512 each present with purpose `any` and with purpose `maskable`; every icon `src` exists in `dist/` and Pillow reads its size as declared; `apple-touch-icon.png` is 180 by 180 in mode `RGB`; the centre pixel of `icon-512.png` differs from its corner pixel and the corner pixel equals `--color-ink`; building twice gives byte-identical icons; `dist/sw.js` lists the manifest and the three icons.
-- [ ] `tests/browser/test_smoke.py` (appended): `dist/index.html` over `file://` still records zero non-`file:` requests and no console errors, and `document.querySelector('link[rel="manifest"]')` is present.
+- [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0. (Main loop at integration, 2026-09-15: GATE GREEN.)
+- [x] `tests/test_build.py`: `dist/index.html` contains the manifest link, the apple-touch-icon link, `apple-mobile-web-app-capable` and a `theme-color` meta whose content equals `--color-canvas` parsed from the tokens; no `__THEME_COLOR__` remains in `dist/index.html` or `dist/manifest.webmanifest`; the dist manifest parses with `name` `Crosscheck`, `start_url` `./`, `display` `standalone`, both colours equal to `--color-canvas`, and icons 192 and 512 each present with purpose `any` and with purpose `maskable`; every icon `src` exists in `dist/` and Pillow reads its size as declared; `apple-touch-icon.png` is 180 by 180 in mode `RGB`; the centre pixel of `icon-512.png` differs from its corner pixel and the corner pixel equals `--color-ink`; building twice gives byte-identical icons; `dist/sw.js` lists the manifest and the three icons.
+- [x] `tests/browser/test_smoke.py` (appended): `dist/index.html` over `file://` still records zero non-`file:` requests and no console errors, and `document.querySelector('link[rel="manifest"]')` is present.
 - [ ] Not gated, Tarik's manual check on the Pages address after deploy: Chrome on the S24 offers "Install app" and the installed icon opens without an address bar; on an iPhone, Share then Add to Home Screen shows the Crosscheck icon and opens full screen.
 
 ## Status
 
-Not started.
+DONE 2026-09-15 (main loop: integrated, gate green; mutation check: a wrong theme placeholder name turns four build tests red, restored; icon reviewed by eye, the check mark sits a little high, left for the post-feedback edits) Worker notes follow.
+
+Implemented in worktree `agent-ad5065f5fd10d1b6d`, based on `a3e0aab`. `scripts/gate.py` was not
+run (no `data/raw/` in this worktree, per instructions); the commands that make it up were run
+directly instead, from the project root's interpreter:
+
+- `PYTHONUTF8=1 .venv/Scripts/python -m ruff check --no-cache .` → `All checks passed!`
+- `PYTHONUTF8=1 .venv/Scripts/python scripts/build_app.py` → `dist\index.html: 574635 bytes`
+  (well under the 1,048,576-byte limit)
+- `PYTHONUTF8=1 .venv/Scripts/python -m pytest tests/test_build.py tests/browser -q` → 68 passed
+
+Icon sizes written to `dist/`: `icon-192.png` 3,354 bytes, `icon-512.png` 9,776 bytes,
+`apple-touch-icon.png` 3,215 bytes. All three are deterministic across two consecutive builds
+(byte-for-byte), verified by `test_icons_written_at_declared_sizes_and_deterministic`.
+`reports/spike-map-bytes/icon-512-preview.png` holds a copy of `icon-512.png` for visual review:
+a dark-ink square with a white checkmark whose vertex sits on the exact canvas centre and whose
+strokes stay inside the central 60%, so a maskable/circular crop never clips it.
+
+Deviations from the Lane's literal `OWNS` wording, both forced by adding real `<link>`/`<meta>`
+PWA tags to every page of the single-page app, not something chosen beyond the brief:
+
+1. `tests/test_build.py::test_real_build` asserted `"<link" not in html`, guarding against any
+   external resource link. That is now definitionally false once the manifest and icon `<link>`
+   tags are added (as the Execution Guide requires). Narrowed the assertion to
+   `'<link rel="stylesheet"' not in html`, which preserves the original intent (CSS stays
+   inlined, nothing external is linked) while allowing the new same-origin, host-relative links.
+2. `tests/browser/test_share.py::test_share_card_renders` asserted
+   `page.locator("link[rel=manifest]").count() == 0` — true before this task, false after, since
+   the manifest link is a static `<head>` tag present on every hash route including `#/share`,
+   not a runtime registration. Flipped the assertion to `== 1` with a comment explaining why.
+
+Both are one-line, mechanical fixes with no scope beyond making the two pre-existing tests state
+the same thing Task-28 required them to state after the change; no other logic in either file
+was touched. Nothing under `app/app.js`, `app/store.js`, `app/transfer.js`, `app/nearby.js`,
+`app/app.css`, `app/qr.js`, `app/layers.css`, `pipeline/`, `scripts/gate.py` or `design/` was
+touched.

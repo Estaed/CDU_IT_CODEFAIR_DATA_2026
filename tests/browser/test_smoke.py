@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 def test_offline_smoke(browser):
     page = browser.new_page()
     blocked: list[str] = []
+    console_errors: list[str] = []
 
     def handler(route):
         url = route.request.url
@@ -24,6 +25,7 @@ def test_offline_smoke(browser):
             route.continue_()
 
     page.route("**/*", handler)
+    page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
     page.goto((ROOT / "dist" / "index.html").resolve().as_uri())
     page.wait_for_load_state()
 
@@ -34,6 +36,9 @@ def test_offline_smoke(browser):
     assert "96" in page.locator(".search-input").get_attribute("placeholder")
     assert page.locator("h1.community-header__name").count() == 1
     assert page.evaluate("location.hash") == "#/community/426"
+    # Task-28: the manifest link is present even though dist/index.html works without it.
+    assert page.locator('link[rel="manifest"]').count() == 1
+    assert console_errors == []
 
     page.close()
 

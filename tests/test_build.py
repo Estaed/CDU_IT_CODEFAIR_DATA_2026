@@ -46,7 +46,9 @@ def test_real_build():
     html = (ROOT / "dist" / "index.html").read_text(encoding="utf-8")
 
     assert html.count('id="pack"') == 1
-    assert "<link" not in html
+    # CSS is still inlined, not linked; the manifest and icon <link> tags are host-relative
+    # (Task-28) and are covered by their own checks below.
+    assert '<link rel="stylesheet"' not in html
     assert "<script src" not in html
     assert len(html.encode("utf-8")) <= 1_048_576
 
@@ -96,19 +98,32 @@ def test_sizes_meta_matches_files():
     assert app_bytes == out.stat().st_size
 
 
+def _token(name: str) -> str:
+    css = (ROOT / "design" / "ds" / "design" / "tokens" / "colors.css").read_text(encoding="utf-8")
+    match = re.search(rf"--{name}:(#[0-9a-fA-F]+);", css)
+    assert match, f"{name} not found in colors.css"
+    return match.group(1)
+
+
 def test_host_files_copied():
     build_app.main()
-    # manifest.webmanifest is still a plain copy; sw.js is not since Task-26 (its cache name
-    # carries this build's own hash so an installed copy updates on the next online open --
-    # see test_sw_cache_name_is_build_hash below).
-    assert (ROOT / "dist" / "manifest.webmanifest").read_bytes() == (
-        ROOT / "app" / "manifest.webmanifest"
-    ).read_bytes()
-    manifest = json.loads((ROOT / "dist" / "manifest.webmanifest").read_text(encoding="utf-8"))
+    # sw.js is not a plain copy since Task-26 (build-hashed cache name); manifest.webmanifest
+    # is not a plain copy since Task-28 (theme_color/background_color templated from the tokens).
+    manifest_text = (ROOT / "dist" / "manifest.webmanifest").read_text(encoding="utf-8")
+    assert "__THEME_COLOR__" not in manifest_text
+    manifest = json.loads(manifest_text)
+    canvas = _token("color-canvas")
+
     assert manifest["name"] == "Crosscheck"
     assert manifest["display"] == "standalone"
     assert manifest["start_url"] == "./"
-    assert "icons" not in manifest
+    assert manifest["theme_color"] == canvas
+    assert manifest["background_color"] == canvas
+
+    for size, src in ((192, "icon-192.png"), (512, "icon-512.png")):
+        entries = [icon for icon in manifest["icons"] if icon["src"] == src]
+        assert {icon["purpose"] for icon in entries} == {"any", "maskable"}
+        assert all(icon["sizes"] == f"{size}x{size}" for icon in entries)
 
 
 def test_with_sizes_counts_its_own_meta():
@@ -160,3 +175,47 @@ def test_sw_cache_name_is_build_hash():
     assert "skipWaiting" in sw
     assert "clients.claim" in sw
     assert "navigate" in sw
+
+
+def test_dist_head_has_pwa_tags():
+    build_app.main()
+    html = (ROOT / "dist" / "index.html").read_text(encoding="utf-8")
+    canvas = _token("color-canvas")
+
+    assert '<link rel="manifest" href="manifest.webmanifest">' in html
+    assert '<link rel="apple-touch-icon" href="apple-touch-icon.png">' in html
+    assert 'name="apple-mobile-web-app-capable" content="yes"' in html
+    assert f'<meta name="theme-color" content="{canvas}">' in html
+    assert "__THEME_COLOR__" not in html
+
+
+def test_icons_written_at_declared_sizes_and_deterministic():
+    from PIL import Image
+
+    build_app.main()
+    dist = ROOT / "dist"
+    sizes = {"icon-192.png": 192, "icon-512.png": 512, "apple-touch-icon.png": 180}
+    for name, size in sizes.items():
+        with Image.open(dist / name) as img:
+            assert img.size == (size, size)
+            assert img.mode == "RGB"
+
+    ink = _token("color-ink")
+    ink_rgb = tuple(int(ink[i : i + 2], 16) for i in (1, 3, 5))
+    with Image.open(dist / "icon-512.png") as img:
+        corner = img.getpixel((0, 0))
+        centre = img.getpixel((256, 256))
+    assert corner == ink_rgb
+    assert centre != corner
+
+    first_build = {name: (dist / name).read_bytes() for name in sizes}
+    build_app.main()
+    for name, data in first_build.items():
+        assert (dist / name).read_bytes() == data
+
+
+def test_sw_precaches_manifest_and_icons():
+    build_app.main()
+    sw = (ROOT / "dist" / "sw.js").read_text(encoding="utf-8")
+    for name in ("manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"):
+        assert name in sw

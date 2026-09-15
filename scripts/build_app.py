@@ -2,7 +2,8 @@
 
 Concatenation only - this script imports nothing from the pipeline and computes no verdict.
 It also renders the share screen's QR code, records the pack and app sizes in a meta tag and
-copies the two host-only PWA files next to the page.
+writes the host-only PWA files next to the page: sw.js, the templated manifest and the three
+home-screen icons drawn from the colour tokens (Task-28).
 Run from the project root: ``PYTHONUTF8=1 .venv/Scripts/python scripts/build_app.py``.
 """
 
@@ -10,10 +11,11 @@ from __future__ import annotations
 
 import hashlib
 import json
-import shutil
+import re
 from pathlib import Path
 
 import qrcode
+from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = ROOT / "app/index.html"
@@ -29,8 +31,11 @@ JS_FILES = (
 # Served by the host only; dist/index.html never depends on them.
 SW_SRC = ROOT / "app/sw.js"
 MANIFEST_SRC = ROOT / "app/manifest.webmanifest"
+TOKENS_CSS = ROOT / "design/ds/design/tokens/colors.css"
 SIZES_PLACEHOLDER = "<!-- SIZES -->"
 BUILD_PLACEHOLDER = b"__BUILD__"
+THEME_PLACEHOLDER = "__THEME_COLOR__"
+TOKEN_RE = re.compile(r"--([a-z0-9-]+):(#[0-9a-fA-F]{3,8});")
 
 # Order fixed by CLAUDE.md Part 2: tokens, base, the reference screens, then the app.
 CSS_FILES = (
@@ -82,6 +87,65 @@ def qr_svg(text: str) -> str:
     )
 
 
+def read_tokens(names: tuple[str, ...]) -> dict[str, str]:
+    """Parse the requested custom properties out of colors.css; never retype a hex value."""
+    found = dict(TOKEN_RE.findall(TOKENS_CSS.read_text(encoding="utf-8")))
+    missing = [name for name in names if name not in found]
+    if missing:
+        raise ValueError(f"{TOKENS_CSS.name} is missing token(s): {', '.join(missing)}")
+    return {name: found[name] for name in names}
+
+
+def draw_icon(size: int, ink: str, mark: str) -> Image.Image:
+    """A full-bleed ink square with a bold rounded check mark in mark, inside the central 60%.
+
+    Drawn at 4x and downsampled with LANCZOS for clean edges (Task-28 Execution Guide).
+    """
+    scale = 4
+    canvas = size * scale
+    image = Image.new("RGB", (canvas, canvas), ink)
+    draw = ImageDraw.Draw(image)
+
+    margin = canvas * 0.2
+    span = canvas - 2 * margin
+    # The vertex sits exactly on the canvas centre (margin + span * 0.5 == canvas / 2) so the
+    # centre pixel is always mark-coloured, whatever size the icon is drawn at.
+    points = [
+        (margin + span * 0.05, margin + span * 0.38),
+        (margin + span * 0.50, margin + span * 0.50),
+        (margin + span * 0.98, margin + span * 0.05),
+    ]
+    stroke = round(canvas * 0.11)
+    draw.line(points, fill=mark, width=stroke, joint="curve")
+    radius = stroke / 2
+    for x, y in (points[0], points[-1]):
+        draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=mark)
+
+    return image.resize((size, size), Image.Resampling.LANCZOS)
+
+
+def write_host_files(dist_dir: Path, html_bytes: bytes, tokens: dict[str, str]) -> None:
+    """Write sw.js (build-hashed), the templated manifest and the three home-screen icons."""
+    build_id = hashlib.sha256(html_bytes).hexdigest()[:12].encode("ascii")
+    sw_bytes = SW_SRC.read_bytes().replace(BUILD_PLACEHOLDER, build_id)
+    (dist_dir / SW_SRC.name).write_bytes(sw_bytes)
+
+    manifest_text = MANIFEST_SRC.read_text(encoding="utf-8")
+    if THEME_PLACEHOLDER not in manifest_text:
+        raise ValueError(f"{MANIFEST_SRC.name} has no {THEME_PLACEHOLDER} placeholder")
+    manifest_text = manifest_text.replace(THEME_PLACEHOLDER, tokens["color-canvas"])
+    (dist_dir / MANIFEST_SRC.name).write_text(manifest_text, encoding="utf-8", newline="\n")
+
+    ink, mark = tokens["color-ink"], tokens["color-on-primary"]
+    icons = {
+        "icon-192.png": draw_icon(192, ink, mark),
+        "icon-512.png": draw_icon(512, ink, mark),
+        "apple-touch-icon.png": draw_icon(180, ink, mark),
+    }
+    for name, image in icons.items():
+        image.save(dist_dir / name, format="PNG", optimize=False)
+
+
 def add_share_blocks(template: str, qr: str) -> str:
     """Put the QR <template> before the pack (the JS reads it) and a sizes slot into <head>."""
     for marker in ("</head>", "<!-- PACK -->"):
@@ -104,26 +168,29 @@ def with_sizes(page: str, pack_bytes: int) -> str:
 
 
 def main() -> str:
-    """Build dist/index.html, copy the host-only files, and return what was written."""
+    """Build dist/index.html, write the host-only files, and return what was written."""
     pack_text = PACK.read_text(encoding="utf-8")
     # APP_URL comes from constants.md through the pack, so the QR and the share button agree.
     qr = qr_svg(json.loads(pack_text)["app_url"])
+    tokens = read_tokens(("color-canvas", "color-ink", "color-on-primary"))
     page = inline(
         add_share_blocks(TEMPLATE.read_text(encoding="utf-8"), qr),
         [path.read_text(encoding="utf-8") for path in CSS_FILES],
         "\n".join(path.read_text(encoding="utf-8") for path in JS_FILES),
         pack_text.strip(),
     )
+    if THEME_PLACEHOLDER not in page:
+        raise ValueError(f"the template has no {THEME_PLACEHOLDER} placeholder")
+    page = page.replace(THEME_PLACEHOLDER, tokens["color-canvas"])
+    # Sizes are computed after the theme colour is filled in, so the meta reflects the byte
+    # count of what is actually written to disk.
     page = with_sizes(page, PACK.stat().st_size)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     dist_index_bytes = page.encode("utf-8")
     OUT.write_bytes(dist_index_bytes)
     # A new cache name every build (Task-26): a stale __BUILD__ literal would serve one page
-    # forever, so this is the one file that is not a plain copy.
-    build_id = hashlib.sha256(dist_index_bytes).hexdigest()[:12].encode("ascii")
-    sw_bytes = SW_SRC.read_bytes().replace(BUILD_PLACEHOLDER, build_id)
-    (OUT.parent / SW_SRC.name).write_bytes(sw_bytes)
-    shutil.copyfile(MANIFEST_SRC, OUT.parent / MANIFEST_SRC.name)
+    # forever, so sw.js is written by write_host_files, not copied plain.
+    write_host_files(OUT.parent, dist_index_bytes, tokens)
     print(f"{OUT.relative_to(ROOT)}: {OUT.stat().st_size} bytes")
     return page
 

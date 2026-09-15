@@ -77,7 +77,9 @@ def test_share_card_renders(context):
     expect(page.locator("[role=tab][aria-selected=true]")).to_have_text("Share")
 
     assert page.evaluate("window.__swRegistered === undefined")
-    assert page.locator("link[rel=manifest]").count() == 0
+    # Task-28: the manifest link is a static <head> tag present on every route, not a runtime
+    # service-worker registration; __swRegistered above stays unset offline either way.
+    assert page.locator("link[rel=manifest]").count() == 1
     assert errors == []
     assert blocked == []
     page.close()
