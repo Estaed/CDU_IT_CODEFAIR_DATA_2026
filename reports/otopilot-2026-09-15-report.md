@@ -51,3 +51,33 @@ approved 12:35. `BASE_SHA` `5826840` (the plan commit). Run started 12:43 local.
   nothing exercised over `https:`. `dist/` now holds `index.html` (305,315 bytes), `sw.js`,
   `manifest.webmanifest`.
 - Wave 3: Task-11 on `sonnet`, base `e62ff08`, launched 13:20 with a 60-minute timebox.
+
+## Incident after wave 2 (13:25) and recovery (13:25-15:45)
+
+- `git worktree remove --force` on the three integrated lanes followed the junctions inside
+  them and emptied their targets: `.venv` (404 MB), `data/raw` (3.7 GB, gitignored) and
+  `data/out/cache` (277 MB). Commits and `data/out/` were untouched. Main-loop error: the
+  junctions had to be unlinked (`(Get-Item $j).Delete()`) before the worktree was removed;
+  the wave-3 cleanup now does that and verified the targets afterwards.
+- Recovery: `uv sync` rebuilt `.venv`; the fetch scripts re-downloaded every raw file; ABS,
+  NBN, NTG and ACCC came back byte-identical to `PROVENANCE.md`. BushTel and RRL cannot be
+  re-fetched as of 12 September: Tarik chose the honest path, `_2026-09-15` files, dates
+  updated in the provenance registry and the tests. The ACCC fetch also brought the Optus 5G
+  and TPG 5G layers that the 12 September budget had skipped. The parse cache was rebuilt
+  (13:41-15:00).
+- Data delta 12 -> 15 September: no verdict, path or publisher claim changed in any of the
+  96 rows. Milingimbi `svc_wifi` Y -> N; Angurugu Wi-Fi comment; both profile stamps; RRL site
+  table 576 -> 575 rows (nearest-site distances unchanged); the two 5G columns -1 -> real.
+- Fixtures frozen on 2026-09-15 as a second set beside the 2026-09-12 files (Tarik's choice);
+  tests repointed; `_to_iso` accepts ISO dates; ACCC oracle updated for the 5G layers; RRL
+  row count 575. Gate GREEN at `d1dac2c` (104 unit + 15 browser, 305,594 / 255,883 bytes).
+- The Task-11 bee that had started on the empty `.venv` was stopped at 13:30 with no changes
+  in its worktree; its worktree was removed junction-first.
+- Tarik added Task-12..16 (PRD §4.2 additions, `2b51e10`); Task-16 carries a stop marker.
+
+## Wave 9 (15:50): Task-11 + Task-12, both `sonnet`, base `d1dac2c`
+
+Task-12 depends on Task-10 only and owns `pipeline/changes.py`, `pipeline/pack.py`,
+`scripts/run_pipeline.py`, `data/out/history/`, two tests; Task-11 owns `README.md`,
+`scripts/package_submission.py`, `tests/test_package.py`, `spike/`, `.gitignore`. Disjoint.
+Quota before the wave: Claude 5-hour 0% -> measured below at the checkpoint, weekly 44%.
