@@ -81,3 +81,17 @@ Task-12 depends on Task-10 only and owns `pipeline/changes.py`, `pipeline/pack.p
 `scripts/run_pipeline.py`, `data/out/history/`, two tests; Task-11 owns `README.md`,
 `scripts/package_submission.py`, `tests/test_package.py`, `spike/`, `.gitignore`. Disjoint.
 Quota before the wave: Claude 5-hour 0% -> measured below at the checkpoint, weekly 44%.
+
+## Checkpoint after wave 9 (Task-12 integrated 16:00, Task-11 integrated 16:10)
+
+- Claude 5-hour 0% -> 28% before the wave (includes the recovery work) -> measured at the
+  next checkpoint; weekly 44% -> 46%.
+- Task-12 (`sonnet`, 12 min, 28 turns, $1.15, 0 refusals): lane gate GREEN first run, 13 new
+  tests; main GREEN at `552a1a0`; status `af0d579`. `changes.items` = Milingimbi only.
+- Task-11 (`sonnet`, 16 min, 45 turns, $1.48, 0 refusals): lane gate GREEN, 5 packager tests,
+  zip 940,723 bytes / 76 entries; one DoD grep needed three docstrings inside `pipeline/`
+  reworded by the main loop; main GREEN at `0780fe8` (122 unit + 15 browser); status
+  `38f8880`. Leftover gitignored `spike/raw/` held a duplicate NTG 2021 xlsx (byte-equal to
+  `data/raw/ntg_2021.xlsx`, deleted) and the NTG 2021 data-quality statement PDF, moved to
+  `docs/ntg_2021_data-quality-statement.pdf`.
+- Wave 10 (16:12): Task-13 on `opus`, base `af0d579` (Task-11 owns no app file), 75 minutes.
