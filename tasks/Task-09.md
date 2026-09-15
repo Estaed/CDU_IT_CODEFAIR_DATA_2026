@@ -42,9 +42,13 @@ Pages copy installable without the HTML ever depending on them.
 
 ## Acceptance Criteria (DoD)
 
-- [ ] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
-- [ ] `tests/test_build.py`: the QR path in `dist/index.html` decodes back to `APP_URL` (use `qrcode`'s matrix for the same text and compare module for module, as `design/screens/README.md` did); the sizes meta matches the actual file sizes; `dist/sw.js` and `dist/manifest.webmanifest` exist.
-- [ ] `tests/browser/test_share.py` (marker `browser`): `#/share` renders one `.qr`, meta text containing the pack `built` date and both `KB` figures inside `.fig`, two `.button`; clicking `Save file` triggers a download (`page.expect_download`) whose content starts with `<!DOCTYPE html>` and contains `id="pack"` exactly once.
-- [ ] Over `file://`, `navigator.serviceWorker.register` is never called (assert by evaluating a flag `window.__swRegistered === undefined`).
-- [ ] Zero non-`file:` requests and no console errors on `#/share`.
-- [ ] `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js` prints nothing.
+- [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
+- [x] `tests/test_build.py`: the QR path in `dist/index.html` decodes back to `APP_URL` (use `qrcode`'s matrix for the same text and compare module for module, as `design/screens/README.md` did); the sizes meta matches the actual file sizes; `dist/sw.js` and `dist/manifest.webmanifest` exist.
+- [x] `tests/browser/test_share.py` (marker `browser`): `#/share` renders one `.qr`, meta text containing the pack `built` date and both `KB` figures inside `.fig`, two `.button`; clicking `Save file` triggers a download (`page.expect_download`) whose content starts with `<!DOCTYPE html>` and contains `id="pack"` exactly once.
+- [x] Over `file://`, `navigator.serviceWorker.register` is never called (assert by evaluating a flag `window.__swRegistered === undefined`).
+- [x] Zero non-`file:` requests and no console errors on `#/share`.
+- [x] `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js` prints nothing.
+
+## Status
+
+DONE 2026-09-15 (otopilot, lane gate and main gate green at `b7c3234`; 7 build tests, 3 share browser tests). Bee notes: the build reads `APP_URL` from the pack (which reads `constants.md`), the QR and sizes meta are inserted by text at `</head>` and the pack marker because `app/index.html` was outside the lane, the manifest link is added by script over `https:` only, and nothing was exercised over `https:` since Pages is not enabled. Manifest has no icons (DESIGN.md), so the install prompt is browser-dependent. review-visual pending.
