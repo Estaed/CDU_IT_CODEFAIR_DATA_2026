@@ -726,6 +726,7 @@
     shareButton.addEventListener("click", shareApp);
     saveButton.addEventListener("click", saveFile);
     main.textContent = "";
+    const changes = renderChanges(pack);
     main.appendChild(
       h(
         "div",
@@ -760,8 +761,39 @@
             "Crosscheck shows what published sources say about a community's connectivity and what that allows. It does not measure signal. Every value shows its source and date.",
           ),
         ),
+        changes,
       ),
     );
+  };
+
+  // The Changes list is ordered by the pipeline; the browser does no sorting or filtering
+  // (Task-14 Execution Guide).
+  const renderChanges = (pack) => {
+    if (!pack.changes) {
+      return null;
+    }
+    const { from, to, items } = pack.changes;
+    const section = h(
+      "section",
+      { class: "section" },
+      h("h2", { class: "section__title" }, `Changes ${from} -> ${to}`),
+    );
+    if (items.length === 0) {
+      section.appendChild(h("div", { class: "source-line" }, `No changes between ${from} and ${to}`));
+      return section;
+    }
+    for (const item of items) {
+      section.appendChild(
+        h(
+          "div",
+          { class: "link-row" },
+          h("a", { class: "text-link", href: `#/community/${item.id}` }, item.name),
+          `: ${item.text} · `,
+          h("span", { class: "source-line" }, h("span", { class: "fig fig--xs" }, item.date)),
+        ),
+      );
+    }
+    return section;
   };
 
   // Host-only install support: never touched over file://, so the single file stands alone.
