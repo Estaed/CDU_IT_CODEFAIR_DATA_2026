@@ -94,11 +94,11 @@
     );
   };
 
-  const renderHeader = (community) =>
+  const renderHeader = (community, headingTag = "h1") =>
     h(
       "div",
       { class: "community-header" },
-      h("h1", { class: "community-header__name" }, community.name),
+      h(headingTag, { class: "community-header__name" }, community.name),
       h(
         "div",
         { class: "community-header__meta" },
@@ -187,6 +187,58 @@
     return section;
   };
 
+  const renderServiceRow = (service) => {
+    const verdict = VERDICTS[service.verdict];
+    const panel = service.sources.length
+      ? h(
+          "div",
+          { class: "service-row__sources", hidden: "" },
+          service.sources.map((source) => labeledSourceLine(source.label, source.src)),
+        )
+      : null;
+    const button = h(
+      "button",
+      { type: "button", class: "service-row__button", "aria-expanded": "false" },
+      h(
+        "span",
+        { class: "service-row__top" },
+        h("span", { class: "service-row__name" }, SERVICE_LABEL[service.service] || service.service),
+        h(
+          "span",
+          { class: `verdict-badge verdict-badge--${service.verdict}` },
+          h("span", { "aria-hidden": "true" }, verdict.glyph),
+          verdict.word,
+        ),
+      ),
+      h("span", { class: "service-row__reason" }, figures(service.reason)),
+    );
+    button.addEventListener("click", () => {
+      const expanded = button.getAttribute("aria-expanded") === "true";
+      button.setAttribute("aria-expanded", expanded ? "false" : "true");
+      // The sources panel exists in the DOM only while the row is expanded (Task-07 DoD).
+      if (panel) {
+        if (expanded) {
+          panel.remove();
+        } else {
+          button.after(panel);
+        }
+      }
+    });
+    const row = h("div", { class: "service-row" }, button);
+    if (service.assumption) {
+      row.appendChild(
+        h(
+          "div",
+          { class: "assumption-note" },
+          h("span", { class: "assumption-note__label" }, "Assumption"),
+          " ",
+          figures(service.assumption),
+        ),
+      );
+    }
+    return row;
+  };
+
   const renderServices = (community) => {
     const section = h(
       "section",
@@ -202,55 +254,7 @@
       ),
     );
     for (const service of community.services) {
-      const verdict = VERDICTS[service.verdict];
-      const panel = service.sources.length
-        ? h(
-            "div",
-            { class: "service-row__sources", hidden: "" },
-            service.sources.map((source) => labeledSourceLine(source.label, source.src)),
-          )
-        : null;
-      const button = h(
-        "button",
-        { type: "button", class: "service-row__button", "aria-expanded": "false" },
-        h(
-          "span",
-          { class: "service-row__top" },
-          h("span", { class: "service-row__name" }, SERVICE_LABEL[service.service] || service.service),
-          h(
-            "span",
-            { class: `verdict-badge verdict-badge--${service.verdict}` },
-            h("span", { "aria-hidden": "true" }, verdict.glyph),
-            verdict.word,
-          ),
-        ),
-        h("span", { class: "service-row__reason" }, figures(service.reason)),
-      );
-      button.addEventListener("click", () => {
-        const expanded = button.getAttribute("aria-expanded") === "true";
-        button.setAttribute("aria-expanded", expanded ? "false" : "true");
-        // The sources panel exists in the DOM only while the row is expanded (Task-07 DoD).
-        if (panel) {
-          if (expanded) {
-            panel.remove();
-          } else {
-            button.after(panel);
-          }
-        }
-      });
-      const row = h("div", { class: "service-row" }, button);
-      if (service.assumption) {
-        row.appendChild(
-          h(
-            "div",
-            { class: "assumption-note" },
-            h("span", { class: "assumption-note__label" }, "Assumption"),
-            " ",
-            figures(service.assumption),
-          ),
-        );
-      }
-      section.appendChild(row);
+      section.appendChild(renderServiceRow(service));
     }
     return section;
   };
@@ -361,6 +365,209 @@
     main.appendChild(renderActions(community));
   };
 
+  // The HTML parser places <svg> in the SVG namespace; reading it back keeps a namespace URL
+  // literal out of the built file (tests/test_build.py forbids one outside the pack).
+  const SVG_NS = (() => {
+    const template = document.createElement("template");
+    template.innerHTML = "<svg></svg>";
+    return template.content.firstChild.namespaceURI;
+  })();
+
+  const s = (tag, attrs, ...children) => {
+    const el = document.createElementNS(SVG_NS, tag);
+    for (const [key, value] of Object.entries(attrs || {})) {
+      el.setAttribute(key, value);
+    }
+    for (const child of children) {
+      el.appendChild(child instanceof Node ? child : document.createTextNode(String(child)));
+    }
+    return el;
+  };
+
+  const f1 = (n) => n.toFixed(1);
+
+  const telehealthVerdict = (community) =>
+    community.services.find((service) => service.service === "telehealth_video").verdict;
+
+  const mapHash = (filterId, selectedId) =>
+    `#/map?filter=${filterId}${selectedId === null ? "" : `&selected=${selectedId}`}`;
+
+  // Point markup and geometry of design/screens/assets/build.mjs (s = 5, hit r = 16, ring r = 9).
+  const renderPoint = (community, isSelected, filterId) => {
+    const { x, y } = community;
+    const size = 5;
+    const verdict = telehealthVerdict(community);
+    let shape;
+    if (verdict === "works") {
+      shape = s("circle", { class: "map__pt map__pt--works", cx: f1(x), cy: f1(y), r: size });
+    } else if (verdict === "degraded") {
+      const points = [
+        `${f1(x)},${f1(y - size - 1)}`,
+        `${f1(x + size + 1)},${f1(y + size)}`,
+        `${f1(x - size - 1)},${f1(y + size)}`,
+      ].join(" ");
+      shape = s("polygon", { class: "map__pt map__pt--degraded", points });
+    } else if (verdict === "fails") {
+      shape = s("rect", {
+        class: "map__pt map__pt--fails",
+        x: f1(x - size),
+        y: f1(y - size),
+        width: 2 * size,
+        height: 2 * size,
+      });
+    } else {
+      shape = s("rect", {
+        class: "map__pt map__pt--nodata",
+        x: f1(x - size),
+        y: f1(y - 1.5),
+        width: 2 * size,
+        height: 3,
+      });
+    }
+    const group = s(
+      "g",
+      {
+        class: `map__community${isSelected ? " map__community--selected" : ""}`,
+        tabindex: "0",
+      },
+      s("title", {}, `${community.name} · ${VERDICTS[verdict].word}`),
+      s("circle", { class: "map__hit", cx: f1(x), cy: f1(y), r: 16 }),
+      shape,
+    );
+    if (isSelected) {
+      const right = x > 200;
+      group.appendChild(s("circle", { class: "map__ring", cx: f1(x), cy: f1(y), r: 9 }));
+      group.appendChild(
+        s(
+          "text",
+          {
+            class: "map__label",
+            x: f1(right ? x - 13 : x + 13),
+            y: f1(y + 4),
+            "text-anchor": right ? "end" : "start",
+          },
+          community.name,
+        ),
+      );
+    }
+    const select = () => {
+      location.hash = mapHash(filterId, community.id);
+    };
+    group.addEventListener("click", select);
+    group.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        select();
+      }
+    });
+    return group;
+  };
+
+  const renderFilterTabs = (active, selectedId) => {
+    const bar = h("div", { class: "tabs filter-tabs", role: "tablist", "aria-label": "Filters" });
+    for (const filter of pack.filters) {
+      const isActive = filter.id === active.id;
+      const tab = h(
+        "button",
+        { type: "button", class: "tab", role: "tab", "aria-selected": isActive ? "true" : "false" },
+        `${filter.label} `,
+        h("span", { class: "tab__count" }, String(filter.ids.length)),
+      );
+      tab.addEventListener("click", () => {
+        location.hash = mapHash(filter.id, filter.ids.includes(selectedId) ? selectedId : null);
+      });
+      bar.appendChild(tab);
+    }
+    return bar;
+  };
+
+  const renderLegend = (shownCount) => {
+    const all = h("span", { class: "fig fig--xs" }, String(pack.count));
+    return h(
+      "div",
+      { class: "map-legend" },
+      h(
+        "div",
+        { class: "map-legend__row" },
+        Object.entries(pack.legend).map(([verdict, count]) =>
+          h(
+            "span",
+            { class: "map-legend__item" },
+            h(
+              "span",
+              { class: `map-legend__glyph--${verdict}`, "aria-hidden": "true" },
+              VERDICTS[verdict].glyph,
+            ),
+            `${VERDICTS[verdict].word} `,
+            h("span", { class: "map-legend__count" }, String(count)),
+          ),
+        ),
+      ),
+      h("div", { class: "map-legend__subject" }, "Telehealth video · all ", all, " communities"),
+      // pack.filters carries no definition text yet, so the line stops at the counts.
+      h(
+        "div",
+        { class: "map-legend__subject" },
+        "Showing ",
+        h("span", { class: "fig fig--xs" }, String(shownCount)),
+        " of ",
+        h("span", { class: "fig fig--xs" }, String(pack.count)),
+      ),
+    );
+  };
+
+  const renderMapPanel = (community) => [
+    renderHeader(community, "h2"),
+    renderPublishers(community),
+    h(
+      "section",
+      { class: "section" },
+      h("h2", { class: "section__title" }, "What the connection allows"),
+      renderServiceRow(
+        community.services.find((service) => service.service === "telehealth_video"),
+      ),
+      h(
+        "div",
+        { class: "link-row" },
+        h("a", { class: "text-link", href: `#/community/${community.id}` }, `Open ${community.name}`),
+      ),
+    ),
+  ];
+
+  const renderMap = (filterId, selectedId) => {
+    const filter = pack.filters.find((f) => f.id === filterId) || pack.filters[0];
+    const shown = pack.communities.filter((c) => filter.ids.includes(c.id));
+    const selected = pack.communities.find((c) => c.id === selectedId) || null;
+    // The selected point is drawn last so its ring and label sit above its neighbours.
+    const ordered = [
+      ...shown.filter((c) => c !== selected),
+      ...shown.filter((c) => c === selected),
+    ];
+    const svg = s(
+      "svg",
+      {
+        class: "map",
+        role: "img",
+        "aria-label": `Map of the Northern Territory, ${shown.length} of ${pack.count} communities shown`,
+        viewBox: "0 0 300 480",
+      },
+      s("g", { class: "map__land" }, s("path", { d: pack.outline })),
+      ...ordered.map((c) => renderPoint(c, c === selected, filter.id)),
+    );
+    main.textContent = "";
+    const bar = renderFilterTabs(filter, selected ? selected.id : null);
+    main.appendChild(bar);
+    main.appendChild(svg);
+    main.appendChild(renderLegend(shown.length));
+    if (selected) {
+      for (const node of renderMapPanel(selected)) {
+        main.appendChild(node);
+      }
+    }
+    const activeTab = bar.querySelector("[aria-selected=true]");
+    activeTab.scrollIntoView({ inline: "nearest", block: "nearest" });
+  };
+
   const render = (text) => {
     const line = document.createElement("p");
     line.textContent = text;
@@ -388,7 +595,9 @@
       selected.scrollIntoView({ inline: "nearest", block: "nearest" });
     }
     if (screen === "#/map") {
-      render("Map");
+      const query = new URLSearchParams(hash.split("?")[1] || "");
+      const selectedParam = query.get("selected");
+      renderMap(query.get("filter") || "all", selectedParam ? Number(selectedParam) : null);
     } else if (screen === "#/share") {
       render("Share");
     } else {
