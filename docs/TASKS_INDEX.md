@@ -29,7 +29,7 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-09: Share screen, QR, save-as-file, and the host-only PWA files
 - [x] Task-10: Report-ready figures and tables
 - [ ] Task-11: Reproduction README, submission packaging, spike retirement
-- [ ] Task-12: Freshness, history and changes in the pack (added 2026-09-15)
+- [x] Task-12: Freshness, history and changes in the pack (added 2026-09-15)
 - [ ] Task-13: Send as SMS, copy statement and the freshness line (added 2026-09-15)
 - [ ] Task-14: Changes since the previous snapshot on the Share screen (added 2026-09-15)
 - [ ] Task-15: Compare two communities (added 2026-09-15)

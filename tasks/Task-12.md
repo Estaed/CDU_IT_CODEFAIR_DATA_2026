@@ -34,8 +34,12 @@ pipeline produced, and the list of what changed between the two newest tables.
 
 ## Acceptance Criteria (DoD)
 
-- [ ] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
-- [ ] `tests/test_changes.py`: hand-built rows: no change -> `[]`; one verdict flip -> one row with before/after; a community present only in the newer table -> one row `column == "bushtel_id"`; ignored columns (free text, coordinates) never produce a row.
-- [ ] `tests/test_pack.py` (additive): every community has `freshness` with a key present in `sources` and a date; `changes.items` for the committed history names Milingimbi's `svc_wifi` Y -> N; the pack is under 307,200 bytes.
-- [ ] `data/out/history/` holds `capability_table_2026-09-12.csv` (byte-equal to the fixture) and `capability_table_2026-09-15.csv`.
-- [ ] `grep -rn "spike" pipeline/changes.py` prints nothing.
+- [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
+- [x] `tests/test_changes.py`: hand-built rows: no change -> `[]`; one verdict flip -> one row with before/after; a community present only in the newer table -> one row `column == "bushtel_id"`; ignored columns (free text, coordinates) never produce a row.
+- [x] `tests/test_pack.py` (additive): every community has `freshness` with a key present in `sources` and a date; `changes.items` for the committed history names Milingimbi's `svc_wifi` Y -> N; the pack is under 307,200 bytes.
+- [x] `data/out/history/` holds `capability_table_2026-09-12.csv` (byte-equal to the fixture) and `capability_table_2026-09-15.csv`.
+- [x] `grep -rn "spike" pipeline/changes.py` prints nothing.
+
+## Status
+
+DONE 2026-09-15 (otopilot, lane gate and main gate green at `552a1a0`; 13 new unit tests). Bee note: the 2026-09-12 history file stores verdicts in the old RAG vocabulary, so `pack.py` recomputes the verdict columns through `rules.py` before diffing; `changes.items` for 12 -> 15 September is exactly Milingimbi's public Wi-Fi.
