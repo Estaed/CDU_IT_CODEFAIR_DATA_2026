@@ -38,7 +38,7 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-22: Mesh-size statement, 200 bytes (second batch, added 2026-09-15)
 - [x] Task-20: Map layers in the pipeline: towns, highways, regions, coverage (second batch, added 2026-09-15; reads reports/2026-09-15-map-bytes.md)
 - [x] Task-18: Transfer by camera, QR frames (second batch, added 2026-09-15)
-- [ ] Task-19: Nearby chat over the phone's own Wi-Fi (second batch, added 2026-09-15)
+- [x] Task-19: Nearby chat over the phone's own Wi-Fi (second batch, added 2026-09-15)
 - [ ] Task-21: Map second pass in the app: layers, zoom, pan, labels; pack version 2 (second batch, added 2026-09-15)
 
 ## Execution routing

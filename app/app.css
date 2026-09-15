@@ -106,3 +106,86 @@
 .transfer__video { width: 100%; border-radius: var(--radius-md); background: var(--surface-block); }
 
 .transfer__note { margin: 0; font: var(--text-body-sm); color: var(--text-secondary); }
+
+/* Task-19 nearby chat: the #/nearby screen reached from a button on the share screen. New
+   classes only, tokens only (layer rule 5); the same card/button shape as the transfer block
+   above, reused rather than invented (Task-19 Execution Guide). */
+
+.nearby__status { margin: 0; font: var(--text-body-sm); color: var(--text-secondary); }
+
+.nearby__card {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  margin-top: var(--space-md);
+  background: var(--surface-page);
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+}
+
+.nearby__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--size-control);
+  min-width: var(--size-touch);
+  padding: 0 calc(var(--space-md) + var(--space-xxs));
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  font: var(--text-button);
+  color: var(--text-heading);
+  background: var(--surface-page);
+  cursor: pointer;
+}
+
+.nearby__button:active { background: var(--surface-block); }
+
+.nearby__button:disabled { color: var(--text-secondary); }
+
+.nearby__qr-wrap { display: flex; justify-content: center; }
+
+.nearby__qr { width: var(--size-qr); height: var(--size-qr); }
+
+.nearby__scanner { display: grid; gap: var(--space-xs); }
+
+.nearby__video { width: 100%; border-radius: var(--radius-md); background: var(--surface-block); }
+
+.nearby__messages {
+  display: grid;
+  gap: var(--space-xs);
+  max-height: calc(var(--size-control) * 4);
+  overflow-y: auto;
+}
+
+.nearby__msg {
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  font: var(--text-body-sm);
+  max-width: 80%;
+}
+
+.nearby__msg--me { background: var(--surface-block); justify-self: end; }
+
+.nearby__msg--peer {
+  background: var(--surface-page);
+  border: var(--size-hairline) solid var(--border-hairline);
+  justify-self: start;
+}
+
+.nearby__send-row { display: grid; grid-template-columns: 1fr auto; gap: var(--space-xs); }
+
+.nearby__input {
+  display: block;
+  width: 100%;
+  height: var(--size-control);
+  padding: 0 var(--space-sm);
+  font: var(--text-body-md);
+  color: var(--text-heading);
+  background: var(--surface-page);
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  appearance: none;
+}
+
+.nearby__input::placeholder { color: var(--text-secondary); }

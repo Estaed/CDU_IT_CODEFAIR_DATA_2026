@@ -19,7 +19,12 @@ TEMPLATE = ROOT / "app/index.html"
 OUT = ROOT / "dist/index.html"
 PACK = ROOT / "data/out/data_pack.json"
 # Order fixed by CLAUDE.md Part 2: qr.js, transfer.js, nearby.js, app.js; later tasks append.
-JS_FILES = (ROOT / "app/qr.js", ROOT / "app/transfer.js", ROOT / "app/app.js")
+JS_FILES = (
+    ROOT / "app/qr.js",
+    ROOT / "app/transfer.js",
+    ROOT / "app/nearby.js",
+    ROOT / "app/app.js",
+)
 # Served by the host only; dist/index.html never depends on them.
 HOST_FILES = (ROOT / "app/sw.js", ROOT / "app/manifest.webmanifest")
 SIZES_PLACEHOLDER = "<!-- SIZES -->"

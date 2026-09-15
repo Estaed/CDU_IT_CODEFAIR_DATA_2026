@@ -122,3 +122,21 @@ def test_qr_js_inlined_once_before_app_js():
     # DEFAULT_HASH is a unique app.js identifier (Task-17 Execution Guide: qr.js before app.js).
     app_index = html.index("DEFAULT_HASH")
     assert qr_index < app_index
+
+
+def test_nearby_js_no_stun_turn_and_empty_ice_servers():
+    source = (ROOT / "app" / "nearby.js").read_text(encoding="utf-8")
+    assert "iceServers: []" in source
+    assert "stun:" not in source
+    assert "turn:" not in source
+
+
+def test_get_user_media_only_in_transfer_and_nearby():
+    # The Python equivalent of `grep -l getUserMedia app/*.js` (CLAUDE.md Part 2, layer rule 8);
+    # no shelling out, Windows has no `grep` on PATH by default.
+    files = sorted(
+        path.name
+        for path in (ROOT / "app").glob("*.js")
+        if "getUserMedia" in path.read_text(encoding="utf-8")
+    )
+    assert files == ["nearby.js", "transfer.js"]
