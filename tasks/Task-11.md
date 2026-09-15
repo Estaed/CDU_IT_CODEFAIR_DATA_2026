@@ -4,7 +4,7 @@
 > *Why:* the organiser's file rules are transcribed in `docs/report-requirements.md`; the criterion is a zip whose listing and file names match them, checked by a test.
 
 **Lane**
-- OWNS: `README.md` (append a "Reproduce" section; the competition text above it stays), `scripts/package_submission.py`, `tests/test_package.py`, deletion of `spike/`
+- OWNS: `README.md` (append a "Reproduce" section; the competition text above it stays), `scripts/package_submission.py`, `tests/test_package.py`, deletion of `spike/`, `.gitignore` (the `spike/raw/` line only; added 2026-09-15 by the otopilot plan, the Execution Guide already required it)
 - MUST NOT TOUCH: `pipeline/`, `app/`, `design/`, `docs/`, `tests/fixtures/`
 - GATE: `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` from the project root
 - DEPENDS ON: Task-09, Task-10
