@@ -464,8 +464,12 @@ red gate at the start is expected; a task marked DONE on a red gate is not.
   first render, or any computation of a verdict; it renders `data_pack.json`. The one
   exception, named 2026-09-15 (OQ15): **jsQR 1.4.0**, Apache-2.0, vendored as
   `app/vendor/jsQR.js` with `app/vendor/jsQR.LICENSE` beside it, used only through
-  `app/scan.js` when the browser has no `BarcodeDetector`. Its one edit (a comment URL removed)
-  is recorded in the licence file. No other library may be added without a line here.
+  `app/scan.js` when the browser has no `BarcodeDetector`. Two edits, both recorded with hashes
+  in the licence file: a comment URL removed, and the version 23 alignment centres corrected
+  from `[6, 30, 54, 74, 102]` to the ISO/IEC 18004 `[6, 30, 54, 78, 102]` (verified 2026-09-15:
+  all 40 versions compared with Python `qrcode`, only 23 differed; shipped jsQR failed to decode
+  version 23 and the corrected copy decoded all 40; transfer frames are version 23). No other
+  library may be added without a line here.
 - Nearby chat uses `iceServers: []`, no STUN, no TURN, no signalling server; the handshake is
   two QR scans and nothing is stored. Transfer by camera carries the page's own bytes, never a
   URL that needs the internet.
