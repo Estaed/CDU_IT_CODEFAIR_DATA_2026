@@ -146,3 +146,97 @@ workflow: dump raw thinking into `notes.md`, then `create-prd`, then `create-arc
 write Part 2, then `generate-tasks`, then `verify-task` per task. `.codex/hooks.json` has been
 generated for this path. Part 2 of `CLAUDE.md` is still the placeholder and must be written
 before any task is generated.
+
+## Reproduce
+
+Every command below runs from this folder (the project root) and was run once while writing
+this section. Commands are copied verbatim from `CLAUDE.md` Part 2 "Entry points" and "Quality
+gate"; if the two ever disagree, `CLAUDE.md` is the source of truth.
+
+### Prerequisites
+
+- Python 3.13 and [uv](https://docs.astral.sh/uv/) (this project was built against Python
+  3.13.5 and uv 0.12.13).
+- An environment at `.venv/`, created and kept in sync with:
+
+  ```
+  uv sync
+  ```
+
+  This installs both the runtime dependencies in `pyproject.toml` and the `dev` group
+  (`pytest`, `ruff`, `playwright`). Playwright also needs its Chromium build once:
+  `.venv/Scripts/python -m playwright install chromium`.
+
+### Raw data: committed vs re-fetched
+
+`data/raw/` is entirely gitignored — a clone of this repository starts with no raw snapshots
+and no committed ones exist to unpack (BushTel's reuse terms are still an open question, so no
+raw file from any source is committed). Every source is re-fetched by hand with one script per
+publisher, each writing `data/raw/<source>_<today>.*`:
+
+```
+PYTHONUTF8=1 .venv/Scripts/python -m pipeline.fetch.bushtel
+PYTHONUTF8=1 .venv/Scripts/python -m pipeline.fetch.nbn
+PYTHONUTF8=1 .venv/Scripts/python -m pipeline.fetch.accc
+PYTHONUTF8=1 .venv/Scripts/python -m pipeline.fetch.rrl
+PYTHONUTF8=1 .venv/Scripts/python -m pipeline.fetch.ntg
+PYTHONUTF8=1 .venv/Scripts/python -m pipeline.fetch.abs_boundary
+```
+
+The pipeline always reads the **newest** file matching each source's pattern under
+`data/raw/`, so a fresh fetch does not need the old snapshot removed first — a re-fetch today
+produces new BushTel and ACMA RRL files, for example, dated with today's date, sitting next
+to whatever was already there.
+
+### Run the pipeline
+
+```
+PYTHONUTF8=1 .venv/Scripts/python scripts/run_pipeline.py
+```
+
+Reads only `data/raw/`, writes only `data/out/`: `capability_table.csv`/`.xlsx`,
+`data_pack.json`, `PROVENANCE.md`, and the figures. No network access.
+
+The ACCC source is the slow part: on its first run it parses the raw KML files and writes a
+290 MB cache to `data/out/cache/` (gitignored); that cold parse took 3,531 seconds on
+2026-09-13. Every run after that reads the cache and takes seconds, until a raw ACCC file
+changes.
+
+### Build the app
+
+```
+PYTHONUTF8=1 .venv/Scripts/python scripts/build_app.py
+```
+
+Inlines the design tokens, `app/app.css`, `app/app.js` and `data/out/data_pack.json` into
+`app/index.html`, writing `dist/index.html`, and copies `app/sw.js` and
+`app/manifest.webmanifest` next to it for the host. `dist/` is gitignored and rebuilt from
+source every time.
+
+### Quality gate
+
+```
+PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py
+```
+
+Runs, in order, stopping at the first failure: lint (`ruff check --no-cache .`), the unit
+tests, the app build above, the size check (`dist/index.html` under 1 MiB, `data_pack.json`
+under 300 KiB), then the Playwright browser smoke test. That last step is also the offline
+claim's verification: it opens `dist/index.html` from `file://` and asserts zero requests
+left the page. Run it on its own with:
+
+```
+PYTHONUTF8=1 .venv/Scripts/python -m pytest -m browser
+```
+
+### Package the submission
+
+```
+PYTHONUTF8=1 .venv/Scripts/python scripts/package_submission.py
+```
+
+Builds `dist/DataChallenge_Team <team number>_Submission.zip` (team number read from
+`constants.md`) from `dist/index.html`, this README, `pyproject.toml`, `uv.lock`, `pipeline/`,
+`scripts/`, `tests/`, `data/out/`, and any committed raw snapshot. It also picks up the report
+PDF and slide deck from `submission/` if present there under their expected names, and warns
+without failing if either is missing.
