@@ -104,6 +104,20 @@ and points are embedded.
 phone by QR code, system share sheet or file, so the receiving phone opens the same map with
 no network. Says plainly what the app does and does not claim (it does not measure signal).
 
+**v1 additions, decided 2026-09-15 (Tarik, after the Task-08..10 wave).** Five features, each a
+pack field plus a render, no new library, no computation of a verdict in the browser:
+
+- *Send as SMS* and *Copy statement* on Screen 1: a short and a long plain-language text
+  assembled from the pack's verdict words, reason sentences and source names, sent through the
+  phone's own `sms:` handler or the clipboard. Works where only voice and SMS work.
+- *Freshness line* on Screen 1: the oldest source the community's row rests on, with its date.
+- *Changes since the previous snapshot* on Screen 3: the pipeline keeps every capability table
+  it produces under `data/out/history/` and lists what changed between the two newest.
+- *Compare two communities* at `#/compare/<id>/<id>`: the four verdicts and the agreement count
+  side by side.
+- *Sunlight mode*: one toggle that swaps to a higher-contrast token set exported from the design
+  project; blocked until that export exists.
+
 ### 4.3 Report, slides, pitch
 
 Owned by Emma, Thanh and Will, built from §4.1 item 3. Structure and file rules are in
@@ -246,3 +260,6 @@ D5. **National scope** — only if the NT is finished early; the brief allows it
 | 2026-09-13 | The pack follows the §5 path rule where the reference screens disagree with it: Wadeye is `terrestrial_mobile` (predicted and licensed both say covered), not the `satellite` the mock's section note typed by hand. The screen text is the mock's error, not a rule | Eko, on Tarik's instruction to decide |
 | 2026-09-13 | Agreement count: `available` counts only publisher lines that make a claim (`says_covered` is `covered` or `not-covered`); a `not-recorded` line is not a source that speaks. Baniyala reads 1 of 3, not the mock's 1 of 4 | Eko, on Tarik's instruction to decide |
 | 2026-09-13 | The 300 KB pack limit stays. Task-00's interim pack is 288 KB because 56 source/date pairs are repeated per line; Task-05's provenance registry becomes a `sources` table in the pack header with short keys and every `source`/`date` pair on a line becomes one `src` key (measured 2026-09-13: 288,193 -> 225,841 bytes). `pack_version` stays 1 because no screen renders the pack before Task-07 | Eko, on Tarik's instruction to decide |
+| 2026-09-15 | Five v1 additions (§4.2): SMS and statement text, freshness line, changes since the previous snapshot, compare route, sunlight mode. The community-card QR and the free-Wi-Fi rollout flag were considered and dropped: the first carries only text a camera reads and cannot update, the second is a promise, not a verdict | Tarik |
+| 2026-09-15 | Text for SMS and the statement is assembled in the browser from pack strings; it is rendering, not a verdict, and keeps 96 paragraphs out of the 300 KB pack | Eko, on Tarik's instruction to decide |
+| 2026-09-15 | BushTel and ACMA RRL snapshots re-fetched as `_2026-09-15` after the 12 September files were lost (worktree removal followed junctions); the static sets came back byte-identical | Tarik |

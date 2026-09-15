@@ -29,6 +29,11 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-09: Share screen, QR, save-as-file, and the host-only PWA files
 - [x] Task-10: Report-ready figures and tables
 - [ ] Task-11: Reproduction README, submission packaging, spike retirement
+- [ ] Task-12: Freshness, history and changes in the pack (added 2026-09-15)
+- [ ] Task-13: Send as SMS, copy statement and the freshness line (added 2026-09-15)
+- [ ] Task-14: Changes since the previous snapshot on the Share screen (added 2026-09-15)
+- [ ] Task-15: Compare two communities (added 2026-09-15)
+- [ ] Task-16: Sunlight mode (added 2026-09-15; blocked until the sunlight tokens are exported from the design project)
 
 ## Execution routing
 
@@ -51,6 +56,11 @@ writes nothing here itself except the review after DONE.
 | Task-09 | claude-worker | no | high | Task-08 | 8 |
 | Task-10 | claude-worker | no | medium | Task-06 | 6 (beside Task-07) |
 | Task-11 | claude-worker | no | medium | Task-09, Task-10 | 9 |
+| Task-12 | claude-worker | no | medium | Task-10 | 9 (beside Task-11) |
+| Task-13 | claude-worker | no | high | Task-12 | 10 |
+| Task-14 | claude-worker | no | medium | Task-12, Task-13 | 11 |
+| Task-15 | claude-worker | no | high | Task-14 | 12 |
+| Task-16 | claude-worker | no | medium | Task-15 | 13, after the stop marker is cleared |
 
 Tasks 02, 03 and 04 own disjoint files and can run as one wave in separate worktrees; so can
 Task-07 and Task-10. Every other step is serial because it edits `app/app.js` or `pipeline/pack.py`.
