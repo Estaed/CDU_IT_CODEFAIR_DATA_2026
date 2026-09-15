@@ -118,6 +118,11 @@ a.button { text-decoration: none; }
 
 .transfer__video { width: 100%; border-radius: var(--radius-md); background: var(--surface-block); }
 
+/* Task-27: receive progress, K blocks known of K. No own `display`, so the UA `[hidden]`
+   default already hides it; the two overrides above exist only for the elements that set
+   their own `display`. */
+.transfer__progress { width: 100%; }
+
 .transfer__note { margin: 0; font: var(--text-body-sm); color: var(--text-secondary); }
 
 /* Task-19 nearby chat: the #/nearby screen reached from a button on the share screen. New

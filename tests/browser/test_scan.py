@@ -100,7 +100,19 @@ def test_jsqr_path_decodes_frames_offer_and_wifi_text(browser):
 
     html_text = DIST.read_text(encoding="utf-8")
     frame_texts = page.evaluate(
-        "(html) => window.CrosscheckTransfer.frames(html)", html_text
+        """
+        async (html) => {
+            const built = await window.CrosscheckTransfer.encoder(html);
+            // The first K + K/4 frames of the send order: one full pass of the K source
+            // frames plus a quarter K worth of repair frames, so the sample below (every 16th)
+            // reaches into the repair range too, not just the source pass.
+            const count = built.k + Math.floor(built.k / 4);
+            const texts = [];
+            for (let i = 0; i < count; i++) texts.push(built.frameAt(i));
+            return texts;
+        }
+        """,
+        html_text,
     )
     n = len(frame_texts)
     assert n >= 1

@@ -185,12 +185,16 @@ def test_transfer_receive_completion_stores_pack(context):
     result = page.evaluate(
         """
         async (html) => {
-            const frames = await window.CrosscheckTransfer.frames(html);
-            const reassembled = window.CrosscheckTransfer.reassemble(frames);
-            if (!reassembled.complete) {
+            const built = await window.CrosscheckTransfer.encoder(html);
+            const rx = window.CrosscheckTransfer.receiver();
+            let status;
+            for (let i = 0; i < built.k; i++) {
+                status = rx.push(built.frameAt(i));
+            }
+            if (!status.complete) {
                 return { complete: false };
             }
-            await window.CrosscheckTransfer.testReceiveComplete(reassembled.bytes);
+            await window.CrosscheckTransfer.testReceiveComplete(rx.bytes());
             const stored = await window.CrosscheckStore.load();
             return { complete: true, storedBuilt: stored ? stored.built : null };
         }
