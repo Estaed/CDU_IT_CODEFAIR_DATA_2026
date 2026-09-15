@@ -118,6 +118,47 @@ pack field plus a render, no new library, no computation of a verdict in the bro
 - *Sunlight mode*: one toggle that swaps to a higher-contrast token set exported from the design
   project; blocked until that export exists.
 
+**v1 additions, second batch, decided 2026-09-15 (Tarik, after the research in
+`reports/2026-09-15-research-offline-distribution.md` and the hotspot spike in
+`reports/spike-webrtc-hotspot/`).** The direction for the last two weeks is "the app arrives
+and works without the internet", not "a bigger app". Five features; none computes a verdict,
+none makes a network request while running. Source of truth for each is this section until a
+screen file exists; the existing three screens stay the reference for everything they already
+show.
+
+- *Transfer by camera* on Screen 3: "Show" plays the whole app (gzip, about 32 KB) as a loop of
+  QR frames on this phone's screen; "Receive" on the other phone reads the frames with its
+  camera, reassembles and decompresses them in the browser, opens the result and offers to
+  save it. The existing URL QR stays as it is. Receiving uses the browser's own barcode reader
+  where it exists (Chrome on Android); the iPhone receive route is Tarik's (OQ15).
+- *Nearby chat* at `#/nearby`: two phones on the same Wi-Fi (one phone's personal hotspot, or
+  any router) open a direct browser-to-browser channel by scanning each other's QR once; the
+  channel stays open while both are in range and carries plain messages both ways, and the
+  data pack on request. No server, no internet, no storage: nothing survives the page. Range
+  is the Wi-Fi's. Proven on a home router with a Samsung S24 and a Xiaomi Mi 6 on 2026-09-15;
+  the hotspot case is OQ14.
+- *Wi-Fi join QR* on the same screen: the hotspot's name and password, typed once by the host,
+  shown as a `WIFI:` QR the other phone's camera joins in one tap. The page cannot turn a
+  hotspot on or join one itself; it can only show the code.
+- *Map, second pass* on Screen 2, because the first pass is "not very understandable" (Tarik):
+  pinch-zoom and pan; geographic context so the 96 points are not floating in a blank outline
+  (the towns Darwin, Katherine, Tennant Creek, Alice Springs, Nhulunbuy; the Stuart, Barkly,
+  Victoria and Arnhem highways; ABS region boundaries); community names as labels once zoomed
+  in; the ACCC predicted-coverage polygons as a shaded layer, one toggle per carrier. All of
+  it embedded as simplified vectors in the pack, no tiles, no requests. A relief base image is
+  allowed only if the vectors alone still read as empty (Tarik decides after seeing them).
+  Every new layer names its source and licence in the provenance file.
+- *Mesh-size statement* on Screen 1: a third text beside the SMS and the statement, at most
+  200 bytes, so a community's verdict fits one Meshtastic packet. The app does not talk to a
+  radio; the text is pasted into the mesh app by hand. It exists to make the report's mesh
+  recommendation a checked claim, not a hope.
+
+Considered and dropped on 2026-09-15: a static "app inside one QR" (2,953 bytes per code
+against 32 KB); an ESP32 captive-portal hotspot (works on both platforms, but costs money and
+Tarik ruled out spending); NFC (888 bytes, Android only); a Meshtastic node pair (hardware,
+money, shipping before Challenge Day); a room-range chat sold as community messaging (the
+range is the honest limit and is printed in the app).
+
 ### 4.3 Report, slides, pitch
 
 Owned by Emma, Thanh and Will, built from §4.1 item 3. Structure and file rules are in
@@ -164,8 +205,12 @@ What the app shows for one community; not a schema.
 | Every number in the app and the report traces to a source with URL, date and licence | The provenance file lists every source; a check fails the build if a table column has no source entry |
 | The table reproduces from the frozen snapshots with no network | Pipeline runs from a clean clone with networking disabled and produces byte-identical outputs |
 | The app works with zero connectivity | Tarik opens the installed app in flight mode on his own phone before each demo and on Challenge Day; a named checklist per screen |
-| Size (decided 2026-09-12): app HTML ≤ 1 MB, data pack ≤ 300 KB | Measured by the gate on every build; over-size fails |
-| Phone-to-phone transfer works | Tarik sends the app from one phone to a second phone by QR and by share sheet, opens it there in flight mode; recorded in the demo checklist |
+| Size (decided 2026-09-12; pack cap under review 2026-09-15): app HTML ≤ 1 MB, data pack ≤ 300 KB until OQ13 sets the new cap from the measured map layers | Measured by the gate on every build; over-size fails |
+| Phone-to-phone transfer works | Tarik sends the app from one phone to a second phone by QR and by share sheet, opens it there in flight mode; recorded in the demo checklist. Known since 2026-09-15: an `.html` received as a file does not run on an iPhone (Quick Look has no JavaScript); the iPhone gets the app from the URL before the day |
+| Transfer by camera works | Tarik plays the frames on one phone and receives on the other (Android receive; iPhone per OQ15), the received page opens and shows Wadeye's four verdicts; in the demo checklist. A unit test proves the frame set reassembles to the exact bytes of `dist/index.html` |
+| Nearby chat works with no internet | Tarik: two phones on one hotspot, both in flight mode except Wi-Fi, scan, send a message each way, then switch the hotspot off and confirm the channel drops with a plain message; in the demo checklist (OQ14) |
+| The map reads without explanation | Advisory eye review at 360 px against the layer list in §4.2, plus Tarik's own verdict on his phone; not a gate |
+| Mesh-size statement fits one packet | Unit test: every community's text is ≤ 200 bytes in UTF-8 |
 | Verdict rules are correct as written | Unit tests on the rule functions with hand-built rows for every pattern in the spike (unanimous yes, unanimous no, the six disagreement patterns, fixed line) |
 | The 96-row table matches the spike where inputs are unchanged | Regression test against `spike/out/capability_table.csv` columns that the pipeline keeps |
 | Visual fidelity to `design/` | Advisory review by eye after `design/` exists; not a gate (recorded in Part 2) |
@@ -191,7 +236,12 @@ What the app shows for one community; not a schema.
 
 - Any measurement of signal or speed by the app; crowdsourced data (D2).
 - Real-time outage feeds, road-report live data, Telstra outage pages.
-- Bluetooth mesh or any peer networking beyond sharing the app file (recommendation only).
+- ~~Bluetooth mesh or any peer networking beyond sharing the app file (recommendation only).~~
+  Struck 2026-09-15: the phone's own Wi-Fi hotspot plus a browser-to-browser channel turned
+  out to be free, serverless and buildable (spike 2026-09-15), so nearby chat is in v1 (§4.2).
+  Still out: Bluetooth (the browser cannot form a link between two pages), LoRa or any radio
+  hardware, message storage or relay of any kind, and any claim of range beyond the Wi-Fi.
+- Map tiles, base maps fetched at runtime, or any request at all while the app runs.
 - Communities outside the 96 (D3); Australia outside the NT.
 - A native app, a server, a database, user accounts, analytics.
 - Trend 2018→2025 from ACCC polygons (methodology breaks documented by ACCC; dropped in the verdict).
@@ -226,6 +276,20 @@ What the app shows for one community; not a schema.
     assumption into a rule; ACCC MBA reports are the likely source.
 12. **Team number** — ANSWERED 2026-09-12: **DIC005**. Held in `constants.md`; header, footer
     and file name read it from there. (The sibling AI Challenge entry is AIC014, not this one.)
+13. **Pack cap after the map layers.** External to this session: the byte cost of each map
+    layer (towns, highways, region boundaries, ACCC polygons per carrier) at two or three
+    simplification tolerances is being measured (`reports/2026-09-15-map-bytes.md`, Eko).
+    The cap is set from the numbers, not guessed; until then the gate keeps 300 KB and the map
+    task cannot be marked DONE.
+14. **Does a phone hotspot let two clients talk to each other?** Tarik's test with
+    `reports/spike-webrtc-hotspot/` on the S24 as host: CONNECTED and messages after the
+    laptop server is killed means yes. If no on both phones as host, nearby chat ships with
+    "works on a shared Wi-Fi router" as its stated range and the hotspot line is removed.
+15. **iPhone camera receive route.** Safari has no barcode reader API (flag broken since iOS
+    18); Tarik owns the answer. A bundled WASM reader would be the one library exception in
+    the app and must be named in Part 2 before it is added.
+16. **Licence of the road and town source** for the map's second pass (Geoscience Australia
+    or NT Government open data, expected CC BY 4.0). Research, before the map task starts.
 
 ## 10. Deferred decisions (later phases; unanswered on purpose, block nothing today)
 
@@ -264,3 +328,8 @@ D5. **National scope** — only if the NT is finished early; the brief allows it
 | 2026-09-15 | Text for SMS and the statement is assembled in the browser from pack strings; it is rendering, not a verdict, and keeps 96 paragraphs out of the 300 KB pack | Eko, on Tarik's instruction to decide |
 | 2026-09-15 | BushTel and ACMA RRL snapshots re-fetched as `_2026-09-15` after the 12 September files were lost (worktree removal followed junctions); the static sets came back byte-identical | Tarik |
 | 2026-09-15 | The compare route is the one two-column layout in the app, an exception to DESIGN.md's "don't split into columns"; it stacks on a 360 px phone | Eko, on Tarik's instruction to decide |
+| 2026-09-15 | Direction for the final two weeks: the app arrives and works without the internet; no growth beyond the map's second pass. Second batch of v1 additions (§4.2): transfer by camera, nearby chat over the phone's own hotspot, Wi-Fi join QR, map second pass, mesh-size statement | Tarik, after `reports/2026-09-15-research-offline-distribution.md` |
+| 2026-09-15 | No money: ESP32 captive portal and Meshtastic hardware rejected for the build, kept as report recommendations | Tarik |
+| 2026-09-15 | Nearby chat is a live channel, not one-shot; dropped if the hotspot test fails on both phones (OQ14). The spike page connected two real phones over the home router the same day | Tarik |
+| 2026-09-15 | The map may break the pack cap, DESIGN.md's colour rule (carrier layers) and the "no images" rule (relief base, only if needed); it may not make a network request. Zero runtime requests is the one line that stays | Tarik, "break a few rules if needed" |
+| 2026-09-15 | The pack cap is set after the layers are measured (OQ13), not before | Eko |

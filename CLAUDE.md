@@ -298,6 +298,9 @@ Rejected, one line each:
 - **Flutter, Streamlit, any server**: a tool that needs a connection to explain where there is none (notes.md, 2026-09-12).
 - **pydeck/folium/Leaflet**: tile and CDN requests at runtime; the map is inline SVG.
 - **duckdb**: in the spike venv, imported nowhere; dropped by `uv sync`.
+- **Decimen Optical Transfer, qwbp, txqr as dependencies** (2026-09-15): AGPL-3.0 from v0.4.0 (Decimen) or code we do not need; the QR encoder, the frame loop and the SDP-in-QR handshake are our own, ~500 lines, no licence to carry.
+- **STUN or TURN servers** for nearby chat: a server, and the internet; `iceServers` is `[]` and the range is the Wi-Fi.
+- **ESP32 captive portal, Meshtastic nodes** (2026-09-15): cost money; report recommendations only.
 - **Web fonts, icon fonts, images**: DESIGN.md forbids them and the byte budget agrees.
 - **`venv` as the environment name**: uv and VS Code default to `.venv`; decided 2026-09-13.
 
@@ -316,9 +319,16 @@ pipeline/            Python package, offline after data/raw/ is frozen
   figures.py         the two PNG maps and the report tables
   provenance.py      data/out/PROVENANCE.md from the source registry (URL, fetch date, size, licence, attribution line)
   outline.py         NT boundary (ABS ASGS 2021 STE, CC BY 4.0) simplified to one SVG path for the pack
+  layers.py          map second pass (2026-09-15): towns, highways, SA3 regions, ACCC coverage per carrier,
+                     simplified in degrees and projected with outline.project, emitted as SVG path strings
+                     under the pack's `layers` key; every layer registered in provenance.py
 data/raw/            frozen snapshots; files over 10 MB are gitignored and re-fetched by pipeline/fetch/
 data/out/            capability_table.csv/.xlsx, data_pack.json, PROVENANCE.md, figures/
 app/                 index.html (template), app.js (render only), app.css (app-only rules, tokens only), sw.js, manifest.webmanifest
+                     since 2026-09-15 also: qr.js (QR encoder, byte mode, own code), transfer.js (frame loop and
+                     camera receive), nearby.js (WebRTC data channel, QR handshake, Wi-Fi join QR), layers.css
+                     (map-layer custom properties only). app/vendor/ exists only if OQ15 picks a WASM QR reader
+                     for iPhone, with its licence file beside it and a line here first.
 scripts/             gate.py, build_app.py, run_pipeline.py
 tests/               unit tests; tests/browser/ holds the Playwright smoke test (marker "browser")
 dist/                build output, gitignored; dist/index.html is the deliverable
@@ -331,23 +341,28 @@ docs/ reports/       PRD, competition brief, dated research and spike reports
 1. `pipeline/rules.py` imports only the standard library. `grep -E "^(import|from) (pandas|geopandas|shapely|numpy)" pipeline/rules.py` prints nothing. Rules take and return plain dicts so they are unit-tested with hand-built rows.
 2. Modules in `pipeline/sources/` never import each other; they meet only in `merge.py` on `bushtel_id`. `grep -E "from pipeline.sources" pipeline/sources/*.py` prints nothing.
 3. `requests` appears only under `pipeline/fetch/`. `grep -rl "import requests" pipeline app scripts tests | grep -v pipeline/fetch/` prints nothing.
-4. `app/` computes nothing. The pack carries the verdict word, the reason sentence and the sources per service; `thresholds.csv` is not in the pack and `app.js` contains no comparison of a figure against a requirement. The app renders, routes and shares.
-5. Colours, sizes, radii and fonts exist only as the custom properties in `design/ds/design/tokens/*.css`. `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js` prints nothing; SVG geometry inside the pack is data, not CSS.
+4. `app/` computes no verdict. The pack carries the verdict word, the reason sentence and the sources per service; `thresholds.csv` is not in the pack and no file under `app/` compares a figure against a requirement. The app renders, routes and shares; since 2026-09-15 it also encodes QR, plays and reads frames, gzips its own bytes and opens a WebRTC channel, none of which is a verdict.
+5. Colours, sizes, radii and fonts exist only as the custom properties in `design/ds/design/tokens/*.css`, plus the map-layer colours in `app/layers.css` (custom property definitions only, nothing else in that file; decision 2026-09-15, DESIGN.md's colour rule broken on purpose for carrier layers). `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js app/qr.js app/transfer.js app/nearby.js` prints nothing; SVG geometry inside the pack is data, not CSS.
 6. Nothing in the repo imports from `spike/` or `design/ds/components/`.
+7. The app makes no request while running, checked in the code, not only in the browser test: `grep -nE "fetch\(|XMLHttpRequest|WebSocket|EventSource|stun:|turn:|https?://" app/app.js app/qr.js app/transfer.js app/nearby.js` prints nothing (`sw.js` is the host-only exception and is never needed for first render). `nearby.js` constructs `RTCPeerConnection({ iceServers: [] })` and nothing else.
+8. The camera and the microphone are touched only in `transfer.js` (receive) and `nearby.js` (scan): `grep -l getUserMedia app/*.js` prints exactly those two files. Every stream is stopped on route change.
 
-**Pushed down, out of the browser.** Everything deterministic runs once in the pipeline or the build, never on the phone: the path rule and all verdicts, the agreement count, the reason sentences, the "who does what" lines, the projected SVG coordinates of the 96 points, the simplified NT outline, the QR modules, the two PNG maps. The browser does three things: pick a community, show its pack row, share the file. Nothing is left with a model: the product contains no model (PRD §3).
+**Pushed down, out of the browser.** Everything deterministic runs once in the pipeline or the build, never on the phone: the path rule and all verdicts, the agreement count, the reason sentences, the "who does what" lines, the projected SVG coordinates of the 96 points, the simplified NT outline, the URL QR modules, the two PNG maps, and since 2026-09-15 the simplified map layers (towns, highways, SA3 regions, ACCC coverage per carrier). The browser does five things: pick a community, show its pack row, share the file, play or receive the app as QR frames, and hold a nearby chat. What stays in the browser is only what depends on runtime bytes or the other phone: encoding this build's own bytes as QR frames (gzip via `CompressionStream`, encoder in `qr.js`), the WebRTC handshake, and the mesh-size and SMS texts assembled from pack strings. Nothing is left with a model: the product contains no model (PRD §3).
 
 **The seams**, only those a PRD phase names, with what sits behind each today:
 - **Publisher line** `{publisher, kind, says_covered, detail, source, date}` in `pipeline/sources/*` and the pack. Today: `accc` (predicted), `ntg2022` (listed), `rrl` (licensed, 5 km), `bushtel` (portal). D1's modelled publisher is a new module emitting `kind: "modelled"`; the app renders any kind it is given.
 - **Flag** `{name, value, source, date}` per community. Today: `road_seasonal_cut` (BushTel), `backhaul_2019` (NTG). OQ2 audit tiles and OQ3 cyclone count are new flag emitters, no app change.
 - **Requirement row** in `pipeline/thresholds.csv`. OQ8 and OQ11 add rows; `rules.py` reads the table and never embeds a figure.
-- **Pack header** `{pack_version, built, app_url, communities: 96}`; the app refuses a pack whose `pack_version` it does not know. Today: version 1.
+- **Pack header** `{pack_version, built, app_url, communities: 96}`; the app refuses a pack whose `pack_version` it does not know. Version 1 until the map's second pass is drawn: Task-20 adds the `layers` key additively (the app ignores it), Task-21 draws it, bumps the version to **2** and makes the app accept 2 only.
+- **Map layer** `{id, label, kind: "line" | "area" | "point", src, paths: [...]}` in the pack's `layers` list, one per town set, highway, region set and carrier; the app draws any layer it is given with the colour token named by its `id` in `app/layers.css`, and toggles `area` layers. New layers are new pipeline emitters, no app change.
 No seam exists for D2 (measurements), D3 (more communities) or D5 (national): they are v1.1 and get their seams when they are planned.
 
 **Entry points**
 - `PYTHONUTF8=1 .venv/Scripts/python scripts/run_pipeline.py` from the root: reads `data/raw/`, writes `data/out/`. No network; `pipeline/fetch/*.py` are run by hand and their results committed or logged in `PROVENANCE.md`.
-- `PYTHONUTF8=1 .venv/Scripts/python scripts/build_app.py` from the root: inlines, in this order, `design/ds/design/tokens/colors.css`, `typography.css`, `spacing.css`, `design/ds/design/base.css`, `design/screens/screens.css`, `app/app.css`, then `app/app.js`, then `data/out/data_pack.json` as `<script type="application/json" id="pack">`, into `app/index.html` → `dist/index.html`. Also copies `sw.js` and `manifest.webmanifest` to `dist/` for the host; the HTML never depends on them.
-- The app routes by hash: `#/community/<bushtel_id>`, `#/map?filter=<id>`, `#/share`. The three screens are the reference: `design/screens/community.html`, `map.html`, `share.html`. On load the selected tab is scrolled into view (decision 2026-09-13, PRD §11).
+- `PYTHONUTF8=1 .venv/Scripts/python scripts/build_app.py` from the root: inlines, in this order, `design/ds/design/tokens/colors.css`, `typography.css`, `spacing.css`, `design/ds/design/base.css`, `design/screens/screens.css`, `app/app.css`, `app/layers.css`, then `app/qr.js`, `app/transfer.js`, `app/nearby.js`, `app/app.js` (in that order, each a plain script; the three helpers expose one object each on `window` and `app.js` is the only file that touches the DOM at load), then `data/out/data_pack.json` as `<script type="application/json" id="pack">`, into `app/index.html` → `dist/index.html`. Also copies `sw.js` and `manifest.webmanifest` to `dist/` for the host; the HTML never depends on them.
+- The app routes by hash: `#/community/<bushtel_id>`, `#/map?filter=<id>`, `#/share`, `#/compare/<id>/<id>`, and since 2026-09-15 `#/nearby`. The three screens are the reference: `design/screens/community.html`, `map.html`, `share.html`. The nearby screen, the transfer controls on the share screen and the map's second pass have no screen file: PRD §4.2 (second batch) is their source of truth and they reuse the existing components (`card`, `button`, `chip`, `list`) with no new CSS beyond `app/app.css`. On load the selected tab is scrolled into view (decision 2026-09-13, PRD §11).
+- Transfer by camera, the contract both ends share: payload = gzip of the exact bytes of the running page (`pageHtml()`, the same bytes save-as-file writes); the payload is base64 text because `BarcodeDetector.rawValue` is a string, not bytes; frames = `CX` + index (4 hex) + count (4 hex) + up to 1,000 base64 characters, QR byte mode, error correction L, looped at about 8 frames per second until the user stops; the receiver keeps a set keyed by index, shows `received / total`, and when complete verifies length, inflates with `DecompressionStream`, and opens the result from a `blob:` URL with a save button. Reader: `BarcodeDetector` where present; where absent the screen says so and points at the URL QR (OQ15).
+- Nearby chat, the contract: host taps Start, gets an offer with ICE gathering complete (3 s cap), shows it as one QR (the SDP JSON deflated with `CompressionStream("deflate-raw")` and base64-encoded; field-level reduction only if a real offer still exceeds 1,200 characters); guest scans, shows the answer QR; host scans; the `chat` data channel carries `{t: "msg", text}` and `{t: "pack"}` / `{t: "pack-data", json}`. No storage: a reload empties the screen. The status line prints the range honestly: "Works while both phones are on this Wi-Fi". The Wi-Fi join QR is `WIFI:T:WPA;S:<ssid>;P:<password>;;` from two inputs; nothing is persisted.
 - Hosting: GitHub Pages from `dist/` of `github.com/Estaed/CDU_IT_CODEFAIR_DATA_2026`. The repo is private; the account is GitHub Pro, so Pages serves from a private repo once it is enabled (Tarik, later). `APP_URL` in `constants.md` is that Pages address and the QR encodes it.
 - Team number, `APP_URL`, dates: read from `constants.md`, never retyped.
 
@@ -357,6 +372,8 @@ No seam exists for D2 (measurements), D3 (more communities) or D5 (national): th
 - *Can the build generate the QR without Node?* `qrcode` 8.2 vs the mirror's `qr.js`, version 3 level M mask 0: 444 dark modules in both, 0 differences (2026-09-12). **Python build.**
 - *Do the 96 real coordinates fit the mirror's projection?* Lat −25.58…−11.15, lon 129.08…137.85 project inside the 300×480 view box (2026-09-12, `design/screens/assets/build.mjs`). **Projection reused; outline replaced by ABS in the pipeline.**
 - *Can Playwright open a local file on this machine?* Chromium 1234 opened `design/screens/share.html` from `file://` and read its title (2026-09-13). **Browser smoke test is feasible.**
+- *Can two browsers on one Wi-Fi open a WebRTC data channel with no STUN, no TURN and no server after the handshake?* `reports/spike-webrtc-hotspot/`, 2026-09-15: two headless Chromium contexts on the laptop, then a Samsung S24 and a Xiaomi Mi 6 on the home router, both CONNECTED with messages both ways. **Nearby chat is buildable; the phone-hotspot case is OQ14.**
+- *Is the app small enough to travel by light?* `dist/index.html` 318,741 bytes, 32,099 gzipped (2026-09-15); one QR holds 2,953 bytes. **About 33 frames of 1,000 bytes; a loop, not a single code.**
 
 ### Fidelity & UI
 
@@ -397,7 +414,10 @@ red gate at the start is expected; a task marked DONE on a red gate is not.
    `https://` outside the pack's citation URLs, contains the pack once, stays under the byte
    limits). Rule tests use hand-built rows for every pattern the spike found: unanimous
    covered, unanimous not covered, the six disagreement patterns, the fixed-line case
-   (Yirrkala), the WiFi-only case.
+   (Yirrkala), the WiFi-only case. Since 2026-09-15 also: `layers.build_layers` (every layer
+   has `src` pointing at a provenance entry with URL, date and licence; the summed layer bytes
+   stay under the figure OQ13 sets), and the pack header test accepts version 2 and refuses 1
+   once the layers land.
 3. **Integration**: (a) regression, `tests/test_regression.py`: the pipeline run from the frozen
    `data/raw/` reproduces `spike/out/capability_table.csv` for every column the pipeline keeps,
    all 96 rows, until `spike/` is deleted and the check moves to a committed
@@ -405,12 +425,23 @@ red gate at the start is expected; a task marked DONE on a red gate is not.
    `browser`: Playwright Chromium opens `dist/index.html` over `file://` with every non-`file:`
    request aborted and counted; the test asserts zero such requests, 96 result rows on the
    community screen, Wadeye's four verdict badges with glyph and word, 96 `.map__community`
-   groups on the map, and a `.qr` element on the share screen.
+   groups on the map, and a `.qr` element on the share screen. Since 2026-09-15 the browser
+   suite also holds: (c) the QR encoder in `qr.js` produces, for three fixed strings, the same
+   module matrix as Python `qrcode` at the same version and level (the oracle is computed in
+   the test); (d) transfer round trip without a camera: the frame payloads produced in the page
+   are fed straight to the reassembler and the inflated bytes equal `dist/index.html` exactly;
+   (e) nearby loopback: two pages in the one browser exchange offer and answer through test
+   glue (`page.evaluate`), a message sent from one appears on the other, and the pack request
+   returns 96 communities; (f) the mesh-size text is at most 200 bytes UTF-8 for all 96
+   communities, evaluated in one call; (g) every map layer in the pack is drawn (one `g` per
+   layer id) and a carrier toggle hides and shows its group.
 4. **Resources**: the Playwright browser is opened and closed by one pytest fixture; every file
    in the pipeline is opened in a `with` block; nothing starts a server, a thread or a
    subprocess except `gate.py` itself. The browser test asserts the browser object is closed at
-   teardown.
-5. **Not in the Definition of Done**: visual fidelity (advisory, above); the flight-mode check
+   teardown. The nearby loopback test opens its two pages in the same fixture browser and
+   never a signalling server; the spike server under `reports/` is not imported by any test.
+5. **Not in the Definition of Done**: the hotspot test on real phones (OQ14), the iPhone
+   receive route (OQ15), whether the map "reads" (advisory eye review); visual fidelity (advisory, above); the flight-mode check
    on a real phone and the phone-to-phone transfer (Tarik's manual checklist, PRD §6); the
    report, slides and pitch; the BushTel licence outcome (OQ1); the Pages deployment itself;
    the optional cyclone and audit flags (OQ2, OQ3). Each of these is real work, and none of
@@ -421,7 +452,12 @@ red gate at the start is expected; a task marked DONE on a red gate is not.
 - The built app must not request anything over the network at runtime: no tiles, fonts, scripts,
   analytics, or data. The browser test fails on the first request.
 - The app must not contain a JavaScript framework or library, a service-worker dependency for
-  first render, or any computation of a verdict; it renders `data_pack.json`.
+  first render, or any computation of a verdict; it renders `data_pack.json`. The one
+  permitted exception is a QR *reader* for iPhone if OQ15 chooses one: permissive licence,
+  under `app/vendor/` with its licence file, named in this section before it is added.
+- Nearby chat uses `iceServers: []`, no STUN, no TURN, no signalling server; the handshake is
+  two QR scans and nothing is stored. Transfer by camera carries the page's own bytes, never a
+  URL that needs the internet.
 - The product must not contain a model of any kind, LLM or ML. AI used in building it is declared
   in the report appendix.
 - Never hardcode: the team number or `APP_URL` (`constants.md`), a colour, size or radius (tokens),
@@ -431,7 +467,8 @@ red gate at the start is expected; a task marked DONE on a red gate is not.
   Empty is `Not recorded`, unverified is `Unverified`, never blank.
 - No BushTel free text in the pack until OQ1 is answered; presence flags with attribution only.
 - Hard limits, measured by the gate: `dist/index.html` ≤ 1,048,576 bytes; `data/out/data_pack.json`
-  ≤ 307,200 bytes.
+  ≤ 307,200 bytes **until OQ13** sets the new pack cap from `reports/2026-09-15-map-bytes.md`;
+  the task that raises it changes the one figure in `scripts/gate.py` and this line, dated.
 - Out of scope for v1: everything in PRD §8 and the deferred decisions D1–D5. Do not build a seam
   for them beyond the four named above.
 - Platform: development is on Windows 11. Scripts use `pathlib` and `subprocess` argument lists,

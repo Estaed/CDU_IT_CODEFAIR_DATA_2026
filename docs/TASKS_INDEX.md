@@ -34,6 +34,12 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-14: Changes since the previous snapshot on the Share screen (added 2026-09-15)
 - [x] Task-15: Compare two communities (added 2026-09-15)
 - [ ] Task-16: Sunlight mode (added 2026-09-15; blocked until the sunlight tokens are exported from the design project)
+- [ ] Task-17: QR encoder in the app (second batch, added 2026-09-15)
+- [ ] Task-22: Mesh-size statement, 200 bytes (second batch, added 2026-09-15)
+- [ ] Task-20: Map layers in the pipeline: towns, highways, regions, coverage (second batch, added 2026-09-15; reads reports/2026-09-15-map-bytes.md)
+- [ ] Task-18: Transfer by camera, QR frames (second batch, added 2026-09-15)
+- [ ] Task-19: Nearby chat over the phone's own Wi-Fi (second batch, added 2026-09-15)
+- [ ] Task-21: Map second pass in the app: layers, zoom, pan, labels; pack version 2 (second batch, added 2026-09-15)
 
 ## Execution routing
 
@@ -68,3 +74,14 @@ Task-07 and Task-10. Every other step is serial because it edits `app/app.js` or
 After each wave goes green: `/code-review` over the accumulated diff with the task files and
 Part 2 attached; `review-visual` after Tasks 07, 08 and 09 against `design/screens/*.html`,
 advisory only.
+| Task-17 | claude-worker | no | high | none | 14 |
+| Task-22 | claude-worker | no | medium | none | 14 (beside Task-17) |
+| Task-20 | claude-worker | no | high | none (reads the map-bytes report) | 14 (beside Task-17) |
+| Task-18 | claude-worker | no | high | Task-17 | 15 |
+| Task-19 | claude-worker | no | high | Task-18 | 16 |
+| Task-21 | claude-worker | no | high | Task-19, Task-20 | 17 |
+
+Second batch (2026-09-15) execution note: Codex quota is exhausted until 2026-09-19, so every
+lane is a Claude worker. Wave 14 is three disjoint lanes; 15 to 17 are serial because each
+touches `app/app.js`. Task-16 keeps its place and its stop marker; it is not in this batch's
+waves.

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebRTC Hotspot Spike</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    margin: 0;
+    padding: 12px;
+    background: #111111;
+    color: #eeeeee;
+  }
+  h1 { font-size: 18px; margin: 0 0 12px; }
+  .row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  button {
+    font-size: 18px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    border: none;
+    background: #2563eb;
+    color: #ffffff;
+    flex: 1 1 auto;
+    min-width: 140px;
+    min-height: 56px;
+  }
+  button:disabled { background: #444444; color: #999999; }
+  #status {
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 8px;
+    background: #222222;
+    margin-bottom: 12px;
+    word-break: break-word;
+  }
+  label.checkline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 16px;
+  }
+  input[type="checkbox"] { width: 22px; height: 22px; }
+  #log {
+    background: #000000;
+    color: #00ff00;
+    font-family: monospace;
+    font-size: 13px;
+    height: 180px;
+    overflow-y: auto;
+    padding: 8px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    white-space: pre-wrap;
+  }
+  #messages {
+    background: #222222;
+    border-radius: 8px;
+    padding: 8px;
+    min-height: 120px;
+    max-height: 240px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+  }
+  #messages div { margin-bottom: 6px; font-size: 16px; }
+  .sendrow { display: flex; gap: 8px; }
+  #msgInput {
+    flex: 1;
+    font-size: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #444444;
+  }
+  #sendBtn { flex: 0 0 auto; min-width: 90px; }
+</style>
+</head>
+<body>
+<h1>WebRTC Hotspot Spike</h1>
+<div class="row">
+  <button id="btnA" type="button">I am A (offer)</button>
+  <button id="btnB" type="button">I am B (answer)</button>
+</div>
+<label class="checkline">
+  <input type="checkbox" id="revealIps">
+  Reveal real IPs (asks microphone permission)
+</label>
+<div id="status">idle</div>
+<div id="log"></div>
+<div id="messages"></div>
+<div class="sendrow">
+  <input type="text" id="msgInput" placeholder="Message" disabled>
+  <button id="sendBtn" type="button" disabled>Send</button>
+</div>
+<script>
+(function () {
+  "use strict";
+
+  var logEl = document.getElementById("log");
+  var statusEl = document.getElementById("status");
+  var messagesEl = document.getElementById("messages");
+  var btnA = document.getElementById("btnA");
+  var btnB = document.getElementById("btnB");
+  var revealIps = document.getElementById("revealIps");
+  var msgInput = document.getElementById("msgInput");
+  var sendBtn = document.getElementById("sendBtn");
+
+  var pc = null;
+  var dc = null;
+  var statsTimer = null;
+
+  function log(line) {
+    var stamp = new Date().toISOString().split("T")[1].replace("Z", "");
+    logEl.textContent += "[" + stamp + "] " + line + "\n";
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function setStatus(text) {
+    statusEl.textContent = text;
+  }
+
+  function addMessage(who, text) {
+    var div = document.createElement("div");
+    div.textContent = who + ": " + text;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  async function maybeRevealIps() {
+    if (!revealIps.checked) return;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      log("getUserMedia unavailable on http");
+      return;
+    }
+    try {
+      var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(function (t) { t.stop(); });
+      log("getUserMedia granted (host IPs may be revealed)");
+    } catch (err) {
+      log("getUserMedia denied or failed: " + err);
+    }
+  }
+
+  function waitForIceGatheringComplete(peer) {
+    return new Promise(function (resolve) {
+      if (peer.iceGatheringState === "complete") {
+        resolve();
+        return;
+      }
+      var done = false;
+      var timer = setTimeout(function () {
+        if (!done) {
+          done = true;
+          resolve();
+        }
+      }, 3000);
+      peer.addEventListener("icegatheringstatechange", function onChange() {
+        if (peer.iceGatheringState === "complete" && !done) {
+          done = true;
+          clearTimeout(timer);
+          peer.removeEventListener("icegatheringstatechange", onChange);
+          resolve();
+        }
+      });
+    });
+  }
+
+  async function fetchJson(path, opts) {
+    var options = opts || {};
+    options.cache = "no-store";
+    return fetch(path, options);
+  }
+
+  function wireDataChannel() {
+    dc.addEventListener("open", function () {
+      log("datachannel open");
+      setStatus("CONNECTED");
+      msgInput.disabled = false;
+      sendBtn.disabled = false;
+      startStatsLoop();
+    });
+    dc.addEventListener("close", function () {
+      log("datachannel close");
+      setStatus("CLOSED");
+      msgInput.disabled = true;
+      sendBtn.disabled = true;
+      stopStatsLoop();
+    });
+    dc.addEventListener("error", function (e) {
+      log("datachannel error: " + (e.error || e));
+    });
+    dc.addEventListener("message", function (e) {
+      addMessage("peer", e.data);
+    });
+  }
+
+  function wirePeerConnection() {
+    pc.addEventListener("iceconnectionstatechange", function () {
+      log("iceconnectionstatechange: " + pc.iceConnectionState);
+    });
+    pc.addEventListener("connectionstatechange", function () {
+      log("connectionstatechange: " + pc.connectionState);
+    });
+    pc.addEventListener("icegatheringstatechange", function () {
+      log("icegatheringstatechange: " + pc.iceGatheringState);
+    });
+    pc.addEventListener("icecandidate", function (e) {
+      if (e.candidate) {
+        log("candidate: " + e.candidate.candidate);
+      } else {
+        log("candidate: (end of candidates)");
+      }
+    });
+  }
+
+  function startStatsLoop() {
+    stopStatsLoop();
+    statsTimer = setInterval(async function () {
+      try {
+        var stats = await pc.getStats();
+        var pairId = null;
+        stats.forEach(function (report) {
+          if (report.type === "transport" && report.selectedCandidatePairId) {
+            pairId = report.selectedCandidatePairId;
+          }
+        });
+        var pair = pairId ? stats.get(pairId) : null;
+        if (!pair) {
+          stats.forEach(function (report) {
+            if (report.type === "candidate-pair" && (report.selected || report.nominated)) {
+              pair = report;
+            }
+          });
+        }
+        if (pair) {
+          var local = stats.get(pair.localCandidateId);
+          var remote = stats.get(pair.remoteCandidateId);
+          if (local && remote) {
+            var localAddr = local.address || local.ip || "?";
+            var remoteAddr = remote.address || remote.ip || "?";
+            setStatus(
+              "CONNECTED via " + local.candidateType + " " + localAddr +
+              " -> " + remote.candidateType + " " + remoteAddr
+            );
+          }
+        }
+      } catch (err) {
+        log("getStats error: " + err);
+      }
+    }, 2000);
+  }
+
+  function stopStatsLoop() {
+    if (statsTimer) {
+      clearInterval(statsTimer);
+      statsTimer = null;
+    }
+  }
+
+  async function pollFor(path) {
+    for (;;) {
+      try {
+        var res = await fetchJson(path, { method: "GET" });
+        if (res.status === 200) {
+          var text = await res.text();
+          if (text) return JSON.parse(text);
+        } else if (res.status !== 204) {
+          log("poll " + path + " unexpected status " + res.status);
+        }
+      } catch (err) {
+        log("poll " + path + " fetch error: " + err);
+      }
+      await new Promise(function (resolve) { setTimeout(resolve, 1000); });
+    }
+  }
+
+  async function runA() {
+    btnA.disabled = true;
+    btnB.disabled = true;
+    try {
+      await maybeRevealIps();
+      log("A: reset signalling store");
+      await fetchJson("/reset", { method: "POST" });
+
+      pc = new RTCPeerConnection({ iceServers: [] });
+      wirePeerConnection();
+      dc = pc.createDataChannel("chat");
+      wireDataChannel();
+
+      var offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      log("A: local description set, waiting for ICE gathering");
+      await waitForIceGatheringComplete(pc);
+
+      log("A: posting offer");
+      await fetchJson("/offer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pc.localDescription)
+      });
+
+      setStatus("waiting for answer...");
+      var answer = await pollFor("/answer");
+      log("A: got answer");
+      await pc.setRemoteDescription(answer);
+      setStatus("answer set, connecting...");
+    } catch (err) {
+      log("A error: " + err);
+      setStatus("ERROR: " + err);
+    }
+  }
+
+  async function runB() {
+    btnA.disabled = true;
+    btnB.disabled = true;
+    try {
+      await maybeRevealIps();
+
+      pc = new RTCPeerConnection({ iceServers: [] });
+      wirePeerConnection();
+      pc.addEventListener("datachannel", function (e) {
+        log("B: ondatachannel");
+        dc = e.channel;
+        wireDataChannel();
+      });
+
+      setStatus("waiting for offer...");
+      var offer = await pollFor("/offer");
+      log("B: got offer");
+      await pc.setRemoteDescription(offer);
+
+      var answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      log("B: local description set, waiting for ICE gathering");
+      await waitForIceGatheringComplete(pc);
+
+      log("B: posting answer");
+      await fetchJson("/answer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pc.localDescription)
+      });
+      setStatus("answer sent, connecting...");
+    } catch (err) {
+      log("B error: " + err);
+      setStatus("ERROR: " + err);
+    }
+  }
+
+  btnA.addEventListener("click", function () { runA(); });
+  btnB.addEventListener("click", function () { runB(); });
+
+  sendBtn.addEventListener("click", function () {
+    var text = msgInput.value;
+    if (!text || !dc || dc.readyState !== "open") return;
+    try {
+      dc.send(text);
+      addMessage("me", text);
+      msgInput.value = "";
+    } catch (err) {
+      log("send error: " + err);
+    }
+  });
+
+  msgInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      sendBtn.click();
+    }
+  });
+
+  log("ready");
+})();
+</script>
+</body>
+</html>
