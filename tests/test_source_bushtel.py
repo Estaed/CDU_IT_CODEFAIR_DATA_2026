@@ -11,9 +11,9 @@ import pytest
 from pipeline.sources import bushtel
 
 ROOT = Path(__file__).resolve().parent.parent
-SNAPSHOT = ROOT / "data/raw/bushtel_community_detail_2026-09-12.json"
-BUSHTEL_FIXTURE = ROOT / "tests/fixtures/bushtel_2026-09-12.csv"
-COMMUNITIES_FIXTURE = ROOT / "tests/fixtures/communities_2026-09-12.csv"
+SNAPSHOT = ROOT / "data/raw/bushtel_community_detail_2026-09-15.json"
+BUSHTEL_FIXTURE = ROOT / "tests/fixtures/bushtel_2026-09-15.csv"
+COMMUNITIES_FIXTURE = ROOT / "tests/fixtures/communities_2026-09-15.csv"
 
 IDENTITY_COLUMNS = [
     "bushtel_id",
@@ -30,8 +30,8 @@ IDENTITY_COLUMNS = [
 
 def _to_iso(value: str) -> str:
     """Convert 'dd/mm/yyyy, hh:mm:ss AM' to 'yyyy-mm-dd'; empty stays empty."""
-    if not value:
-        return value
+    if not value or re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        return value  # the 2026-09-15 fixture already holds ISO dates
     date_part = value.split(",", 1)[0].strip()
     day, month, year = date_part.split("/")
     return f"{year}-{month}-{day}"

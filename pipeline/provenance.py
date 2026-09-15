@@ -30,7 +30,7 @@ SOURCES = (
         "pattern": "bushtel_*.json",
         # The snapshot date; the pack cites each community's own profile stamp instead,
         # because the portal publishes no single date for the set (pack.PER_COMMUNITY_SOURCES).
-        "date": "2026-09-12",
+        "date": "2026-09-15",
         "module": "bushtel",
     },
     {
@@ -84,7 +84,7 @@ SOURCES = (
             "Based on Australian Communications and Media Authority information"
         ),
         "pattern": "spectra_rrl_*.zip",
-        "date": "2026-09-12",
+        "date": "2026-09-15",
         "module": "rrl",
     },
     {

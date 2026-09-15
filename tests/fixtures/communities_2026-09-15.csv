@@ -1,0 +1,97 @@
+bushtel_id,name,aliases,community_type,nt_region,population_abs2021,sa1_code,lat,lon,spike20
+202,Ali Curung,"Ale-Kerange, Alekarange, Alekarenge, Warrabri, Warribri",Major,BARKLY,463,7105504,-21.003334,134.40694,0
+203,Alpurrurulam,"Ilperrelhelam, Lake Nash, Wart Alparayetye",Major,BARKLY,411,7105507,-20.984167,137.84749,1
+10,Ampilatwatja,"Aharreng, Aherre, Ammaro, Ammaroo, Amperlatwatye",Major,BARKLY,515,7105209,-21.65664,135.22509,0
+147,Arawerr,"Arrawarra, Iyngiynyala, Soapy Bore",Minor,BARKLY,80,7105213,-22.01371,134.84618,0
+219,Canteen Creek,"Orwaitilla, Orwaitillya, Owairtilla",Major,BARKLY,190,7105505,-20.645082,135.58678,0
+250,Imangara,"Imangara Mungarai, Imangarra, Murray Downs, Murry Downs",Minor,BARKLY,79,7105508,-21.04961,134.68117,0
+63,Irrultja,"Irrwelty, Ittweltye",Minor,BARKLY,45,7105210,-21.97997,135.11128,0
+721,Likkaparta,"Likaparrta, Likiparta, Marapurn",Minor,BARKLY,0,7105503,-19.34336,134.53799,0
+252,Marlinja,Newcastle Waters,Minor,BARKLY,52,7105501,-17.37111,133.40305,1
+244,Mungkarta,"Mclaren Creek, Mungarta",Minor,BARKLY,0,7105503,-20.33702,134.19843,0
+264,Tara,Neutral Junction,Minor,BARKLY,60,7105509,-21.50658,133.99669,0
+227,Wutunugurra,"Epenarra, Wetenngerr, Wuttunugurr, Wutunurrgura",Major,BARKLY,168,7105506,-20.461555,135.25241,0
+622,Amanbidji,"Amanbidgee Station, Kildurk, Mialuni",Major,BIG RIVERS,88,7106803,-16.428055,129.6189,0
+580,Barunga,Bamyili,Major,BIG RIVERS,396,7106501,-14.523625,132.866681,0
+582,Binjari,"Binjarri, Wylunba",Minor,BIG RIVERS,282,7106714,-14.5502,132.1815,1
+586,Bulla,"Gudabijin, Gurrbijim",Minor,BIG RIVERS,77,7106810,-15.764915,130.039364,0
+587,Bulman,"Gulin Gulin, Yulngu",Major,BIG RIVERS,190,70205106509,-13.665292,134.333347,0
+591,Daguragu,"Dagaragu, Wattie Creek",Major,BIG RIVERS,230,7106805,-17.40059,130.80491,0
+600,Hodgson River Station,Station Homestead,Minor,BIG RIVERS,0,7106508,-15.574946,134.09553,0
+593,Jilkminggan,"Djembere, Djilkminggan, Duck Creek, Jilkminggal",Minor,BIG RIVERS,309,7106507,-14.953055,133.3,0
+603,Kalkarindji,"Kalkaringi, Wave Hill",Major,BIG RIVERS,450,7106806,-17.44675,130.83212,1
+608,Kybrook Farm,Copperfield Creek,Minor,BIG RIVERS,0,7105803,-13.86316,131.82196,0
+609,Lajamanu,Hooker Creek,Major,BIG RIVERS,767,7106807,-18.335835,130.63834,1
+595,Manyallaluk,Eva Valley,Minor,BIG RIVERS,121,7106505,-14.26649,132.82797,0
+624,Minyerri,"Hodgson Downs, Miniyerre, Minyere, Minyeri, Minyerre",Major,BIG RIVERS,763,7106606,-15.2216,134.0821,0
+633,Ngukurr,Roper River,Major,BIG RIVERS,1277,7106608,-14.7317,134.7321,1
+639,Nitjpurru,"Bunbidee, Nijburru, Pigeon Hole",Minor,BIG RIVERS,142,7106804,-16.81412,131.22037,0
+549,Numbulwar,Rose River,Major,BIG RIVERS,799,7106604,-14.2791,135.7406,0
+641,Rittarangu,Urapunga,Minor,BIG RIVERS,139,7106607,-14.71011,134.56526,0
+258,Robinson River,Mungoorbada,Major,BIG RIVERS,211,7106611,-16.759736,136.980569,1
+642,Rockhole,Rochole,Minor,BIG RIVERS,115,7106713,-14.51935,132.18633,0
+256,Wandangula,"Police Lagoon, Wanda Ngula, Wandagula",Minor,BIG RIVERS,42,7106602,-16.05477,136.34558,0
+654,Weemol,"Weemoll, Wemool",Minor,BIG RIVERS,109,70205106510,-13.644181,134.308625,0
+581,Wugularr,Beswick,Major,BIG RIVERS,636,7106502,-14.5548,133.1142,0
+658,Yarralin,,Major,BIG RIVERS,332,7106809,-16.44841,130.88279,0
+9,Amoonguna,,Major,CENTRAL AUSTRALIA,269,7105203,-23.766319,133.935986,1
+20,Areyonga,Utju,Major,CENTRAL AUSTRALIA,277,7105314,-24.073612,132.27083,0
+42,Atitjere,"Arltarlpilta, Hart Range, Harts Range",Major,CENTRAL AUSTRALIA,239,7105207,-22.9843,134.9341,0
+33,Engawala,Alcoota,Minor,CENTRAL AUSTRALIA,193,7105208,-22.80257,134.45547,0
+36,Finke,"Apatula, Aputula",Major,CENTRAL AUSTRALIA,224,7105006,-25.581439,134.578418,1
+41,Haasts Bluff,"Ikuntji, Kunparrka",Major,CENTRAL AUSTRALIA,96,7105306,-23.44733,131.88129,0
+43,Hermannsburg,Ntaria,Major,CENTRAL AUSTRALIA,647,7105313,-23.9427,132.7787,0
+51,Imanpa,Mt Ebenezer,Major,CENTRAL AUSTRALIA,146,7105005,-25.13051,132.56999,0
+65,Iwupataka,Jay Creek,Minor,CENTRAL AUSTRALIA,0,7105216,-23.79061,133.50327,0
+66,Kaltukatjara,"Docker River, Kalktukatjara",Major,CENTRAL AUSTRALIA,269,7105004,-24.876112,129.07916,0
+72,Kintore,"Walangkura, Walangura, Walungurru",Major,CENTRAL AUSTRALIA,493,7105303,-23.27591,129.38725,1
+86,Laramba,Napperby,Major,CENTRAL AUSTRALIA,222,7105405,-22.532972,132.75603,0
+112,Mount Liebig,"Amunturangu, Amunturrunga, Anturgunu, Mt Liebig, Watiyawanu",Major,CENTRAL AUSTRALIA,282,7105308,-23.26605,131.27319,0
+120,Mutitjulu,"Ayers Rock, Mutitjula",Major,CENTRAL AUSTRALIA,314,7105003,-25.3523,131.0667,0
+127,Nturiya,"Ti Tree, Ti Tree Station",Major,CENTRAL AUSTRALIA,77,7105408,-22.12379,133.26529,1
+128,Nyirripi,Waite Creek,Major,CENTRAL AUSTRALIA,295,7105302,-22.6505,130.5532,0
+26,Orrtipa-Thurra,"Baikal, Bonya, Dortippa-Thurra Assoc, Orrtipa Thurra, Ortipetherre, Ortippa Thura",Minor,CENTRAL AUSTRALIA,38,7105215,-22.784582,136.16829,0
+131,Papunya,Warumpi,Major,CENTRAL AUSTRALIA,514,7105305,-23.203056,131.9111,0
+138,Pmara Jutunta,"Six Mile, Ti Tree Six Mile",Major,CENTRAL AUSTRALIA,169,7105407,-22.20878,133.43073,0
+145,Santa Teresa,"Ltyente Purte, Ltyentye Apurte",Major,CENTRAL AUSTRALIA,708,7105204,-24.1307,134.3733,0
+148,Titjikala,Maryvale,Major,CENTRAL AUSTRALIA,230,7105206,-24.67389,134.07584,0
+174,Wallace Rockhole,"Ulana, Uranda, Wallace Rock Hole",Major,CENTRAL AUSTRALIA,102,7105307,-24.1245,133.0863,0
+186,Willowra,"Willowra Station, Wirliyatjarrayi",Major,CENTRAL AUSTRALIA,261,7105403,-21.244458,132.613903,0
+187,Wilora,Stirling Station,Minor,CENTRAL AUSTRALIA,69,7105409,-21.7411,133.7311,0
+197,Yuelamu,"Alpirakina, Mount Allan",Major,CENTRAL AUSTRALIA,175,7105404,-22.258347,132.205569,0
+198,Yuendumu,,Major,CENTRAL AUSTRALIA,869,7105401,-22.25389,131.79529,1
+451,Angurugu,,Major,EAST ARNHEM,1037,7106205,-13.982236,136.460569,0
+458,Baniyala,"Banyala, Yilpara",Minor,EAST ARNHEM,138,7106313,-13.2004,136.2261,1
+464,Birany Birany,Biranybirany,Minor,EAST ARNHEM,40,7106304,-12.81703,136.47669,0
+473,Dhalinybuy,Dhalingboy,Minor,EAST ARNHEM,92,7106315,-12.4125,136.3878,0
+492,Galiwinku,"Elcho Island, Galiwin'ku",Major,EAST ARNHEM,2582,7106307,-12.0235,135.5664,1
+498,Gan Gan,Gangan,Minor,EAST ARNHEM,87,7106314,-13.04605,135.94354,0
+500,Gapuwiyak,Lake Evella,Major,EAST ARNHEM,828,7106303,-12.50322,135.80587,0
+514,Gunyangara,"Drimmie Head, Marngarr, Ski Beach",Minor,EAST ARNHEM,283,7106311,-12.215417,136.70569,1
+517,Gurrumuru,Gurrumurru,Minor,EAST ARNHEM,34,7106304,-12.592236,136.231681,0
+524,Mapuru,"Maparu, Mapura, Marparu",Minor,EAST ARNHEM,97,7106310,-12.25318,135.43779,0
+531,Milingimbi,,Major,EAST ARNHEM,1288,7106305,-12.1036,134.9201,0
+532,Milyakburra,Bickerton Island,Major,EAST ARNHEM,124,7106201,-13.78389,136.19583,0
+542,Ngangalala,"Nangala, Nangalala",Minor,EAST ARNHEM,70,7106301,-12.298347,134.992236,0
+550,Ramingining,,Major,EAST ARNHEM,956,7106309,-12.32779,134.93001,0
+469,Rorruwuy,"Burrawuy, Rhodes Point",Minor,EAST ARNHEM,40,7106306,-12.20292,136.29564,0
+555,Umbakumba,,Major,EAST ARNHEM,492,7106203,-13.859736,136.811125,0
+571,Yathalamarra,"Yathalamara, Yathalmarra",Minor,EAST ARNHEM,67,7106301,-12.274458,134.921958,0
+576,Yirrkala,,Major,EAST ARNHEM,771,7106308,-12.252792,136.891681,1
+294,Belyuen,"Delisaville, Delissaville",Major,TOP END,175,7105702,-12.5386,130.6999,1
+319,Gochan Jiny Jirra,"Cadell Gunardpa, Gochan Jiny-Jirra, Gochin Jiny Jard, Gochin Jiny Jirra, Gotjanjinjirra",Minor,TOP END,0,7106104,-12.19925,134.45751,0
+329,Gunbalanya,"Kunbarllanjnja, Oenpelli",Major,TOP END,1354,7106101,-12.324,133.056,0
+362,Maningrida,,Major,TOP END,2956,7106103,-12.050847,134.223625,1
+363,Manmoyi,Manmoi,Minor,TOP END,106,7106106,-12.54064,134.110013,0
+374,Milikapiti,Snake Bay,Major,TOP END,486,7106005,-11.421667,130.67418,0
+375,Minjilang,Croker Island,Major,TOP END,311,7106102,-11.1507,132.5786,0
+397,Nauiyu,"Daly River, Namiyu, Nauiyu Nambiyi, Nauiyu Nambiyu",Major,TOP END,411,7105801,-13.750542,130.688931,0
+404,Nganmarriyanga,Palumpa,Major,TOP END,427,7105804,-14.351111,129.87889,0
+410,Peppimenarti,,Major,TOP END,223,7105805,-14.1503,130.0763,0
+744,Pickertaramoor,,Minor,TOP END,0,7106002,-11.763605,130.89011,0
+411,Pirlangimpi,"Garden Point, Pularumpi",Major,TOP END,372,7106004,-11.4059,130.4172,0
+426,Wadeye,Port Keats,Major,TOP END,2259,7105901,-14.2404,129.5205,1
+429,Warruwi,Goulburn Island,Major,TOP END,507,7106108,-11.64896,133.38935,1
+434,Woodycupaldiya,"Woode Cupildiya, Woodicupildya, Woodykapildiya, Woodykupuldiya, Wudikapildiyeer",Minor,TOP END,36,7105806,-13.85926,130.00115,0
+868,Wurankuwu,Ranku,Minor,TOP END,22,7106001,-11.61652,130.27763,0
+400,Wurrumiyanga,"Bathurst Island, Nguiu",Major,TOP END,1668,7106003,-11.758306,130.63747,0

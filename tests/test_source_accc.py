@@ -14,10 +14,10 @@ import pytest
 from pipeline.sources import accc, bushtel
 
 ROOT = Path(__file__).resolve().parent.parent
-SNAPSHOT = ROOT / "data/raw/bushtel_community_detail_2026-09-12.json"
+SNAPSHOT = ROOT / "data/raw/bushtel_community_detail_2026-09-15.json"
 KML_DIR = ROOT / "data/raw"
 CACHE_DIR = ROOT / "data/out/cache"
-FIXTURE = ROOT / "tests/fixtures/accc_2026-09-12.csv"
+FIXTURE = ROOT / "tests/fixtures/accc_2026-09-15.csv"
 
 FLAG_COLUMNS = [
     "telstra_4g_2025",
@@ -84,8 +84,10 @@ def test_oracle(frame):
     assert (frame["optus_4g_2025"] == "1").sum() == 6
     assert (frame["mocn_4g_2025"] == "1").sum() == 6
     assert (frame["tpg_4g_2025"] == "0").all()
-    for column in ("telstra_3g_2025", "optus_5g_2025", "tpg_5g_2025"):
-        assert (frame[column] == "-1").all(), column
+    assert (frame["telstra_3g_2025"] == "-1").all()
+    # Optus 5G and TPG 5G layers fetched 2026-09-15 (outside the 2026-09-12 budget)
+    assert (frame["optus_5g_2025"] == "1").sum() == 2
+    assert (frame["tpg_5g_2025"] == "0").all()
     assert (frame["telstra_5g_2025"] == "1").sum() == 10
 
     by_id = frame.set_index("bushtel_id")

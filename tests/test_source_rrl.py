@@ -13,10 +13,10 @@ from pipeline.sources import bushtel, rrl
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "data/raw"
-RRL_ZIP = RAW / "spectra_rrl_2026-09-12.zip"
-BUSHTEL_SNAPSHOT = RAW / "bushtel_community_detail_2026-09-12.json"
-RRL_FIXTURE = ROOT / "tests/fixtures/rrl_2026-09-12.csv"
-SITES_FIXTURE = ROOT / "tests/fixtures/rrl_sites_nt_2026-09-12.csv"
+RRL_ZIP = RAW / "spectra_rrl_2026-09-15.zip"
+BUSHTEL_SNAPSHOT = RAW / "bushtel_community_detail_2026-09-15.json"
+RRL_FIXTURE = ROOT / "tests/fixtures/rrl_2026-09-15.csv"
+SITES_FIXTURE = ROOT / "tests/fixtures/rrl_sites_nt_2026-09-15.csv"
 FORBIDDEN_IMPORT = re.compile(r"^(import|from) (pipeline\.sources|spike|requests)", re.MULTILINE)
 
 GROUPS = ["telstra", "optus", "tpg", "jv"]
@@ -96,7 +96,7 @@ def test_oracle(frame):
 
 def test_sites_table(tmp_path):
     table = rrl.sites(RRL_ZIP)
-    assert len(table) == 576
+    assert len(table) == 575  # 576 in the 2026-09-12 extract
     written = tmp_path / "s.csv"
     rrl.write_sites(table, written)
     assert written.read_bytes() == SITES_FIXTURE.read_bytes()

@@ -12,10 +12,10 @@ import pytest
 from pipeline.sources import bushtel, nbn
 
 ROOT = Path(__file__).resolve().parent.parent
-SNAPSHOT = ROOT / "data/raw/bushtel_community_detail_2026-09-12.json"
+SNAPSHOT = ROOT / "data/raw/bushtel_community_detail_2026-09-15.json"
 FIXEDLINE_ZIP = ROOT / "data/raw/nbn_coverage_fixedline_2024-03-26.zip"
 WIRELESS_ZIP = ROOT / "data/raw/nbn_coverage_wireless_2024-03-26.zip"
-FIXTURE = ROOT / "tests/fixtures/nbn_2026-09-12.csv"
+FIXTURE = ROOT / "tests/fixtures/nbn_2026-09-15.csv"
 
 COLUMNS = [
     "bushtel_id",

@@ -1,6 +1,6 @@
 """Unit tests for pipeline.merge: the five-source join and the verdict columns it fills.
 
-# The fixture tests/fixtures/capability_table_2026-09-12.csv is a byte-for-byte copy of the
+# The fixture tests/fixtures/capability_table_2026-09-15.csv is a byte-for-byte copy of the
 # spike's frozen 2026-09-12 table (Task-05, main-loop decision 3).
 """
 
@@ -18,14 +18,14 @@ from pipeline.merge import merge
 
 ROOT = Path(__file__).resolve().parent.parent
 
-BUSHTEL_FIXTURE = ROOT / "tests/fixtures/bushtel_2026-09-12.csv"
-NBN_FIXTURE = ROOT / "tests/fixtures/nbn_2026-09-12.csv"
-ACCC_FIXTURE = ROOT / "tests/fixtures/accc_2026-09-12.csv"
-RRL_FIXTURE = ROOT / "tests/fixtures/rrl_2026-09-12.csv"
-NTG_FIXTURE = ROOT / "tests/fixtures/ntg_2026-09-12.csv"
-COMMUNITIES_FIXTURE = ROOT / "tests/fixtures/communities_2026-09-12.csv"
+BUSHTEL_FIXTURE = ROOT / "tests/fixtures/bushtel_2026-09-15.csv"
+NBN_FIXTURE = ROOT / "tests/fixtures/nbn_2026-09-15.csv"
+ACCC_FIXTURE = ROOT / "tests/fixtures/accc_2026-09-15.csv"
+RRL_FIXTURE = ROOT / "tests/fixtures/rrl_2026-09-15.csv"
+NTG_FIXTURE = ROOT / "tests/fixtures/ntg_2026-09-15.csv"
+COMMUNITIES_FIXTURE = ROOT / "tests/fixtures/communities_2026-09-15.csv"
 THRESHOLDS = ROOT / "pipeline/thresholds.csv"
-CAPABILITY_FIXTURE = ROOT / "tests/fixtures/capability_table_2026-09-12.csv"
+CAPABILITY_FIXTURE = ROOT / "tests/fixtures/capability_table_2026-09-15.csv"
 
 # spike20: only present in the spike's fixture, not produced by the pipeline.
 # telehealth_reason: the pipeline writes the rules' reason sentence; the frozen table has a

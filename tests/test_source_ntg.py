@@ -13,8 +13,8 @@ from pipeline.sources import bushtel, ntg
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "data/raw"
-BUSHTEL_SNAPSHOT = RAW / "bushtel_community_detail_2026-09-12.json"
-NTG_FIXTURE = ROOT / "tests/fixtures/ntg_2026-09-12.csv"
+BUSHTEL_SNAPSHOT = RAW / "bushtel_community_detail_2026-09-15.json"
+NTG_FIXTURE = ROOT / "tests/fixtures/ntg_2026-09-15.csv"
 FORBIDDEN_IMPORT = re.compile(r"^(import|from) (pipeline\.sources|spike|requests)", re.MULTILINE)
 
 COLUMNS = [
