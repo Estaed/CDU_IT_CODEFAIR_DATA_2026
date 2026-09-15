@@ -27,3 +27,39 @@
   font: var(--text-caption);
   color: var(--text-secondary);
 }
+
+/* Task-15 compare route. The screens carry no media query (design/screens/README.md), so the
+   grid wraps on width: two columns inside the content width, stacked on a 360 wide phone. */
+
+.compare {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, calc(var(--size-content-max) / 2 - var(--space-md))), 1fr)
+  );
+}
+
+.compare__column { min-width: 0; }
+
+.compare .community-header__name .text-link { font: inherit; letter-spacing: inherit; }
+
+.compare__service { padding: var(--space-xs) var(--space-md); }
+
+/* The compare box looks like the main search input but cannot share its class: tests address
+   the main box as the only .search-input on Screen 1. */
+.compare-search__input {
+  display: block;
+  width: 100%;
+  height: var(--size-control);
+  padding: 0 var(--space-sm);
+  font: var(--text-body-md);
+  color: var(--text-heading);
+  background: var(--surface-page);
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  appearance: none;
+}
+
+.compare-search__input::placeholder { color: var(--text-secondary); }
+
+.compare-search__input:focus { border-color: var(--text-heading); }

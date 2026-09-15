@@ -148,24 +148,27 @@
     return section;
   };
 
+  const renderAgreement = (community) =>
+    h(
+      "div",
+      { class: "agreement" },
+      h(
+        "div",
+        { class: "agreement__headline" },
+        h("span", { class: "fig fig--lg" }, String(community.agreement.covered)),
+        " of ",
+        h("span", { class: "fig fig--lg" }, String(community.agreement.available)),
+        " sources say covered",
+      ),
+      h("div", { class: "agreement__note" }, community.agreement.note),
+    );
+
   const renderPublishers = (community) => {
     const section = h(
       "section",
       { class: "section" },
       h("h2", { class: "section__title" }, "What the sources say"),
-      h(
-        "div",
-        { class: "agreement" },
-        h(
-          "div",
-          { class: "agreement__headline" },
-          h("span", { class: "fig fig--lg" }, String(community.agreement.covered)),
-          " of ",
-          h("span", { class: "fig fig--lg" }, String(community.agreement.available)),
-          " sources say covered",
-        ),
-        h("div", { class: "agreement__note" }, community.agreement.note),
-      ),
+      renderAgreement(community),
     );
     for (const publisher of community.publishers) {
       section.appendChild(
@@ -187,8 +190,15 @@
     return section;
   };
 
+  const renderBadge = (verdictId) =>
+    h(
+      "span",
+      { class: `verdict-badge verdict-badge--${verdictId}` },
+      h("span", { "aria-hidden": "true" }, VERDICTS[verdictId].glyph),
+      VERDICTS[verdictId].word,
+    );
+
   const renderServiceRow = (service) => {
-    const verdict = VERDICTS[service.verdict];
     const panel = service.sources.length
       ? h(
           "div",
@@ -203,12 +213,7 @@
         "span",
         { class: "service-row__top" },
         h("span", { class: "service-row__name" }, SERVICE_LABEL[service.service] || service.service),
-        h(
-          "span",
-          { class: `verdict-badge verdict-badge--${service.verdict}` },
-          h("span", { "aria-hidden": "true" }, verdict.glyph),
-          verdict.word,
-        ),
+        renderBadge(service.verdict),
       ),
       h("span", { class: "service-row__reason" }, figures(service.reason)),
     );
@@ -411,13 +416,18 @@
   const matchedAlias = (community, query) =>
     community.aliases.find((alias) => matchesText(alias, query)) || null;
 
-  const renderSearch = () => {
+  const renderSearch = ({
+    inputClass = "search-input",
+    placeholder = `Search ${pack.count} communities`,
+    label = "Search communities",
+    hashFor = (community) => `#/community/${community.id}`,
+  } = {}) => {
     const results = h("ul", { class: "search-results" });
     const input = h("input", {
-      class: "search-input",
+      class: inputClass,
       type: "search",
-      placeholder: `Search ${pack.count} communities`,
-      "aria-label": "Search communities",
+      placeholder,
+      "aria-label": label,
     });
     input.addEventListener("input", () => {
       const query = input.value.trim().toLowerCase();
@@ -440,13 +450,16 @@
           ),
         );
         row.addEventListener("click", () => {
-          location.hash = `#/community/${community.id}`;
+          location.hash = hashFor(community);
         });
         results.appendChild(h("li", {}, row));
       }
     });
     return [h("div", { class: "search" }, input), results];
   };
+
+  // Set when a compare route names no known community: Screen 1 opens with its search focused.
+  let openSearch = false;
 
   const renderCommunity = (id) => {
     const community =
@@ -455,6 +468,22 @@
     main.textContent = "";
     for (const node of renderSearch()) {
       main.appendChild(node);
+    }
+    main.appendChild(
+      h(
+        "div",
+        { class: "compare-search" },
+        renderSearch({
+          inputClass: "compare-search__input",
+          placeholder: "Compare with...",
+          label: "Compare with...",
+          hashFor: (other) => `#/compare/${community.id}/${other.id}`,
+        }),
+      ),
+    );
+    if (openSearch) {
+      openSearch = false;
+      main.querySelector(".search-input").focus();
     }
     const header = renderHeader(community);
     header.appendChild(renderFreshness(community));
@@ -465,6 +494,36 @@
     services.appendChild(renderStatementButtons(community));
     main.appendChild(services);
     main.appendChild(renderActions(community));
+  };
+
+  // One compare column: the header block with its name linking back, the agreement headline
+  // and the four verdict badges (Task-15).
+  const renderCompareColumn = (community) => {
+    const header = renderHeader(community, "h2");
+    const name = header.querySelector(".community-header__name");
+    name.textContent = "";
+    name.appendChild(
+      h("a", { class: "text-link", href: `#/community/${community.id}` }, community.name),
+    );
+    return h(
+      "div",
+      { class: "compare__column" },
+      header,
+      renderAgreement(community),
+      community.services.map((service) =>
+        h(
+          "div",
+          { class: "service-row__top compare__service" },
+          h("span", { class: "service-row__name" }, SERVICE_LABEL[service.service] || service.service),
+          renderBadge(service.verdict),
+        ),
+      ),
+    );
+  };
+
+  const renderCompare = (a, b) => {
+    main.textContent = "";
+    main.appendChild(h("div", { class: "compare" }, renderCompareColumn(a), renderCompareColumn(b)));
   };
 
   // Exposed for the browser test, which runs the builders over every community in the pack.
@@ -833,6 +892,23 @@
       renderMap(query.get("filter") || "all", selectedParam ? Number(selectedParam) : null);
     } else if (screen === "#/share") {
       renderShare();
+    } else if (hash.startsWith("#/compare")) {
+      // An unknown id falls back to the known one's community route, or Screen 1 with the
+      // search open when neither is known.
+      const found = hash
+        .split("?")[0]
+        .split("/")
+        .slice(2, 4)
+        .map((part) => pack.communities.find((c) => c.id === Number(part)))
+        .filter(Boolean);
+      if (found.length === 2) {
+        renderCompare(found[0], found[1]);
+      } else if (found.length === 1) {
+        location.replace(`#/community/${found[0].id}`);
+      } else {
+        openSearch = true;
+        location.replace(DEFAULT_HASH);
+      }
     } else {
       const match = hash.match(/^#\/community\/(\d+)/);
       renderCommunity(match ? Number(match[1]) : DEFAULT_ID);
