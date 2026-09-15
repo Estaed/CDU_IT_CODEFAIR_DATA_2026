@@ -287,9 +287,12 @@ What the app shows for one community; not a schema.
     `reports/spike-webrtc-hotspot/` on the S24 as host: CONNECTED and messages after the
     laptop server is killed means yes. If no on both phones as host, nearby chat ships with
     "works on a shared Wi-Fi router" as its stated range and the hotspot line is removed.
-15. **iPhone camera receive route.** Safari has no barcode reader API (flag broken since iOS
-    18); Tarik owns the answer. A bundled WASM reader would be the one library exception in
-    the app and must be named in Part 2 before it is added.
+15. **iPhone camera receive route** — ANSWERED 2026-09-15 (Tarik): vendor jsQR 1.4.0
+    (Apache-2.0, pure JavaScript, 256,885 bytes, 56,970 gzipped, last release 2021-04-24) behind
+    one scan adapter that prefers the browser's own reader (Task-25). The one library exception
+    in the app, named in Part 2. Rejected: zxing-wasm (maintained, MIT, but a 3.7 MB package whose
+    `.wasm` would have to be inlined), qr-scanner (MIT, last release 2022, needs a separate worker
+    file).
 16. **Licence of the road and town source** for the map's second pass (Geoscience Australia
     or NT Government open data, expected CC BY 4.0). Research, before the map task starts.
 
@@ -337,3 +340,6 @@ D5. **National scope** — only if the NT is finished early; the brief allows it
 | 2026-09-15 | The pack cap is set after the layers are measured (OQ13), not before | Eko |
 | 2026-09-15 | Camera features need a secure origin: on the Samsung S24, Chrome answers `NotAllowedError` to the camera request on a copy opened from `file://` (the browser's QR reader itself is present). So Receive and the nearby scan work from the Pages address (`APP_URL`) or the installed PWA; a copy received as a file can Show frames and chat once paired, but cannot open the camera. GitHub Pages is published by `.github/workflows/pages.yml` from the committed pack; Tarik enables Pages once if the workflow cannot | Tarik's phone test, Eko |
 | 2026-09-15 | OQ13 closed: tolerance 0.02, three carrier layers (Telstra, Optus, MOCN as TPG), SA3 regions, five towns; pack cap 512,000 bytes; highways deferred to Task-23 pending a browser download of the NT Government roads file | Eko, on Tarik's instruction to decide |
+| 2026-09-15 | First install stays "open the address once with the internet" or "receive the file by Bluetooth / Quick Share". A single-QR bootstrap for a phone that has nothing (a tiny receiver page inside one code) is deferred until the app is finished: camera apps do not open a `data:` page from a QR, so it would rest on pasting text into the address bar, which is not reliable on stage | Tarik |
+| 2026-09-15 | Received packs update the installed app in place (Task-24) | Tarik, "update atsin" |
+| 2026-09-15 | OQ15 closed: jsQR vendored as the one library exception so iPhone can read QR codes (Task-25) | Tarik |

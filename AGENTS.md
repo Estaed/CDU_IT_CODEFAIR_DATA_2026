@@ -307,6 +307,7 @@ Rejected, one line each:
 - **Decimen Optical Transfer, qwbp, txqr as dependencies** (2026-09-15): AGPL-3.0 from v0.4.0 (Decimen) or code we do not need; the QR encoder, the frame loop and the SDP-in-QR handshake are our own, ~500 lines, no licence to carry.
 - **STUN or TURN servers** for nearby chat: a server, and the internet; `iceServers` is `[]` and the range is the Wi-Fi.
 - **ESP32 captive portal, Meshtastic nodes** (2026-09-15): cost money; report recommendations only.
+- **zxing-wasm, qr-scanner** as the iPhone QR reader (2026-09-15): zxing-wasm is a 3.7 MB package whose `.wasm` would have to be inlined; qr-scanner needs a separate worker file and was last released in 2022. jsQR is plain JavaScript and inlines as one script.
 - **Web fonts, icon fonts, images**: DESIGN.md forbids them and the byte budget agrees.
 - **`venv` as the environment name**: uv and VS Code default to `.venv`; decided 2026-09-13.
 
@@ -333,8 +334,9 @@ data/out/            capability_table.csv/.xlsx, data_pack.json, PROVENANCE.md, 
 app/                 index.html (template), app.js (render only), app.css (app-only rules, tokens only), sw.js, manifest.webmanifest
                      since 2026-09-15 also: qr.js (QR encoder, byte mode, own code), transfer.js (frame loop and
                      camera receive), nearby.js (WebRTC data channel, QR handshake, Wi-Fi join QR), layers.css
-                     (map-layer custom properties only). app/vendor/ exists only if OQ15 picks a WASM QR reader
-                     for iPhone, with its licence file beside it and a line here first.
+                     (map-layer custom properties only), store.js (received pack in IndexedDB, Task-24), scan.js
+                     (one QR reader adapter, Task-25), vendor/jsQR.js + vendor/jsQR.LICENSE (the one
+                     library exception, OQ15)
 scripts/             gate.py, build_app.py, run_pipeline.py
 tests/               unit tests; tests/browser/ holds the Playwright smoke test (marker "browser")
 dist/                build output, gitignored; dist/index.html is the deliverable
@@ -350,7 +352,7 @@ docs/ reports/       PRD, competition brief, dated research and spike reports
 4. `app/` computes no verdict. The pack carries the verdict word, the reason sentence and the sources per service; `thresholds.csv` is not in the pack and no file under `app/` compares a figure against a requirement. The app renders, routes and shares; since 2026-09-15 it also encodes QR, plays and reads frames, gzips its own bytes and opens a WebRTC channel, none of which is a verdict.
 5. Colours, sizes, radii and fonts exist only as the custom properties in `design/ds/design/tokens/*.css`, plus the map-layer colours in `app/layers.css` (custom property definitions only, nothing else in that file; decision 2026-09-15, DESIGN.md's colour rule broken on purpose for carrier layers). `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js app/qr.js app/transfer.js app/nearby.js` prints nothing; SVG geometry inside the pack is data, not CSS.
 6. Nothing in the repo imports from `spike/` or `design/ds/components/`.
-7. The app makes no request while running, checked in the code, not only in the browser test: `grep -nE "fetch\(|XMLHttpRequest|WebSocket|EventSource|stun:|turn:|https?://" app/app.js app/qr.js app/transfer.js app/nearby.js` prints nothing (`sw.js` is the host-only exception and is never needed for first render). `nearby.js` constructs `RTCPeerConnection({ iceServers: [] })` and nothing else.
+7. The app makes no request while running, checked in the code, not only in the browser test: `grep -nE "fetch\(|XMLHttpRequest|WebSocket|EventSource|stun:|turn:|https?://" app/app.js app/qr.js app/scan.js app/store.js app/transfer.js app/nearby.js app/vendor/jsQR.js` prints nothing (`sw.js` is the host-only exception and is never needed for first render). `nearby.js` constructs `RTCPeerConnection({ iceServers: [] })` and nothing else.
 8. The camera and the microphone are touched only in `transfer.js` (receive) and `nearby.js` (scan): `grep -l getUserMedia app/*.js` prints exactly those two files. Every stream is stopped on route change.
 
 **Pushed down, out of the browser.** Everything deterministic runs once in the pipeline or the build, never on the phone: the path rule and all verdicts, the agreement count, the reason sentences, the "who does what" lines, the projected SVG coordinates of the 96 points, the simplified NT outline, the URL QR modules, the two PNG maps, and since 2026-09-15 the simplified map layers (towns, highways, SA3 regions, ACCC coverage per carrier). The browser does five things: pick a community, show its pack row, share the file, play or receive the app as QR frames, and hold a nearby chat. What stays in the browser is only what depends on runtime bytes or the other phone: encoding this build's own bytes as QR frames (gzip via `CompressionStream`, encoder in `qr.js`), the WebRTC handshake, and the mesh-size and SMS texts assembled from pack strings. Nothing is left with a model: the product contains no model (PRD §3).
@@ -365,7 +367,7 @@ No seam exists for D2 (measurements), D3 (more communities) or D5 (national): th
 
 **Entry points**
 - `PYTHONUTF8=1 .venv/Scripts/python scripts/run_pipeline.py` from the root: reads `data/raw/`, writes `data/out/`. No network; `pipeline/fetch/*.py` are run by hand and their results committed or logged in `PROVENANCE.md`.
-- `PYTHONUTF8=1 .venv/Scripts/python scripts/build_app.py` from the root: inlines, in this order, `design/ds/design/tokens/colors.css`, `typography.css`, `spacing.css`, `design/ds/design/base.css`, `design/screens/screens.css`, `app/app.css`, `app/layers.css`, then `app/qr.js`, `app/transfer.js`, `app/nearby.js`, `app/app.js` (in that order, each a plain script; the three helpers expose one object each on `window` and `app.js` is the only file that touches the DOM at load), then `data/out/data_pack.json` as `<script type="application/json" id="pack">`, into `app/index.html` → `dist/index.html`. Also copies `sw.js` and `manifest.webmanifest` to `dist/` for the host; the HTML never depends on them.
+- `PYTHONUTF8=1 .venv/Scripts/python scripts/build_app.py` from the root: inlines, in this order, `design/ds/design/tokens/colors.css`, `typography.css`, `spacing.css`, `design/ds/design/base.css`, `design/screens/screens.css`, `app/app.css`, `app/layers.css`, then `app/vendor/jsQR.js`, `app/qr.js`, `app/scan.js`, `app/transfer.js`, `app/nearby.js`, `app/store.js`, `app/app.js` (in that order, each a plain script; the helpers expose one object each on `window` and `app.js` is the only file that touches the DOM at load), then `data/out/data_pack.json` as `<script type="application/json" id="pack">`, into `app/index.html` → `dist/index.html`. Also copies `sw.js` and `manifest.webmanifest` to `dist/` for the host; the HTML never depends on them.
 - The app routes by hash: `#/community/<bushtel_id>`, `#/map?filter=<id>`, `#/share`, `#/compare/<id>/<id>`, and since 2026-09-15 `#/nearby`. The three screens are the reference: `design/screens/community.html`, `map.html`, `share.html`. The nearby screen, the transfer controls on the share screen and the map's second pass have no screen file: PRD §4.2 (second batch) is their source of truth and they reuse the existing components (`card`, `button`, `chip`, `list`) with no new CSS beyond `app/app.css`. On load the selected tab is scrolled into view (decision 2026-09-13, PRD §11).
 - Transfer by camera, the contract both ends share: payload = gzip of the exact bytes of the running page (`pageHtml()`, the same bytes save-as-file writes); the payload is base64 text because `BarcodeDetector.rawValue` is a string, not bytes; frames = `CX` + index (4 hex) + count (4 hex) + up to 1,000 base64 characters, QR byte mode, error correction L, looped at about 8 frames per second until the user stops; the receiver keeps a set keyed by index, shows `received / total`, and when complete verifies length, inflates with `DecompressionStream`, and opens the result from a `blob:` URL with a save button. Reader: `BarcodeDetector` where present; where absent the screen says so and points at the URL QR (OQ15).
 - Nearby chat, the contract: host taps Start, gets an offer with ICE gathering complete (3 s cap), shows it as one QR (the SDP JSON deflated with `CompressionStream("deflate-raw")` and base64-encoded; field-level reduction only if a real offer still exceeds 1,200 characters); guest scans, shows the answer QR; host scans; the `chat` data channel carries `{t: "msg", text}` and `{t: "pack"}` answered by `{t: "pack-chunk", i, n, part}` pieces of 16,000 characters (a data channel refuses one 446 KB message; measured 2026-09-15). No storage: a reload empties the screen. The status line prints the range honestly: "Works while both phones are on this Wi-Fi". The Wi-Fi join QR is `WIFI:T:WPA;S:<ssid>;P:<password>;;` from two inputs; nothing is persisted.
@@ -459,8 +461,10 @@ red gate at the start is expected; a task marked DONE on a red gate is not.
   analytics, or data. The browser test fails on the first request.
 - The app must not contain a JavaScript framework or library, a service-worker dependency for
   first render, or any computation of a verdict; it renders `data_pack.json`. The one
-  permitted exception is a QR *reader* for iPhone if OQ15 chooses one: permissive licence,
-  under `app/vendor/` with its licence file, named in this section before it is added.
+  exception, named 2026-09-15 (OQ15): **jsQR 1.4.0**, Apache-2.0, vendored as
+  `app/vendor/jsQR.js` with `app/vendor/jsQR.LICENSE` beside it, used only through
+  `app/scan.js` when the browser has no `BarcodeDetector`. Its one edit (a comment URL removed)
+  is recorded in the licence file. No other library may be added without a line here.
 - Nearby chat uses `iceServers: []`, no STUN, no TURN, no signalling server; the handshake is
   two QR scans and nothing is stored. Transfer by camera carries the page's own bytes, never a
   URL that needs the internet.
