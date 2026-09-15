@@ -62,8 +62,9 @@ window.CrosscheckTransfer = (() => {
 
   const hex4 = (n) => n.toString(16).padStart(4, "0");
 
-  // Payload -> frame texts: gzip the page's own bytes, base64 the result (BarcodeDetector's
-  // rawValue is a string, not bytes), then split into chunks of up to 1,000 base64 characters.
+  // Payload -> frame texts: gzip the page's own bytes, base64 the result (every reader in
+  // scan.js hands back a string, not bytes), then split into chunks of up to 1,000 base64
+  // characters.
   const frames = async (html) => {
     const bytes = new TextEncoder().encode(html);
     const gzipped = await gzip(bytes);
@@ -205,6 +206,12 @@ window.CrosscheckTransfer = (() => {
   // Reads the frames back with the camera and reassembles, inflates and offers the result.
   const buildReceive = () => {
     const button = el("button", { type: "button", class: "transfer__button" }, "Receive");
+    // Task-25: which reader is running, so a phone test says jsQR ran without opening devtools.
+    const readerKind = el(
+      "p",
+      { class: "transfer__reader" },
+      `reader: ${window.CrosscheckScan.kind()}`,
+    );
     const note = el("p", { class: "transfer__note", hidden: "" });
     const video = el("video", {
       class: "transfer__video",
@@ -237,7 +244,6 @@ window.CrosscheckTransfer = (() => {
     let scanning = false;
     let receivedTexts = new Set();
     let receivedUrl = null;
-    let detector = null;
 
     const revokeReceivedUrl = () => {
       if (receivedUrl) {
@@ -315,10 +321,10 @@ window.CrosscheckTransfer = (() => {
         return;
       }
       try {
-        const codes = await detector.detect(video);
-        for (const code of codes) {
-          if (typeof code.rawValue === "string" && code.rawValue.startsWith(FRAME_PREFIX)) {
-            receivedTexts.add(code.rawValue);
+        const values = await window.CrosscheckScan.reader().detect(video);
+        for (const value of values) {
+          if (typeof value === "string" && value.startsWith(FRAME_PREFIX)) {
+            receivedTexts.add(value);
           }
         }
         const partial = reassemble([...receivedTexts]);
@@ -353,15 +359,12 @@ window.CrosscheckTransfer = (() => {
         stop();
         return;
       }
-      if (!("BarcodeDetector" in window)) {
+      if (!navigator.mediaDevices) {
         note.hidden = false;
-        note.textContent =
-          "This browser cannot scan QR codes with the camera; use the QR code above " +
-          "with a camera app that opens links instead.";
+        note.textContent = "This browser cannot use the camera.";
         return;
       }
       note.hidden = true;
-      detector = detector || new window.BarcodeDetector({ formats: ["qr_code"] });
       start().catch((error) => {
         stop();
         counter.hidden = false;
@@ -385,6 +388,7 @@ window.CrosscheckTransfer = (() => {
         "div",
         { class: "transfer__section" },
         button,
+        readerKind,
         note,
         video,
         counter,

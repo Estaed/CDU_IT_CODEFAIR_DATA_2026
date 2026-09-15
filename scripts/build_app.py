@@ -21,14 +21,25 @@ ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = ROOT / "app/index.html"
 OUT = ROOT / "dist/index.html"
 PACK = ROOT / "data/out/data_pack.json"
-# Order fixed by CLAUDE.md Part 2: qr.js, transfer.js, nearby.js, store.js, app.js; later tasks
-# append. store.js sits before app.js because app.js reads window.CrosscheckStore at startup.
+# Order fixed by CLAUDE.md Part 2: vendor/jsQR.js, qr.js, scan.js, transfer.js, nearby.js,
+# store.js, app.js; later tasks append. store.js sits before app.js because app.js reads
+# window.CrosscheckStore at startup; scan.js sits before transfer.js and nearby.js because both
+# call window.CrosscheckScan (Task-25).
 JS_FILES = (
+    ROOT / "app/vendor/jsQR.js",
     ROOT / "app/qr.js",
+    ROOT / "app/scan.js",
     ROOT / "app/transfer.js",
     ROOT / "app/nearby.js",
     ROOT / "app/store.js",
     ROOT / "app/app.js",
+)
+# jsQR 1.4.0, Apache-2.0 (Task-25, OQ15): the one library exception CLAUDE.md Part 2 allows.
+# Prefixed only onto the vendored file's own text, never onto the rest of JS_FILES; the full
+# notice and the three recorded SHA-256 values are in app/vendor/jsQR.LICENSE.
+JSQR_LICENSE_HEADER = (
+    "/*! jsQR 1.4.0, Apache-2.0, (c) Cosmo Wolfe; one comment URL removed; licence text in "
+    "app/vendor/jsQR.LICENSE of the source repository */"
 )
 # Served by the host only; dist/index.html never depends on them.
 SW_SRC = ROOT / "app/sw.js"
@@ -175,10 +186,16 @@ def main() -> str:
     # APP_URL comes from constants.md through the pack, so the QR and the share button agree.
     qr = qr_svg(json.loads(pack_text)["app_url"])
     tokens = read_tokens(("color-canvas", "color-ink", "color-on-primary"))
+    js_parts = []
+    for path in JS_FILES:
+        text = path.read_text(encoding="utf-8")
+        if path.name == "jsQR.js":
+            text = f"{JSQR_LICENSE_HEADER}\n{text}"
+        js_parts.append(text)
     page = inline(
         add_share_blocks(TEMPLATE.read_text(encoding="utf-8"), qr),
         [path.read_text(encoding="utf-8") for path in CSS_FILES],
-        "\n".join(path.read_text(encoding="utf-8") for path in JS_FILES),
+        "\n".join(js_parts),
         pack_text.strip(),
     )
     if THEME_PLACEHOLDER not in page:

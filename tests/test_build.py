@@ -240,3 +240,48 @@ def test_sw_precaches_manifest_and_icons():
     sw = (ROOT / "dist" / "sw.js").read_text(encoding="utf-8")
     for name in ("manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"):
         assert name in sw
+
+
+def test_jsqr_licence_header_once_before_scan_before_transfer():
+    # Task-25: the vendored jsQR block carries its own one-line notice (Apache-2.0 section
+    # 4(b)) exactly once, ahead of window.CrosscheckScan (which uses it); CrosscheckScan itself
+    # is defined before window.CrosscheckTransfer (which calls it), per build_app.JS_FILES.
+    build_app.main()
+    html = (ROOT / "dist" / "index.html").read_text(encoding="utf-8")
+
+    assert html.count(build_app.JSQR_LICENSE_HEADER) == 1
+    assert html.count("window.CrosscheckScan = ") == 1
+
+    header_index = html.index(build_app.JSQR_LICENSE_HEADER)
+    scan_index = html.index("window.CrosscheckScan = ")
+    transfer_index = html.index("window.CrosscheckTransfer")
+    assert header_index < scan_index < transfer_index
+
+    assert len(html.encode("utf-8")) <= 1_048_576
+
+
+def test_vendored_jsqr_sha256_matches_license_file():
+    # The Execution Guide's own audit trail: app/vendor/jsQR.LICENSE records the SHA-256 of the
+    # edited file as vendored; a hand-edit to app/vendor/jsQR.js that is not also re-recorded
+    # there is exactly the drift this check exists to catch.
+    vendored = (ROOT / "app" / "vendor" / "jsQR.js").read_bytes()
+    digest = hashlib.sha256(vendored).hexdigest()
+
+    license_text = (ROOT / "app" / "vendor" / "jsQR.LICENSE").read_text(encoding="utf-8")
+    match = re.search(
+        r"SHA-256, app/vendor/jsQR\.js, edited[^:]*:\s*\n\s*([0-9a-f]{64})", license_text
+    )
+    assert match, "no recorded SHA-256 for the edited app/vendor/jsQR.js in jsQR.LICENSE"
+    assert digest == match.group(1)
+
+
+def test_barcode_detector_only_in_scan_js():
+    # The Python equivalent of `grep -l BarcodeDetector app/*.js` (Task-25 DoD); no shelling
+    # out, Windows has no `grep` on PATH by default. app/vendor/jsQR.js is a decoder, not a
+    # reader adapter, and never references BarcodeDetector either.
+    files = sorted(
+        path.name
+        for path in (ROOT / "app").rglob("*.js")
+        if "BarcodeDetector" in path.read_text(encoding="utf-8")
+    )
+    assert files == ["scan.js"]

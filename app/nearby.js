@@ -234,17 +234,20 @@ window.CrosscheckNearby = (() => {
     button.type = "button";
     button.className = "nearby__button";
     button.textContent = label;
+    // Task-25: which reader is running, so a phone test says jsQR ran without opening devtools.
+    const readerKind = document.createElement("p");
+    readerKind.className = "nearby__reader";
+    readerKind.textContent = `reader: ${window.CrosscheckScan.kind()}`;
     const video = document.createElement("video");
     video.className = "nearby__video";
     video.autoplay = true;
     video.playsInline = true;
     video.muted = true;
     video.hidden = true;
-    wrap.append(button, video);
+    wrap.append(button, readerKind, video);
 
     let stream = null;
     let timer = null;
-    let detector = null;
 
     const stop = () => {
       if (timer !== null) {
@@ -267,9 +270,9 @@ window.CrosscheckNearby = (() => {
         return;
       }
       try {
-        const codes = await detector.detect(video);
-        if (codes.length > 0) {
-          const text = codes[0].rawValue;
+        const values = await window.CrosscheckScan.reader().detect(video);
+        if (values.length > 0) {
+          const text = values[0];
           stop();
           onCode(text);
           return;
@@ -287,12 +290,11 @@ window.CrosscheckNearby = (() => {
         stop();
         return;
       }
-      if (!("BarcodeDetector" in window)) {
+      if (!navigator.mediaDevices) {
         button.disabled = true;
-        button.title = "This browser cannot scan QR codes with the camera.";
+        button.title = "This browser cannot use the camera.";
         return;
       }
-      detector = detector || new window.BarcodeDetector({ formats: ["qr_code"] });
       try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
       } catch (error) {

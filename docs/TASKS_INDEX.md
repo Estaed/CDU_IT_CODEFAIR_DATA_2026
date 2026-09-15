@@ -41,7 +41,7 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-19: Nearby chat over the phone's own Wi-Fi (second batch, added 2026-09-15)
 - [x] Task-21: Map second pass in the app: layers, zoom, pan, labels; pack version 2 (second batch, added 2026-09-15)
 - [x] Task-24: Received pack updates the app in place (added 2026-09-15, Tarik: "update atsin")
-- [ ] Task-25: QR reading on every browser, jsQR fallback for iPhone (added 2026-09-15, OQ15)
+- [x] Task-25: QR reading on every browser, jsQR fallback for iPhone (added 2026-09-15, OQ15)
 - [x] Task-26: Small fixes before outside testers, and the page that never updates (added 2026-09-15)
 - [ ] Task-27: Transfer by camera, visible progress and missed-frame repair (added 2026-09-15)
 - [x] Task-28: Install as a real home-screen app, tactics from the Calisthenics app (added 2026-09-15)

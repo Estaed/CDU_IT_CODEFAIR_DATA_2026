@@ -53,14 +53,62 @@ one library exception Part 2 allows.
 
 ## Acceptance Criteria (DoD)
 
-- [ ] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
-- [ ] `tests/browser/test_scan.py` (marker `browser`): with an init script that removes `window.BarcodeDetector`, `CrosscheckScan.kind()` is `"jsqr"`; for each of (a) the first, the last and every 16th transfer frame from `CrosscheckTransfer.frames` on `dist/index.html`, (b) a nearby offer text from `CrosscheckNearby.start()`, (c) `WIFI:T:WPA;S:Crosscheck;P:pass\;word;;`, the page draws `CrosscheckQR.encode(text, level)` onto a canvas with `fillRect` at 4 units per module and a 4-module quiet zone, and `CrosscheckScan.decodeImageData(ctx.getImageData(...))` returns exactly `text`.
-- [ ] Same test: with `BarcodeDetector` present (a stub class defined by the init script), `kind()` is `"native"` and `reader().detect` calls the stub.
-- [ ] `tests/test_build.py` (appended): `dist/index.html` contains the jsQR licence header comment exactly once, before `window.CrosscheckScan = `, which appears once and before `window.CrosscheckTransfer`; the sha256 of `app/vendor/jsQR.js` equals the value recorded in `app/vendor/jsQR.LICENSE` for the edited file; `dist/index.html` is at most 1,048,576 bytes; `BarcodeDetector` appears in `app/scan.js` and in no other file under `app/`.
-- [ ] `grep -nE "fetch\(|XMLHttpRequest|WebSocket|EventSource|https?://" app/scan.js app/vendor/jsQR.js app/transfer.js app/nearby.js` prints nothing; `grep -l getUserMedia app/*.js` prints exactly `app/nearby.js` and `app/transfer.js`; zero non-`file:` requests and no console errors; all existing browser tests stay green.
+- [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0. (Main loop at integration, 2026-09-15: GATE GREEN.)
+- [x] `tests/browser/test_scan.py` (marker `browser`): with an init script that removes `window.BarcodeDetector`, `CrosscheckScan.kind()` is `"jsqr"`; for each of (a) the first, the last and every 16th transfer frame from `CrosscheckTransfer.frames` on `dist/index.html`, (b) a nearby offer text from `CrosscheckNearby.start()`, (c) `WIFI:T:WPA;S:Crosscheck;P:pass\;word;;`, the page draws `CrosscheckQR.encode(text, level)` onto a canvas with `fillRect` at 4 units per module and a 4-module quiet zone, and `CrosscheckScan.decodeImageData(ctx.getImageData(...))` returns exactly `text`. (Was blocked by the jsQR version-23 defect below; resolved by the second recorded edit to `app/vendor/jsQR.js`, and now holds for every sampled frame, not just 1 of 15. Also added `test_all_versions_1_to_40_decode_at_byte_mode_capacity`, one text per QR version 1-40 at level L's byte-mode capacity, as the regression check for this exact defect class.)
+- [x] Same test: with `BarcodeDetector` present (a stub class defined by the init script), `kind()` is `"native"` and `reader().detect` calls the stub.
+- [x] `tests/test_build.py` (appended): `dist/index.html` contains the jsQR licence header comment exactly once, before `window.CrosscheckScan = `, which appears once and before `window.CrosscheckTransfer`; the sha256 of `app/vendor/jsQR.js` equals the value recorded in `app/vendor/jsQR.LICENSE` for the edited file; `dist/index.html` is at most 1,048,576 bytes; `BarcodeDetector` appears in `app/scan.js` and in no other file under `app/`.
+- [x] `grep -nE "fetch\(|XMLHttpRequest|WebSocket|EventSource|https?://" app/scan.js app/vendor/jsQR.js app/transfer.js app/nearby.js` prints nothing; `grep -l getUserMedia app/*.js` prints exactly `app/nearby.js` and `app/transfer.js`; zero non-`file:` requests and no console errors; all existing browser tests stay green.
 
 ## Status
 
-Not started. Expected cost, written down so nobody is surprised: `dist/index.html` grows by about
-257 KB, and a transfer by light grows by about 57 KB gzipped, which is about 76 more frames
-(roughly 10 more seconds per loop at 8 frames a second). Record the measured figures here.
+DONE 2026-09-15 (main loop: three-way cherry-pick with no conflict, gate green; mutation check: putting the upstream 74 back in the version 23 table turns the all-versions scan test red, restored; the version 23 defect was found by the worker and re-verified by the main loop over all 40 versions) Worker notes follow.
+
+Implemented and tested. Not marked DONE here; that is `verify-task`'s call, from the main loop,
+per Part 1.
+
+**Commands run (from the worktree root, main tree's interpreter, PowerShell -- the Bash tool
+refused the cross-tree path as expected):**
+- `ruff check --no-cache .` -> `All checks passed!`
+- `python scripts/build_app.py` -> `dist\index.html: 844595 bytes`
+- `python -m pytest tests/test_build.py tests/browser -q` -> `80 passed in 35.12s`
+- `grep -nE "fetch\(|XMLHttpRequest|WebSocket|EventSource|https?://" app/scan.js app/vendor/jsQR.js app/transfer.js app/nearby.js` -> nothing (clean)
+- `grep -l getUserMedia app/*.js` -> `app/nearby.js`, `app/transfer.js` (exactly those two)
+- `grep -rl BarcodeDetector app/*.js app/vendor/*.js` -> `app/scan.js` (exactly that one)
+
+**Measured figures:**
+- `dist/index.html`: 844,595 bytes (budget 1,048,576; about 204 KB of headroom). Grew from the
+  pre-jsQR baseline mostly as expected, plus everything Task-26/28 already added since that
+  baseline was measured.
+- `app/vendor/jsQR.js`: 256,847 bytes (unchanged by the second edit -- `74` -> `78` is the same
+  digit count).
+- Transfer by light: 220 frames for this build's own bytes (up from the 128-frame, pre-jsQR
+  baseline; growth matches the expected order of magnitude).
+- SHA-256, npm tarball `jsqr-1.4.0.tgz`: `b5299b37917a1fe7a8cab9dd5cc6b8accf82663add80abe5bf7761a921cc6602`
+- SHA-256, `package/dist/jsQR.js` unmodified: `bc40c8a15196236b2314db0856f72ca0b49980cd5413b8c852a7349f5fee0859`
+- SHA-256, `app/vendor/jsQR.js` edited, both edits applied (as vendored): `fe2ce9b7b6f8b5ade1ec36623584117eab267ff438acada61ad1d09f70df61ac`
+- All three (tarball, unmodified, edited) recorded in `app/vendor/jsQR.LICENSE`, alongside both
+  edits made and the full Apache-2.0 text.
+
+**jsQR version-23 defect -- resolved, second edit applied (coordinator decision, CLAUDE.md Part 2
+amended in main to allow it):**
+`app/vendor/jsQR.js`'s own version table (`VERSIONS[22]`, `versionNumber: 23`) read
+`alignmentPatternCenters: [6, 30, 54, 74, 102]`; the ISO/IEC 18004 value for the fourth centre is
+`78`, not `74`. Confirmed independently by the main loop against Python `qrcode`'s
+`util.PATTERN_POSITION_TABLE` (all 40 versions compared; only version 23 differs) and by
+rendering+decoding every version 1-40 at level L (the shipped file failed only version 23; a copy
+with the one entry corrected decoded all 40). Corrected in `app/vendor/jsQR.js` as the one
+additional line (no other byte changed -- confirmed: the file is still 256,847 bytes and the old
+value no longer appears anywhere in it); the second edit, its citation and the new SHA-256 are
+recorded in `app/vendor/jsQR.LICENSE`.
+
+`tests/browser/test_scan.py` no longer pins the version-23 failure: every sampled transfer frame,
+the nearby offer text and the Wi-Fi join QR now assert plain equality
+(`decodeImageData(...) === text`), matching the DoD's own wording exactly. Added
+`test_all_versions_1_to_40_decode_at_byte_mode_capacity`: one text per QR version 1-40, each
+built at that version's exact byte-mode capacity at level L (`BYTE_CAPACITY_L`, from Python's own
+`qrcode.util.BIT_LIMIT_TABLE` through the same formula `app/qr.js`'s `bestVersion` uses), so
+`CrosscheckQR.encode` is forced to land on every version in turn and jsQR is asked to decode all
+40 -- this is the regression check that would catch this exact defect class again if a future
+jsQR upgrade reintroduces it. `tests/test_build.py`'s existing
+`test_vendored_jsqr_sha256_matches_license_file` reads the recorded hash from the licence file
+dynamically, so it needed no code change and now compares against the new hash automatically.
