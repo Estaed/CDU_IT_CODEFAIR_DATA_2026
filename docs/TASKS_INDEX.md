@@ -40,6 +40,7 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-18: Transfer by camera, QR frames (second batch, added 2026-09-15)
 - [x] Task-19: Nearby chat over the phone's own Wi-Fi (second batch, added 2026-09-15)
 - [ ] Task-21: Map second pass in the app: layers, zoom, pan, labels; pack version 2 (second batch, added 2026-09-15)
+- [ ] Task-24: Received pack updates the app in place (added 2026-09-15, Tarik: "update atsin")
 
 ## Execution routing
 
@@ -80,6 +81,7 @@ advisory only.
 | Task-18 | claude-worker | no | high | Task-17 | 15 |
 | Task-19 | claude-worker | no | high | Task-18 | 16 |
 | Task-21 | claude-worker | no | high | Task-19, Task-20 | 17 |
+| Task-24 | claude-worker | no | high | Task-21 | 18 |
 
 Second batch (2026-09-15) execution note: Codex quota is exhausted until 2026-09-19, so every
 lane is a Claude worker. Wave 14 is three disjoint lanes; 15 to 17 are serial because each
