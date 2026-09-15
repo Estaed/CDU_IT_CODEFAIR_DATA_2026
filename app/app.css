@@ -189,3 +189,42 @@
 }
 
 .nearby__input::placeholder { color: var(--text-secondary); }
+
+/* Task-21 map second pass: layer groups, the carrier coverage toggle chips, and the zoom/pan
+   controls. New classes only, tokens only (layer rule 5); the map/community/label styling
+   screens.css already owns is untouched -- these rules only add what it does not carry. */
+
+.map--zoomable { touch-action: none; }
+
+.map__layer--area .map__layer-shape { stroke: none; fill-opacity: var(--layer-fill-opacity); }
+
+.map__layer--line .map__layer-shape {
+  fill: none;
+  stroke-width: calc(var(--size-hairline) * var(--layer-stroke-scale));
+  vector-effect: non-scaling-stroke;
+}
+
+[data-layer="cov-telstra"] .map__layer-shape { fill: var(--layer-cov-telstra); }
+[data-layer="cov-optus"] .map__layer-shape { fill: var(--layer-cov-optus); }
+[data-layer="cov-tpg"] .map__layer-shape { fill: var(--layer-cov-tpg); }
+[data-layer="regions-sa3"] .map__layer-shape { stroke: var(--layer-regions-sa3); }
+
+.map__town-dot { fill: var(--layer-towns); }
+.map__town-label { font: var(--text-label); fill: var(--layer-towns); }
+
+.layer-chips { padding: var(--space-sm) var(--space-md) 0; }
+
+.layer-chip { border: none; cursor: pointer; }
+
+.layer-chip[aria-pressed="false"] { opacity: 0.5; }
+
+.map-controls__reset { width: auto; margin: var(--space-sm) auto var(--space-sm); }
+
+/* Point markers, the selection ring, every community label and the town markers counter-scale
+   against the viewBox zoom (--map-zoom, set by app.js) around their own centre, so they read
+   at a constant screen size instead of growing as the map zooms in (Task-21 Execution Guide). */
+.map__pt, .map__ring, .map__label, .map__town-dot, .map__town-label {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(calc(1 / var(--map-zoom, 1)));
+}

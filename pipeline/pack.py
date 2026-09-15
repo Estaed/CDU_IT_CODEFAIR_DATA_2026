@@ -23,7 +23,7 @@ BOUNDARY_RAW = ROOT / "data/raw" / outline.RAW_NAME
 RAW_DIR = ROOT / "data/raw"
 HISTORY_DIR = ROOT / "data/out/history"
 
-PACK_VERSION = 1
+PACK_VERSION = 2
 POPULATION_SOURCE = "ABS 2021 SA1 via BushTel"
 
 # BushTel publishes no single date for the set: every line citing a profile carries that

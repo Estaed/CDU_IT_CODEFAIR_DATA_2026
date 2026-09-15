@@ -7,7 +7,7 @@
 - OWNS: `app/store.js` (new), `app/app.js` (startup pack selection, the update chip, the "use built-in pack" action, and the two receive call sites), `app/transfer.js` (call the store when a received page is complete), `app/nearby.js` (call the store when a `pack` event arrives), `app/app.css` (update chip only, tokens only), `scripts/build_app.py` (the JS tuple only), `tests/browser/test_update.py` (new), `tests/test_build.py` (append only)
 - MUST NOT TOUCH: `app/qr.js`, `app/layers.css`, `pipeline/`, `scripts/gate.py`, `design/`
 - GATE: `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` from the project root
-- DEPENDS ON: Task-21
+- DEPENDS ON: Task-26
 
 ## Objective
 

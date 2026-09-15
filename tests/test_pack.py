@@ -52,7 +52,7 @@ def _by_id(data_pack, bushtel_id: int) -> dict:
 
 
 def test_pack_header(data_pack):
-    assert data_pack["pack_version"] == 1
+    assert data_pack["pack_version"] == 2
     assert data_pack["count"] == 96
     assert len(data_pack["communities"]) == 96
 
@@ -197,7 +197,7 @@ def test_committed_data_pack_file():
     assert path.exists()
     with path.open(encoding="utf-8") as f:
         committed = json.load(f)
-    assert committed["pack_version"] == 1
+    assert committed["pack_version"] == 2
     assert committed["count"] == 96
     assert path.stat().st_size <= 512_000
 
@@ -309,7 +309,7 @@ def test_layers_ids_and_order(data_pack):
 
 
 def test_pack_version_and_count_unaffected_by_layers(data_pack):
-    assert data_pack["pack_version"] == 1
+    assert data_pack["pack_version"] == 2
     assert data_pack["count"] == 96
     assert len(data_pack["communities"]) == 96
 

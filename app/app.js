@@ -30,7 +30,7 @@
   const footer = document.querySelector("footer.footer");
   const pack = JSON.parse(document.getElementById("pack").textContent);
 
-  if (pack.pack_version !== 1) {
+  if (pack.pack_version !== 2) {
     main.textContent = "Unknown data pack";
     return;
   }
@@ -604,11 +604,21 @@
   const telehealthVerdict = (community) =>
     community.services.find((service) => service.service === "telehealth_video").verdict;
 
-  const mapHash = (filterId, selectedId) =>
-    `#/map?filter=${filterId}${selectedId === null ? "" : `&selected=${selectedId}`}`;
+  // ``layersRaw`` is the hash's own ``layers`` value (or null when absent): threaded through
+  // unchanged so selecting a point or switching a filter never clobbers a carrier toggle state.
+  const mapHash = (filterId, selectedId, layersRaw) => {
+    let hash = `#/map?filter=${filterId}`;
+    if (selectedId !== null && selectedId !== undefined) {
+      hash += `&selected=${selectedId}`;
+    }
+    if (layersRaw !== null && layersRaw !== undefined) {
+      hash += `&layers=${layersRaw}`;
+    }
+    return hash;
+  };
 
   // Point markup and geometry of design/screens/assets/build.mjs (s = 5, hit r = 16, ring r = 9).
-  const renderPoint = (community, isSelected, filterId) => {
+  const renderPoint = (community, isSelected, filterId, layersRaw) => {
     const { x, y } = community;
     const size = 5;
     const verdict = telehealthVerdict(community);
@@ -666,7 +676,7 @@
       );
     }
     const select = () => {
-      location.hash = mapHash(filterId, community.id);
+      location.hash = mapHash(filterId, community.id, layersRaw);
     };
     group.addEventListener("click", select);
     group.addEventListener("keydown", (event) => {
@@ -678,7 +688,7 @@
     return group;
   };
 
-  const renderFilterTabs = (active, selectedId) => {
+  const renderFilterTabs = (active, selectedId, layersRaw) => {
     const bar = h("div", { class: "tabs filter-tabs", role: "tablist", "aria-label": "Filters" });
     for (const filter of pack.filters) {
       const isActive = filter.id === active.id;
@@ -689,7 +699,11 @@
         h("span", { class: "tab__count" }, String(filter.ids.length)),
       );
       tab.addEventListener("click", () => {
-        location.hash = mapHash(filter.id, filter.ids.includes(selectedId) ? selectedId : null);
+        location.hash = mapHash(
+          filter.id,
+          filter.ids.includes(selectedId) ? selectedId : null,
+          layersRaw,
+        );
       });
       bar.appendChild(tab);
     }
@@ -749,7 +763,235 @@
     ),
   ];
 
-  const renderMap = (filterId, selectedId) => {
+  // Map layers (Task-21, Part 2 "Map layer" seam): the pack's own order already draws area
+  // (coverage) layers first, then line (region) layers, then point (town) layers -- exactly
+  // the Execution Guide's draw order -- so the app never hand-orders layer ids.
+  const slugOf = (layer) => (layer.id.startsWith("cov-") ? layer.id.slice(4) : layer.id);
+
+  const renderLayerGroup = (layer, visibleSlugs) => {
+    const g = s("g", { class: `map__layer map__layer--${layer.kind}`, "data-layer": layer.id });
+    if (layer.kind === "area") {
+      if (!visibleSlugs.has(slugOf(layer))) {
+        g.setAttribute("hidden", "");
+      }
+      for (const d of layer.paths) {
+        g.appendChild(s("path", { class: "map__layer-shape", d }));
+      }
+    } else if (layer.kind === "line") {
+      for (const d of layer.paths) {
+        g.appendChild(s("path", { class: "map__layer-shape", d }));
+      }
+    } else if (layer.kind === "point") {
+      for (const point of layer.paths) {
+        g.appendChild(
+          s(
+            "g",
+            { class: "map__town" },
+            s("circle", { class: "map__town-dot", cx: f1(point.x), cy: f1(point.y), r: 2 }),
+            s(
+              "text",
+              { class: "map__town-label", x: f1(point.x + 4), y: f1(point.y + 1) },
+              point.label,
+            ),
+          ),
+        );
+      }
+    }
+    return g;
+  };
+
+  // One chip per area (coverage) layer; its slug (the layer id with any "cov-" prefix
+  // dropped) is what the hash's "layers" query carries, e.g. "&layers=telstra,optus".
+  const renderLayerChips = (areaLayers, visibleSlugs, filterId, selectedId, layersRaw) => {
+    const bar = h("div", { class: "chips layer-chips" });
+    for (const layer of areaLayers) {
+      const slug = slugOf(layer);
+      const chip = h(
+        "button",
+        {
+          type: "button",
+          class: "chip layer-chip",
+          "aria-pressed": visibleSlugs.has(slug) ? "true" : "false",
+        },
+        layer.label,
+      );
+      chip.addEventListener("click", () => {
+        const next = new Set(visibleSlugs);
+        if (next.has(slug)) {
+          next.delete(slug);
+        } else {
+          next.add(slug);
+        }
+        const allSlugs = areaLayers.map(slugOf);
+        const nextRaw = allSlugs.every((one) => next.has(one))
+          ? null
+          : allSlugs.filter((one) => next.has(one)).join(",");
+        location.hash = mapHash(filterId, selectedId, nextRaw);
+      });
+      bar.appendChild(chip);
+    }
+    return bar;
+  };
+
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+  // A viewBox coordinate formatted without a forced decimal (unlike f1): "300", not "300.0",
+  // so the resting and reset viewBox reads exactly "0 0 300 480" (Task-21 DoD).
+  const vnum = (value) => String(Math.round(value * 100) / 100);
+
+  const BASE_VIEW = { x: 0, y: 0, w: 300, h: 480 };
+  const ZOOM_MIN = 1;
+  const ZOOM_MAX = 8;
+  // Community labels appear once zoomed at least this far in (Task-21 Execution Guide).
+  const LABEL_ZOOM = 3;
+
+  // Zoom (wheel, pinch) and pan (one-pointer drag) over the map's viewBox, plus the labels
+  // that appear once zoomed in far enough. Point/ring/label geometry stays a constant screen
+  // size at any zoom through the CSS transform keyed on the --map-zoom custom property this
+  // sets (app.css), rather than by rebuilding every point's own radius on each zoom step.
+  const attachMapView = (svg, shownCommunities, selectedId) => {
+    const view = { ...BASE_VIEW };
+    let zoom = ZOOM_MIN;
+    let labelsBuilt = false;
+    const labelsGroup = s("g", { class: "map__zoom-labels" });
+    svg.appendChild(labelsGroup);
+
+    const syncLabels = (level) => {
+      if (level >= LABEL_ZOOM && !labelsBuilt) {
+        for (const community of shownCommunities) {
+          if (community.id === selectedId) {
+            continue; // already carries its own always-visible .map__label
+          }
+          labelsGroup.appendChild(
+            s(
+              "text",
+              {
+                class: "map__label",
+                x: f1(community.x),
+                y: f1(community.y - 8),
+                "text-anchor": "middle",
+              },
+              community.name,
+            ),
+          );
+        }
+        labelsBuilt = true;
+      } else if (level < LABEL_ZOOM && labelsBuilt) {
+        labelsGroup.textContent = "";
+        labelsBuilt = false;
+      }
+    };
+
+    const apply = () => {
+      svg.setAttribute(
+        "viewBox",
+        `${vnum(view.x)} ${vnum(view.y)} ${vnum(view.w)} ${vnum(view.h)}`,
+      );
+      const level = clamp(Math.round(zoom), ZOOM_MIN, ZOOM_MAX);
+      svg.setAttribute("data-zoom", String(level));
+      svg.style.setProperty("--map-zoom", String(zoom));
+      syncLabels(level);
+    };
+
+    const toSvgPoint = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect();
+      return {
+        x: view.x + ((clientX - rect.left) / rect.width) * view.w,
+        y: view.y + ((clientY - rect.top) / rect.height) * view.h,
+      };
+    };
+
+    const zoomAt = (factor, anchorX, anchorY) => {
+      const newZoom = clamp(zoom * factor, ZOOM_MIN, ZOOM_MAX);
+      const newW = BASE_VIEW.w / newZoom;
+      const newH = BASE_VIEW.h / newZoom;
+      const ratioX = (anchorX - view.x) / view.w;
+      const ratioY = (anchorY - view.y) / view.h;
+      view.x = anchorX - ratioX * newW;
+      view.y = anchorY - ratioY * newH;
+      view.w = newW;
+      view.h = newH;
+      zoom = newZoom;
+      apply();
+    };
+
+    svg.classList.add("map--zoomable");
+    svg.addEventListener(
+      "wheel",
+      (event) => {
+        event.preventDefault();
+        const point = toSvgPoint(event.clientX, event.clientY);
+        zoomAt(event.deltaY < 0 ? 1.2 : 1 / 1.2, point.x, point.y);
+      },
+      { passive: false },
+    );
+
+    const pointers = new Map();
+    let pinchStartDistance = null;
+    let pinchStartZoom = null;
+    const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+    const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+
+    svg.addEventListener("pointerdown", (event) => {
+      // No setPointerCapture: capturing on every pointerdown (including a plain tap on a
+      // community point) intercepts the click the point's own listener needs (Task-08).
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (pointers.size === 2) {
+        const [a, b] = [...pointers.values()];
+        pinchStartDistance = distance(a, b);
+        pinchStartZoom = zoom;
+      }
+    });
+
+    svg.addEventListener("pointermove", (event) => {
+      if (!pointers.has(event.pointerId)) {
+        return;
+      }
+      const previous = pointers.get(event.pointerId);
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (pointers.size === 1) {
+        const rect = svg.getBoundingClientRect();
+        view.x -= ((event.clientX - previous.x) / rect.width) * view.w;
+        view.y -= ((event.clientY - previous.y) / rect.height) * view.h;
+        apply();
+      } else if (pointers.size === 2 && pinchStartDistance) {
+        const [a, b] = [...pointers.values()];
+        const mid = midpoint(a, b);
+        const point = toSvgPoint(mid.x, mid.y);
+        const targetZoom = clamp(
+          pinchStartZoom * (distance(a, b) / pinchStartDistance),
+          ZOOM_MIN,
+          ZOOM_MAX,
+        );
+        zoomAt(targetZoom / zoom, point.x, point.y);
+      }
+    });
+
+    const endPointer = (event) => {
+      pointers.delete(event.pointerId);
+      if (pointers.size < 2) {
+        pinchStartDistance = null;
+        pinchStartZoom = null;
+      }
+    };
+    svg.addEventListener("pointerup", endPointer);
+    svg.addEventListener("pointercancel", endPointer);
+    svg.addEventListener("pointerleave", endPointer);
+
+    const reset = () => {
+      view.x = BASE_VIEW.x;
+      view.y = BASE_VIEW.y;
+      view.w = BASE_VIEW.w;
+      view.h = BASE_VIEW.h;
+      zoom = ZOOM_MIN;
+      apply();
+    };
+
+    apply();
+    return { reset };
+  };
+
+  const renderMap = (filterId, selectedId, layersRaw) => {
     const filter = pack.filters.find((f) => f.id === filterId) || pack.filters[0];
     const shown = pack.communities.filter((c) => filter.ids.includes(c.id));
     const selected = pack.communities.find((c) => c.id === selectedId) || null;
@@ -758,6 +1000,11 @@
       ...shown.filter((c) => c !== selected),
       ...shown.filter((c) => c === selected),
     ];
+    const areaLayers = pack.layers.filter((layer) => layer.kind === "area");
+    const visibleSlugs =
+      layersRaw === null || layersRaw === undefined
+        ? new Set(areaLayers.map(slugOf))
+        : new Set(layersRaw.split(",").filter(Boolean));
     const svg = s(
       "svg",
       {
@@ -766,13 +1013,29 @@
         "aria-label": `Map of the Northern Territory, ${shown.length} of ${pack.count} communities shown`,
         viewBox: "0 0 300 480",
       },
+      // The land is the base terrain the layers and points sit on: painted first, not last
+      // (a deliberate departure from a literal reading of the Execution Guide's draw-order
+      // sentence -- its own opaque --map-land fill, drawn after the coverage layers, painted
+      // over every one of them; see this task's Status notes).
       s("g", { class: "map__land" }, s("path", { d: pack.outline })),
-      ...ordered.map((c) => renderPoint(c, c === selected, filter.id)),
+      ...pack.layers.map((layer) => renderLayerGroup(layer, visibleSlugs)),
+      ...ordered.map((c) => renderPoint(c, c === selected, filter.id, layersRaw)),
     );
     main.textContent = "";
-    const bar = renderFilterTabs(filter, selected ? selected.id : null);
+    const bar = renderFilterTabs(filter, selected ? selected.id : null, layersRaw);
     main.appendChild(bar);
+    main.appendChild(
+      renderLayerChips(areaLayers, visibleSlugs, filter.id, selected ? selected.id : null, layersRaw),
+    );
     main.appendChild(svg);
+    const mapView = attachMapView(svg, shown, selected ? selected.id : null);
+    const resetButton = h(
+      "button",
+      { type: "button", class: "button button--secondary map-controls__reset" },
+      "Reset view",
+    );
+    resetButton.addEventListener("click", () => mapView.reset());
+    main.appendChild(resetButton);
     main.appendChild(renderLegend(shown.length));
     if (selected) {
       for (const node of renderMapPanel(selected)) {
@@ -1115,7 +1378,12 @@
     if (screen === "#/map") {
       const query = new URLSearchParams(hash.split("?")[1] || "");
       const selectedParam = query.get("selected");
-      renderMap(query.get("filter") || "all", selectedParam ? Number(selectedParam) : null);
+      const layersParam = query.has("layers") ? query.get("layers") : null;
+      renderMap(
+        query.get("filter") || "all",
+        selectedParam ? Number(selectedParam) : null,
+        layersParam,
+      );
     } else if (hash.startsWith("#/nearby")) {
       renderNearby();
     } else if (screen === "#/share") {

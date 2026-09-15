@@ -1,0 +1,14 @@
+/* Map layer custom properties only (CLAUDE.md Part 2, layer rule 5's map-layer exception). */
+:root {
+  /* Carrier coverage colours: brand hues, the deliberate exception -- not derived from a token */
+  /* because DESIGN.md carries no carrier palette (PRD decision 2026-09-15). */
+  --layer-cov-telstra: #0072ce;
+  --layer-cov-optus: #00a19a;
+  --layer-cov-tpg: #6b2c91;
+  /* Non-carrier layers derive from the existing design tokens. */
+  --layer-regions-sa3: var(--color-muted-soft);
+  --layer-towns: var(--color-ink);
+  /* Shared across every area/line layer. */
+  --layer-fill-opacity: 0.28;
+  --layer-stroke-scale: 2;
+}

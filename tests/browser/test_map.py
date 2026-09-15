@@ -160,3 +160,146 @@ def test_click_point_selects_it(browser):
     assert errors == []
     assert blocked == []
     page.close()
+
+
+# --- Task-21: map layers, carrier toggles, zoom/pan, community labels ------------------------
+
+PACK_LAYERS = json.loads(PACK.read_text(encoding="utf-8"))["layers"]
+AREA_LAYER_IDS = [layer["id"] for layer in PACK_LAYERS if layer["kind"] == "area"]
+
+
+def test_one_layer_group_per_pack_layer(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+
+    for layer in PACK_LAYERS:
+        expect(page.locator(f'g[data-layer="{layer["id"]}"]')).to_have_count(1)
+    # The Task-08 filter behaviour and counts are unaffected by the new layer groups.
+    expect(page.locator(".map__community")).to_have_count(96)
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_area_chip_toggles_hidden_on_its_group(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+
+    layer_id = AREA_LAYER_IDS[0]
+    label = next(layer["label"] for layer in PACK_LAYERS if layer["id"] == layer_id)
+    group = page.locator(f'g[data-layer="{layer_id}"]')
+    chip = page.locator(".layer-chip").filter(has_text=label)
+    expect(chip).to_have_count(1)
+
+    expect(group).not_to_have_attribute("hidden", "")
+    chip.click()
+    expect(group).to_have_attribute("hidden", "")
+    chip.click()
+    expect(group).not_to_have_attribute("hidden", "")
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_layers_query_shows_only_the_named_layer(browser):
+    page, blocked, errors = _open_page(browser, "#/map?layers=telstra")
+
+    expect(page.locator('g[data-layer="cov-telstra"]')).not_to_have_attribute("hidden", "")
+    expect(page.locator('g[data-layer="cov-optus"]')).to_have_attribute("hidden", "")
+    expect(page.locator('g[data-layer="cov-tpg"]')).to_have_attribute("hidden", "")
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_five_towns_with_names(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+
+    towns_layer = next(layer for layer in PACK_LAYERS if layer["kind"] == "point")
+    expected = {point["label"] for point in towns_layer["paths"]}
+    markers = page.locator(".map__town")
+    expect(markers).to_have_count(5)
+    assert set(markers.all_text_contents()) == expected == {
+        "Darwin",
+        "Katherine",
+        "Tennant Creek",
+        "Alice Springs",
+        "Nhulunbuy",
+    }
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def _wheel_zoom_in(page, ticks: int = 10):
+    box = page.locator(".map").bounding_box()
+    cx = box["x"] + box["width"] / 2
+    cy = box["y"] + box["height"] / 2
+    for _ in range(ticks):
+        page.locator(".map").dispatch_event(
+            "wheel",
+            {"deltaY": -100, "clientX": cx, "clientY": cy, "bubbles": True, "cancelable": True},
+        )
+
+
+def test_wheel_zooms_in_and_sets_data_zoom(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+
+    svg = page.locator(".map")
+    _wheel_zoom_in(page, ticks=3)
+    view_box = svg.get_attribute("viewBox")
+    width = float(view_box.split(" ")[2])
+    assert width < 300
+    assert int(svg.get_attribute("data-zoom")) > 1
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_zoomed_in_labels_become_visible(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+
+    svg = page.locator(".map")
+    _wheel_zoom_in(page, ticks=12)
+    assert int(svg.get_attribute("data-zoom")) >= 3
+    labels = page.locator(".map__zoom-labels .map__label")
+    expect(labels.first).to_be_visible()
+    display = labels.first.evaluate("el => getComputedStyle(el).display")
+    assert display != "none"
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_reset_view_restores_default_viewbox(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+
+    svg = page.locator(".map")
+    _wheel_zoom_in(page, ticks=6)
+    assert svg.get_attribute("viewBox") != "0 0 300 480"
+
+    page.get_by_text("Reset view").click()
+    expect(svg).to_have_attribute("viewBox", "0 0 300 480")
+    expect(svg).to_have_attribute("data-zoom", "1")
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_version_1_pack_is_refused(browser, tmp_path):
+    built = (ROOT / "dist" / "index.html").read_text(encoding="utf-8")
+    assert '"pack_version":2' in built
+    downgraded = built.replace('"pack_version":2', '"pack_version":1', 1)
+    copy_path = tmp_path / "version1.html"
+    copy_path.write_text(downgraded, encoding="utf-8")
+
+    page = browser.new_page()
+    page.goto(copy_path.resolve().as_uri())
+    page.wait_for_load_state()
+    expect(page.locator("main")).to_have_text("Unknown data pack")
+    page.close()

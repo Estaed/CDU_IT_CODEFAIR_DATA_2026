@@ -37,6 +37,7 @@ CSS_FILES = (
     ROOT / "design/ds/design/base.css",
     ROOT / "design/screens/screens.css",
     ROOT / "app/app.css",
+    ROOT / "app/layers.css",
 )
 
 
