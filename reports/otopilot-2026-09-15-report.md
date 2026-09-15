@@ -11,7 +11,12 @@ approved 12:35. `BASE_SHA` `5826840` (the plan commit). Run started 12:43 local.
 | Task-08 map screen | **green, review-visual pending** | opus | 1 (+ main-loop finish) | 8 min, 49 turns | $2.14 | lane gate 1 fail -> 0 after the PRD alignment below | `c90c3bf` + `6305792` (status) |
 | Task-10 figures | **green, DONE** | sonnet | 1 (+ main-loop commit) | 19 min, 100 turns | $2.73 | lane gate GREEN first run (no commands ran in the bee, 20 refusals) | `48c8ab0` + `d186138` (status) |
 | Task-09 share screen | **green, review-visual pending** | opus | 1 | 6 min, 25 turns | $1.74 | lane gate GREEN, main gate GREEN, 0 refusals with `--allowedTools` | `b7c3234` + `e62ff08` (status) |
-| Task-11 packaging | in flight (wave 3 opened 13:20, base `e62ff08`) | sonnet | | | | | |
+| Task-11 packaging | **green, DONE** (second launch, wave 9) | sonnet | 1 | 16 min, 45 turns | $1.48 | lane GREEN; 3 docstrings reworded by the main loop | `0780fe8` + `38f8880` (status) |
+| Task-12 pack: freshness, history, changes | **green, DONE** | sonnet | 1 | 12 min, 28 turns | $1.15 | lane GREEN first run | `552a1a0` + `af0d579` (status) |
+| Task-13 SMS, statement, freshness line | **green, review-visual pending** | opus | 1 | 5 min, 21 turns | $1.56 | lane GREEN first run | `467f0eb` + `090c94d` (status) |
+| Task-14 changes on the share screen | **green, review-visual pending** | sonnet | 1 | 6 min, 22 turns | $0.67 | lane GREEN first run | `d054316` + `bb61c42` (status) |
+| Task-15 compare route | **green, review-visual pending** | opus | 1 | 6 min, 25 turns | $1.52 | lane GREEN first run | `8687e87` + status commit below |
+| Task-16 sunlight mode | **not a lane**: stop marker (sunlight tokens must be exported from the design project first) | | | | | | |
 
 ## Checkpoint after wave 1 (Task-08 integrated 13:08)
 
@@ -95,3 +100,23 @@ Quota before the wave: Claude 5-hour 0% -> measured below at the checkpoint, wee
   `data/raw/ntg_2021.xlsx`, deleted) and the NTG 2021 data-quality statement PDF, moved to
   `docs/ntg_2021_data-quality-statement.pdf`.
 - Wave 10 (16:12): Task-13 on `opus`, base `af0d579` (Task-11 owns no app file), 75 minutes.
+
+## Closeout (16:30)
+
+Every task in the approved plan (08, 09, 10, 11) and every task Tarik added at the desk
+(12, 13, 14, 15) is integrated on `main` with the gate green after each pick. Final main gate
+at `8687e87`: ruff clean, 122 unit + 30 browser tests, `dist/index.html` 318,741 bytes,
+`data/out/data_pack.json` 260,161 bytes. Task-16 is excluded by its stop marker.
+
+Bee cost for the day: 8 lanes, $12.99, 8 launches, 0 second attempts. Every lane's first gate
+was green except Task-08 (one PRD-alignment edit by the main loop). Quota at closeout: see the
+line below. Worktrees: all removed junction-first; `git worktree list` shows main only.
+
+**Awaiting eye check (`review-visual`, advisory):** `dist/index.html` at 360x780 and 768x1024
+against `design/screens/*.html`: Task-08 map, Task-09 share, Task-13 buttons under the
+services, Task-14 changes list, Task-15 compare grid. Task-10's two PNG maps for the team.
+
+**Lessons for the brain (not this repo):** (1) `--permission-mode acceptEdits` does not let a
+`claude -p` bee run Bash; the recipe needs `--allowedTools`. (2) Never `git worktree remove` a
+lane that holds junctions; unlink them first. (3) The status-line quota reading is valid when
+the live endpoint returns 429; the checker should not report UNKNOWN on it.

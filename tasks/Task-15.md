@@ -27,6 +27,10 @@ reached from a "Compare with..." search box on Screen 1. PRD §4.2 additions, 20
 
 ## Acceptance Criteria (DoD)
 
-- [ ] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
-- [ ] `tests/browser/test_compare.py` (marker `browser`): `#/compare/9/458` renders two `.community-header__name` (Amoonguna, Baniyala), eight `.verdict-badge`, two `.agreement__headline`; typing `Bani` in the compare box on `#/community/9` and picking the result changes the hash to `#/compare/9/458`; `#/compare/9/999999` lands on `#/community/9`.
-- [ ] Zero non-`file:` requests and no console errors; `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js` prints nothing.
+- [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
+- [x] `tests/browser/test_compare.py` (marker `browser`): `#/compare/9/458` renders two `.community-header__name` (Amoonguna, Baniyala), eight `.verdict-badge`, two `.agreement__headline`; typing `Bani` in the compare box on `#/community/9` and picking the result changes the hash to `#/compare/9/458`; `#/compare/9/999999` lands on `#/community/9`.
+- [x] Zero non-`file:` requests and no console errors; `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js` prints nothing.
+
+## Status
+
+DONE 2026-09-15 (otopilot, lane gate and main gate green at `8687e87`; 8 browser tests). Bee notes: the screens carry no media query, so the grid wraps with auto-fit/minmax (stacked at 360, two columns at 768); the compare box has its own `.compare-search__input` because two tests expect exactly one `.search-input`; both ids unknown falls back to Wadeye with the search focused. The two-column layout is the one exception to DESIGN.md's single-column rule, recorded in the PRD decision log 2026-09-15. review-visual pending.
