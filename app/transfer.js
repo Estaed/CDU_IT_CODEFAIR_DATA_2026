@@ -343,10 +343,11 @@ window.CrosscheckTransfer = (() => {
       }
       note.hidden = true;
       detector = detector || new window.BarcodeDetector({ formats: ["qr_code"] });
-      start().catch(() => {
+      start().catch((error) => {
         stop();
         counter.hidden = false;
-        counter.textContent = "Could not access the camera.";
+        const why = error && error.name ? ` (${error.name}, ${location.protocol})` : "";
+        counter.textContent = `Could not access the camera${why}.`;
       });
     });
 
