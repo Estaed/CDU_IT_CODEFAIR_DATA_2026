@@ -837,6 +837,7 @@
     saveButton.addEventListener("click", saveFile);
     main.textContent = "";
     const changes = renderChanges(pack);
+    const transfer = h("div", { class: "transfer" });
     main.appendChild(
       h(
         "div",
@@ -871,9 +872,13 @@
             "Crosscheck shows what published sources say about a community's connectivity and what that allows. It does not measure signal. Every value shows its source and date.",
           ),
         ),
+        transfer,
         changes,
       ),
     );
+    // The camera loop and the camera read live in transfer.js (layer rule 8); this screen only
+    // gives it the container and the same page bytes Save file writes.
+    window.CrosscheckTransfer.mount(transfer, pageHtml);
   };
 
   // The Changes list is ordered by the pipeline; the browser does no sorting or filtering

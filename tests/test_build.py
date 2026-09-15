@@ -117,8 +117,8 @@ def test_qr_js_inlined_once_before_app_js():
     build_app.main()
     html = (ROOT / "dist" / "index.html").read_text(encoding="utf-8")
 
-    assert html.count("window.CrosscheckQR") == 1
-    qr_index = html.index("window.CrosscheckQR")
+    assert html.count("window.CrosscheckQR = ") == 1
+    qr_index = html.index("window.CrosscheckQR = ")
     # DEFAULT_HASH is a unique app.js identifier (Task-17 Execution Guide: qr.js before app.js).
     app_index = html.index("DEFAULT_HASH")
     assert qr_index < app_index

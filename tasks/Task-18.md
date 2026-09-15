@@ -46,12 +46,69 @@ batch; Part 2 "Entry points: Transfer by camera".
 
 ## Acceptance Criteria (DoD)
 
-- [ ] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
-- [ ] `tests/browser/test_transfer.py` (marker `browser`): in `dist/index.html`, `CrosscheckTransfer.frames(pageHtml)` (the test reads `dist/index.html` from disk and passes its text) returns N frames, every frame matches `^CX[0-9a-f]{4}[0-9a-f]{4}[A-Za-z0-9+/=]{1,1000}$`, the count field equals N on every frame, and `CrosscheckQR.encode(frame, "L").version` is at most 40 for all of them; shuffling the frames and dropping every duplicate, `reassemble` reports `complete`, and the SHA-256 of `inflate(bytes)` computed in the page with `crypto.subtle` equals the SHA-256 of `dist/index.html` computed in the test.
-- [ ] Same test: `#/share` shows a `.transfer` block with buttons labelled `Show` and `Receive`; clicking Show renders an `svg` inside `.transfer` and a counter text matching `frame 1 of \d+`; clicking Stop removes the loop (the counter stops changing over 500 ms).
-- [ ] `grep -l getUserMedia app/*.js` prints only `app/transfer.js` (until Task-19 adds `app/nearby.js`); `grep -nE "fetch\(|XMLHttpRequest|WebSocket|https?://" app/transfer.js` prints nothing; `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js app/transfer.js` prints nothing.
-- [ ] All existing browser tests (share, changes screen, statement) stay green; zero non-`file:` requests and no console errors.
+- [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0. (Main loop at integration, 2026-09-15: GATE GREEN, 37 browser tests.)
+- [x] `tests/browser/test_transfer.py` (marker `browser`): in `dist/index.html`, `CrosscheckTransfer.frames(pageHtml)` (the test reads `dist/index.html` from disk and passes its text) returns N frames, every frame matches `^CX[0-9a-f]{4}[0-9a-f]{4}[A-Za-z0-9+/=]{1,1000}$`, the count field equals N on every frame, and `CrosscheckQR.encode(frame, "L").version` is at most 40 for all of them; shuffling the frames and dropping every duplicate, `reassemble` reports `complete`, and the SHA-256 of `inflate(bytes)` computed in the page with `crypto.subtle` equals the SHA-256 of `dist/index.html` computed in the test.
+- [x] Same test: `#/share` shows a `.transfer` block with buttons labelled `Show` and `Receive`; clicking Show renders an `svg` inside `.transfer` and a counter text matching `frame 1 of \d+`; clicking Stop removes the loop (the counter stops changing over 500 ms).
+- [x] `grep -l getUserMedia app/*.js` prints only `app/transfer.js` (until Task-19 adds `app/nearby.js`); `grep -nE "fetch\(|XMLHttpRequest|WebSocket|https?://" app/transfer.js` prints nothing; `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js app/transfer.js` prints nothing.
+- [x] All existing browser tests (share, changes screen, statement) stay green; zero non-`file:` requests and no console errors.
 
 ## Status
 
-Not started.
+DONE 2026-09-15 (main loop: integrated, gate green; mutation check: requiring `total - 1`
+frames in `reassemble` turns the round-trip test red, restored. Integration fix: the Task-17
+build test now counts the declaration `window.CrosscheckQR = ` rather than every mention, so
+`transfer.js` uses plain `window.CrosscheckQR` dot access instead of the bracket workaround the
+worker described below. Open point for Tarik: 128 frames at 8 fps is a 16-second loop and a
+missed frame costs a full loop; see the session summary for the options.) Worker notes follow.
+
+Implemented in worktree `agent-a8581c4299e0875ba`, rebased onto `efeeb6b` (Wave 14 DONE) first.
+
+Files: `app/transfer.js` (new), `app/app.js` (`renderShare` builds a `.transfer` container and
+calls `window.CrosscheckTransfer.mount(transfer, pageHtml)`), `app/app.css` (`.transfer*` block,
+tokens only), `scripts/build_app.py` (`JS_FILES` now `qr.js, transfer.js, app.js`),
+`tests/browser/test_transfer.py` (new).
+
+Commands run from the worktree root with the main tree's interpreter:
+
+- `ruff check --no-cache .` -> `All checks passed!`
+- `scripts/build_app.py` -> `dist\index.html: 540981 bytes`
+- `pytest tests/test_build.py tests/browser -q` -> `47 passed` (all green, including the two new
+  `test_transfer.py` tests and every pre-existing browser test: share, changes screen,
+  statement, community, compare, map, QR, smoke).
+
+Current build: `dist/index.html` is 540,981 bytes (limit 1,048,576). `CrosscheckTransfer.frames`
+on that file produces **128 frames**, total base64 payload **127,668 characters** across them
+(first frame 1,000 base64 chars, last frame 678). Frame count is higher than the 2026-09-15
+spike's ~33-frame estimate because the pack has grown since (Wave 14 added map layers and
+raised the pack cap to 512,000 bytes), so the gzip ratio on this larger, less repetitive payload
+is lower than the spike's.
+
+Deviations from a literal reading of the Execution Guide, both forced by tests already in the
+repo that Task-18 must not touch (`tests/test_build.py`, not in this task's OWNS list):
+- `transfer.js` calls the runtime QR encoder via `window["CrosscheckQR"]` (bracket access)
+  through a local `crosscheckQR` alias, not `window.CrosscheckQR` (dot access). Calling it the
+  literal way made `tests/test_build.py::test_qr_js_inlined_once_before_app_js` fail: that test
+  counts the exact text `window.CrosscheckQR` in the built page and asserts it appears once
+  (qr.js's own declaration). Once transfer.js needs to *call* the encoder, a second literal
+  occurrence is unavoidable unless the call site avoids the dotted spelling.
+- The "received app looks like Crosscheck" check in `finish()` parses the inflated HTML with
+  `DOMParser` and checks `documentElement.tagName === "HTML"` and `getElementById("pack") !==
+  null`, rather than `html.includes("<html")` / `html.includes('id="pack"')` as literally read
+  in the Execution Guide. The substring form embeds the literal text `id="pack"` in transfer.js's
+  own source, which — once inlined into `dist/index.html` as JS text — pushed
+  `test_real_build`'s and `test_save_file_downloads_the_page`'s `html.count('id="pack"') == 1`
+  checks to 2. The DOMParser form is arguably more correct anyway (structural check instead of a
+  text scan) and carries no such literal.
+- The Receive counter/status line uses class `.transfer__status`, not `.transfer__counter`: the
+  Execution Guide doesn't name a class, and giving Show and Receive the same counter class made
+  Playwright's locator strict-mode reject `.transfer .transfer__counter` (two matches). CSS rule
+  for both class names is shared in `app/app.css`.
+- The Receive **button** is always rendered with the label `Receive` (satisfying the literal AC
+  text "buttons labelled Show and Receive"); the `BarcodeDetector`-absent fallback is decided at
+  click time, not mount time, so the card doesn't have to choose between "always show a Receive
+  button" and "replace the whole card with one sentence when unsupported" at render time — it
+  does the latter only once the user asks to scan.
+
+Not verified here (per the lane's own instructions): `scripts/gate.py` itself (no `data/raw/` in
+this worktree); the real camera round trip on two phones (Tarik's manual check, PRD §6); nothing
+in `app/qr.js`, `app/nearby.js`, `pipeline/`, `scripts/gate.py`, or `design/` was touched.

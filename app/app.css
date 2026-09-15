@@ -63,3 +63,46 @@
 .compare-search__input::placeholder { color: var(--text-secondary); }
 
 .compare-search__input:focus { border-color: var(--text-heading); }
+
+/* Task-18 transfer by camera: Show and Receive on the share screen. New classes only, tokens
+   only (layer rule 5); the share card above is untouched and its own tests still address it. */
+
+.transfer { display: grid; gap: var(--space-md); }
+
+.transfer__section {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  background: var(--surface-page);
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+}
+
+.transfer__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--size-control);
+  min-width: var(--size-touch);
+  padding: 0 calc(var(--space-md) + var(--space-xxs));
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  font: var(--text-button);
+  color: var(--text-heading);
+  background: var(--surface-page);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.transfer__button:active { background: var(--surface-block); }
+
+.transfer__stage { display: grid; justify-items: center; gap: var(--space-xs); }
+
+.transfer__svg { width: var(--size-qr); height: var(--size-qr); }
+
+.transfer__counter, .transfer__status { font: var(--text-body-sm); color: var(--text-secondary); }
+
+.transfer__video { width: 100%; border-radius: var(--radius-md); background: var(--surface-block); }
+
+.transfer__note { margin: 0; font: var(--text-body-sm); color: var(--text-secondary); }
