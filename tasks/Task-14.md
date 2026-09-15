@@ -26,6 +26,10 @@ dated list under the share card: "Milingimbi: public Wi-Fi no longer listed (Bus
 
 ## Acceptance Criteria (DoD)
 
-- [ ] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
-- [ ] `tests/browser/test_changes_screen.py` (marker `browser`): `#/share` shows the section title with both dates, at least one row naming Milingimbi, and its link navigates to `#/community/531`; with `changes.items` emptied in the page before render, the "No changes" line shows.
-- [ ] Zero non-`file:` requests and no console errors; `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js` prints nothing.
+- [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
+- [x] `tests/browser/test_changes_screen.py` (marker `browser`): `#/share` shows the section title with both dates, at least one row naming Milingimbi, and its link navigates to `#/community/531`; with `changes.items` emptied in the page before render, the "No changes" line shows.
+- [x] Zero non-`file:` requests and no console errors; `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js` prints nothing.
+
+## Status
+
+DONE 2026-09-15 (otopilot, lane gate and main gate green at `d054316`; 2 browser tests). Bee note: the empty-items case is tested by patching `JSON.parse` through `page.add_init_script` before the app reads the pack. review-visual pending.
