@@ -12,7 +12,7 @@ import re
 from datetime import date
 from pathlib import Path
 
-from pipeline import outline, provenance, rules
+from pipeline import changes, outline, provenance, rules
 
 ROOT = Path(__file__).resolve().parent.parent
 TABLE = ROOT / "data/out/capability_table.csv"
@@ -20,6 +20,7 @@ THRESHOLDS = ROOT / "pipeline/thresholds.csv"
 OUT_PACK = ROOT / "data/out/data_pack.json"
 CONSTANTS = ROOT / "constants.md"
 BOUNDARY_RAW = ROOT / "data/raw" / outline.RAW_NAME
+HISTORY_DIR = ROOT / "data/out/history"
 
 PACK_VERSION = 1
 POPULATION_SOURCE = "ABS 2021 SA1 via BushTel"
@@ -420,6 +421,59 @@ def attributions(thresholds: dict[str, dict]) -> list[dict[str, str]]:
     return items
 
 
+def freshness_for(community: dict, sources: dict[str, dict]) -> dict:
+    """The oldest dated line under one community: its ``sources`` key and date."""
+    oldest_src = None
+    oldest_date = None
+    for line in dated_lines(community):
+        src = line["src"]
+        published = sources[src]["date"]
+        if oldest_date is None or published < oldest_date:
+            oldest_date = published
+            oldest_src = src
+    return {"source": oldest_src, "date": oldest_date}
+
+
+def _refreshed(row: dict[str, str], thresholds: dict[str, dict]) -> dict[str, str]:
+    """Recompute the verdict-shaped columns rather than trust a stale history file.
+
+    The 2026-09-12 fixture predates the current works/degraded/fails/nodata vocabulary
+    (it still carries RAG labels like ``AMBER``): diffing those columns as written would
+    flag every one of the 96 communities as changed. Recomputing from the same rules the
+    pack itself calls is the only reading that cannot be fooled by a label rename.
+    """
+    row = dict(row)
+    row["telehealth_video"] = rules.telehealth_video(row, thresholds)["verdict"]
+    row["school_video_meeting"] = rules.school_video_meeting(row, thresholds)["verdict"]
+    row["mygov_text"] = rules.mygov_text(row, thresholds)["verdict"]
+    row["voice_sms"] = rules.voice_sms(row)["verdict"]
+    row["best_path"] = rules.best_path(row)
+    return row
+
+
+def changes_header(history_dir: Path, thresholds: dict[str, dict]) -> dict:
+    """The header's ``changes`` block: the two newest history snapshots, diffed."""
+    pair = changes.newest_pair(history_dir)
+    if pair is None:
+        return {"from": "", "to": "", "items": []}
+    older_path, newer_path = pair
+    with older_path.open(newline="", encoding="utf-8-sig") as handle:
+        older_rows = [_refreshed(row, thresholds) for row in csv.DictReader(handle)]
+    with newer_path.open(newline="", encoding="utf-8-sig") as handle:
+        newer_rows = [_refreshed(row, thresholds) for row in csv.DictReader(handle)]
+    to_date = changes.date_of(newer_path)
+    items = [
+        {
+            "id": int(row["bushtel_id"]),
+            "name": row["name"],
+            "text": changes.sentence(row),
+            "date": to_date,
+        }
+        for row in changes.diff_tables(older_rows, newer_rows)
+    ]
+    return {"from": changes.date_of(older_path), "to": to_date, "items": items}
+
+
 def filters(rows: list[dict[str, str]]) -> list[dict]:
     """The four map filters (design/screens/README.md "filters"), membership from the table."""
     return [
@@ -449,12 +503,16 @@ def build_pack(
     team: str,
     built: str,
     boundary_path: Path = BOUNDARY_RAW,
+    history_dir: Path = HISTORY_DIR,
 ) -> dict:
     """The whole pack, version 1, communities sorted by BushTel id."""
     cited = citations(thresholds)
     communities = sorted(
         (_community(row, thresholds, cited) for row in rows), key=lambda entry: entry["id"]
     )
+    sources = source_table(communities, cited)
+    for community in communities:
+        community["freshness"] = freshness_for(community, sources)
     return {
         "pack_version": PACK_VERSION,
         "built": built,
@@ -464,7 +522,8 @@ def build_pack(
         "outline": outline.outline_path(boundary_path),
         "filters": filters(rows),
         "legend": legend(communities),
-        "sources": source_table(communities, cited),
+        "sources": sources,
+        "changes": changes_header(history_dir, thresholds),
         "attributions": attributions(thresholds),
         "communities": communities,
     }

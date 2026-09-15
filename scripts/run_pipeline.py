@@ -13,6 +13,7 @@ it, rather than a half-filled table.
 from __future__ import annotations
 
 import sys
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -24,10 +25,24 @@ from pipeline.sources import accc, bushtel, nbn, ntg, rrl  # noqa: E402
 RAW = ROOT / "data/raw"
 OUT = ROOT / "data/out"
 CACHE = OUT / "cache"
+HISTORY = OUT / "history"
+FIXTURE_SEED = ROOT / "tests/fixtures/capability_table_2026-09-12.csv"
 THRESHOLDS = ROOT / "pipeline/thresholds.csv"
 TABLE_CSV = OUT / "capability_table.csv"
 TABLE_XLSX = OUT / "capability_table.xlsx"
 PROVENANCE = OUT / "PROVENANCE.md"
+
+
+def _write_history_snapshot(built: str) -> None:
+    """Copy today's table into the committed history, skipping a byte-identical file."""
+    HISTORY.mkdir(parents=True, exist_ok=True)
+    seed = HISTORY / "capability_table_2026-09-12.csv"
+    if not seed.exists():
+        seed.write_bytes(FIXTURE_SEED.read_bytes())
+    content = TABLE_CSV.read_bytes()
+    target = HISTORY / f"capability_table_{built}.csv"
+    if not target.exists() or target.read_bytes() != content:
+        target.write_bytes(content)
 
 
 def newest(pattern: str, fetch_command: str) -> Path:
@@ -76,6 +91,8 @@ def main() -> None:
     table.to_csv(TABLE_CSV, index=False, lineterminator="\n", encoding="utf-8")
     table.to_excel(TABLE_XLSX, index=False, engine="openpyxl")
     print(f"{TABLE_CSV.relative_to(ROOT).as_posix()}: {len(table)} rows, {table.shape[1]} columns")
+
+    _write_history_snapshot(date.today().isoformat())
 
     provenance.write(PROVENANCE, RAW)
     print(f"{PROVENANCE.relative_to(ROOT).as_posix()}: written")

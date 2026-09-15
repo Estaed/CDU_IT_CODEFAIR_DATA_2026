@@ -272,6 +272,27 @@ def test_header_team_and_attributions(data_pack):
     assert "ACCC Mobile Infrastructure Report 2025" in texts
 
 
+def test_every_community_has_freshness(data_pack):
+    sources = data_pack["sources"]
+    for community in data_pack["communities"]:
+        freshness = community["freshness"]
+        assert freshness["source"] in sources
+        assert DATE_RE.match(freshness["date"])
+
+
+def test_changes_names_milingimbi_wifi(data_pack):
+    changes = data_pack["changes"]
+    assert changes["from"] == "2026-09-12"
+    assert changes["to"] == "2026-09-15"
+    milingimbi = next(item for item in changes["items"] if item["id"] == 531)
+    assert milingimbi["text"] == "Public Wi-Fi no longer listed"
+
+
+def test_changes_excludes_5g_columns(data_pack):
+    serialised = json.dumps(data_pack["changes"], ensure_ascii=False)
+    assert "5g" not in serialised.lower()
+
+
 def test_pack_build_imports_no_fetch_module():
     # Layer rule 3: requests lives under pipeline/fetch/ only, so the pack build (and with it
     # scripts/run_pipeline.py) must not import a fetch module even for a constant.
