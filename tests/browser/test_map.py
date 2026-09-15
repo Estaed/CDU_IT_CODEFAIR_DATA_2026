@@ -291,6 +291,149 @@ def test_reset_view_restores_default_viewbox(browser):
     page.close()
 
 
+# --- Task-29: map points cluster by zoom -----------------------------------------------------
+
+VERDICT_NAMES = ("works", "degraded", "fails", "nodata")
+
+
+def _cluster_data(locator) -> list[dict]:
+    return locator.evaluate_all(
+        """els => els.map(el => ({
+            id: el.getAttribute('data-id'),
+            count: Number(el.getAttribute('data-count')),
+            aria: el.getAttribute('aria-label'),
+            text: el.querySelector('.map__cluster-count').textContent,
+            verdictTotal: ['works', 'degraded', 'fails', 'nodata']
+                .reduce((sum, v) => sum + Number(el.getAttribute(`data-${v}`) || 0), 0),
+        }))"""
+    )
+
+
+def test_clusters_at_zoom1_sum_to_96(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+
+    clusters = page.locator(".map__cluster")
+    expect(clusters.first).to_be_visible()
+    data = _cluster_data(clusters)
+    assert len(data) >= 1
+
+    for entry in data:
+        assert entry["aria"] == f"{entry['count']} communities"
+        assert entry["text"] == str(entry["count"])
+        assert entry["verdictTotal"] == entry["count"]
+
+    total_clustered = sum(entry["count"] for entry in data)
+    visible_points = page.locator(".map__community:not([hidden])").count()
+    assert total_clustered + visible_points == 96
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_zoom_8_shows_no_clusters(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+
+    _wheel_zoom_in(page, ticks=20)
+    expect(page.locator(".map")).to_have_attribute("data-zoom", "8")
+    expect(page.locator(".map__cluster")).to_have_count(0)
+    expect(page.locator(".map__community:not([hidden])")).to_have_count(96)
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_click_first_cluster_zooms_in_and_splits_it(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+
+    svg = page.locator(".map")
+    first_cluster = page.locator(".map__cluster").first
+    expect(first_cluster).to_be_visible()
+    original_id = first_cluster.get_attribute("data-id")
+
+    # dispatch_event, not .click(): neighbouring cluster hit circles can overlap on screen at
+    # zoom 1 (the same reason test_click_point_selects_it above needs an isolated community), so
+    # a real pointer click can land on the wrong cluster; dispatching targets this element only.
+    first_cluster.dispatch_event("click")
+    expect(svg).not_to_have_attribute("data-zoom", "1")
+
+    def remaining_ids() -> list[str]:
+        return page.locator(".map__cluster").evaluate_all(
+            "els => els.map(el => el.getAttribute('data-id'))"
+        )
+
+    # expect() alone only retries truthy/equality checks; poll directly since the assertion is
+    # "this id is absent from a list", which Playwright's Python API has no built-in matcher for.
+    for _ in range(50):
+        if original_id not in remaining_ids():
+            break
+        page.wait_for_timeout(100)
+    assert original_id not in remaining_ids()
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_clinic_filter_clusters_and_points_sum_to_filter_count(browser):
+    page, blocked, errors = _open_page(browser, "#/map?filter=clinic-no-terrestrial")
+
+    clusters = page.locator(".map__cluster")
+    expect(page.locator(".map__community")).to_have_count(FILTER_COUNTS["clinic-no-terrestrial"])
+    data = _cluster_data(clusters)
+    total_clustered = sum(entry["count"] for entry in data)
+    visible_points = page.locator(".map__community:not([hidden])").count()
+    assert total_clustered + visible_points == FILTER_COUNTS["clinic-no-terrestrial"]
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_selected_community_at_zoom1_is_visible_and_unclustered(browser):
+    page, blocked, errors = _open_page(browser, "#/map?selected=458")
+
+    point = page.locator(".map__community").filter(has_text="Baniyala")
+    expect(point).not_to_have_attribute("hidden", "")
+    member_lists = page.locator(".map__cluster").evaluate_all(
+        "els => els.map(el => (el.getAttribute('data-id') || '').split('-'))"
+    )
+    assert all("458" not in members for members in member_lists)
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_cluster_function_is_pure_and_deterministic(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+
+    result = page.evaluate(
+        """() => {
+            const pack = JSON.parse(document.getElementById('pack').textContent);
+            const points = pack.communities.map((c) => ({
+                id: c.id,
+                x: c.x,
+                y: c.y,
+                verdict: c.services.find((s) => s.service === 'telehealth_video').verdict,
+            }));
+            const a = window.__map.cluster(points, 1);
+            const b = window.__map.cluster(points, 1);
+            return { a, b };
+        }"""
+    )
+    assert result["a"]["clusters"] == result["b"]["clusters"]
+    assert result["a"]["singles"] == result["b"]["singles"]
+    assert len(result["a"]["clusters"]) >= 1
+    total = sum(c["count"] for c in result["a"]["clusters"]) + len(result["a"]["singles"])
+    assert total == 96
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
 def test_version_1_pack_is_refused(browser, tmp_path):
     built = (ROOT / "dist" / "index.html").read_text(encoding="utf-8")
     assert '"pack_version":2' in built

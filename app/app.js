@@ -609,6 +609,70 @@
   const telehealthVerdict = (community) =>
     community.services.find((service) => service.service === "telehealth_video").verdict;
 
+  // Task-29: deterministic grouping of the points visible under the active filter into zoom
+  // clusters. Pure (no DOM, no pack), so it is unit-testable from the browser test as
+  // window.__map.cluster below and produces identical output for identical input every call.
+  const CLUSTER_RADIUS = 12;
+  const CLUSTER_MAX_ZOOM = 5;
+
+  // Walk ascending y, then x, then id; each unassigned point takes every other unassigned point
+  // within CLUSTER_RADIUS / zoom (Euclidean, view-box units) into its own group; two or more
+  // members become a cluster at the centroid, one member stays a single (Task-29 Execution
+  // Guide). No clustering at zoom 5 or more.
+  const cluster = (points, zoom) => {
+    if (zoom >= CLUSTER_MAX_ZOOM) {
+      return { clusters: [], singles: [...points] };
+    }
+    const radius = CLUSTER_RADIUS / zoom;
+    const sorted = [...points].sort((a, b) => a.y - b.y || a.x - b.x || a.id - b.id);
+    const assigned = new Set();
+    const clusters = [];
+    const singles = [];
+    for (const seed of sorted) {
+      if (assigned.has(seed.id)) {
+        continue;
+      }
+      const members = [seed];
+      assigned.add(seed.id);
+      for (const other of sorted) {
+        if (assigned.has(other.id)) {
+          continue;
+        }
+        if (Math.hypot(seed.x - other.x, seed.y - other.y) <= radius) {
+          members.push(other);
+          assigned.add(other.id);
+        }
+      }
+      if (members.length === 1) {
+        singles.push(seed);
+        continue;
+      }
+      const verdicts = { works: 0, degraded: 0, fails: 0, nodata: 0 };
+      for (const member of members) {
+        verdicts[member.verdict] = (verdicts[member.verdict] || 0) + 1;
+      }
+      clusters.push({
+        id: members
+          .map((m) => m.id)
+          .sort((a, b) => a - b)
+          .join("-"),
+        x: members.reduce((sum, m) => sum + m.x, 0) / members.length,
+        y: members.reduce((sum, m) => sum + m.y, 0) / members.length,
+        count: members.length,
+        verdicts,
+        members: members.map((m) => m.id).sort((a, b) => a - b),
+        minX: Math.min(...members.map((m) => m.x)),
+        maxX: Math.max(...members.map((m) => m.x)),
+        minY: Math.min(...members.map((m) => m.y)),
+        maxY: Math.max(...members.map((m) => m.y)),
+      });
+    }
+    return { clusters, singles };
+  };
+
+  // Exposed for the browser test, following the existing window.__statement pattern.
+  window.__map = { cluster };
+
   // ``layersRaw`` is the hash's own ``layers`` value (or null when absent): threaded through
   // unchanged so selecting a point or switching a filter never clobbers a carrier toggle state.
   const mapHash = (filterId, selectedId, layersRaw) => {
@@ -688,6 +752,75 @@
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         select();
+      }
+    });
+    return group;
+  };
+
+  // Cluster marker geometry (Task-29 Execution Guide): a filled circle, the count as text, and a
+  // ring split into arcs by the members' telehealth verdict counts using stroke-dasharray on
+  // stacked circles, coloured with the same verdict tokens the points use. Counter-scaled the
+  // same way as the points (app.css), so it keeps a constant screen size at any zoom.
+  const CLUSTER_RING_R = 9;
+  const CLUSTER_VERDICT_ORDER = ["works", "degraded", "fails", "nodata"];
+
+  const clusterRingArcs = (cl) => {
+    const circumference = 2 * Math.PI * CLUSTER_RING_R;
+    let offset = 0;
+    const arcs = [];
+    for (const verdict of CLUSTER_VERDICT_ORDER) {
+      const count = cl.verdicts[verdict] || 0;
+      if (count === 0) {
+        continue;
+      }
+      const length = (count / cl.count) * circumference;
+      arcs.push(
+        s("circle", {
+          class: `map__cluster-arc map__cluster-arc--${verdict}`,
+          cx: f1(cl.x),
+          cy: f1(cl.y),
+          r: CLUSTER_RING_R,
+          "stroke-dasharray": `${length.toFixed(2)} ${(circumference - length).toFixed(2)}`,
+          "stroke-dashoffset": (-offset).toFixed(2),
+        }),
+      );
+      offset += length;
+    }
+    return arcs;
+  };
+
+  // ``onActivate`` is the zoom-to-bounding-box handler attachMapView owns; kept as a parameter
+  // so this stays a plain renderer with no closure over the view/zoom state.
+  const renderClusterMarker = (cl, onActivate) => {
+    const group = s(
+      "g",
+      {
+        class: "map__cluster",
+        role: "button",
+        tabindex: "0",
+        "aria-label": `${cl.count} communities`,
+        "data-id": cl.id,
+        "data-count": String(cl.count),
+        "data-works": String(cl.verdicts.works || 0),
+        "data-degraded": String(cl.verdicts.degraded || 0),
+        "data-fails": String(cl.verdicts.fails || 0),
+        "data-nodata": String(cl.verdicts.nodata || 0),
+      },
+      s("circle", { class: "map__hit", cx: f1(cl.x), cy: f1(cl.y), r: 16 }),
+      s("circle", { class: "map__cluster-fill", cx: f1(cl.x), cy: f1(cl.y), r: CLUSTER_RING_R }),
+      ...clusterRingArcs(cl),
+      s(
+        "text",
+        { class: "map__cluster-count", x: f1(cl.x), y: f1(cl.y + 3), "text-anchor": "middle" },
+        String(cl.count),
+      ),
+    );
+    const activate = () => onActivate(cl);
+    group.addEventListener("click", activate);
+    group.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        activate();
       }
     });
     return group;
@@ -851,21 +984,54 @@
   const LABEL_ZOOM = 3;
 
   // Zoom (wheel, pinch) and pan (one-pointer drag) over the map's viewBox, plus the labels
-  // that appear once zoomed in far enough. Point/ring/label geometry stays a constant screen
-  // size at any zoom through the CSS transform keyed on the --map-zoom custom property this
-  // sets (app.css), rather than by rebuilding every point's own radius on each zoom step.
-  const attachMapView = (svg, shownCommunities, selectedId) => {
+  // that appear once zoomed in far enough and the Task-29 point clusters. Point/ring/label
+  // geometry stays a constant screen size at any zoom through the CSS transform keyed on the
+  // --map-zoom custom property this sets (app.css), rather than by rebuilding every point's own
+  // radius on each zoom step.
+  const attachMapView = (svg, shownCommunities, selectedId, pointGroupsById) => {
     const view = { ...BASE_VIEW };
     let zoom = ZOOM_MIN;
-    let labelsBuilt = false;
     const labelsGroup = s("g", { class: "map__zoom-labels" });
     svg.appendChild(labelsGroup);
+    const clustersLayer = s("g", { class: "map__clusters" });
+    svg.appendChild(clustersLayer);
 
-    const syncLabels = (level) => {
-      if (level >= LABEL_ZOOM && !labelsBuilt) {
+    // Task-29: recompute clusters (and, since they depend on which points are clustered, the
+    // zoom labels too) for the current zoom. Never called from a pan-only move; see the
+    // scheduling below.
+    const updateClustering = () => {
+      const level = clamp(Math.round(zoom), ZOOM_MIN, ZOOM_MAX);
+      const candidates = shownCommunities
+        .filter((community) => community.id !== selectedId)
+        .map((community) => ({
+          id: community.id,
+          x: community.x,
+          y: community.y,
+          verdict: telehealthVerdict(community),
+        }));
+      const { clusters } = cluster(candidates, zoom);
+      const clusteredIds = new Set();
+      for (const group of clusters) {
+        for (const id of group.members) {
+          clusteredIds.add(id);
+        }
+      }
+      for (const [id, group] of pointGroupsById) {
+        if (id !== selectedId && clusteredIds.has(id)) {
+          group.setAttribute("hidden", "");
+        } else {
+          group.removeAttribute("hidden");
+        }
+      }
+      clustersLayer.textContent = "";
+      for (const group of clusters) {
+        clustersLayer.appendChild(renderClusterMarker(group, zoomToCluster));
+      }
+      labelsGroup.textContent = "";
+      if (level >= LABEL_ZOOM) {
         for (const community of shownCommunities) {
-          if (community.id === selectedId) {
-            continue; // already carries its own always-visible .map__label
+          if (community.id === selectedId || clusteredIds.has(community.id)) {
+            continue; // selected already carries its own label; clustered members draw none
           }
           labelsGroup.appendChild(
             s(
@@ -880,11 +1046,21 @@
             ),
           );
         }
-        labelsBuilt = true;
-      } else if (level < LABEL_ZOOM && labelsBuilt) {
-        labelsGroup.textContent = "";
-        labelsBuilt = false;
       }
+    };
+
+    // Coalesces every zoom change within one frame into a single recompute (wheel and pinch can
+    // fire many times before the next paint); a plain click (reset, tap-to-cluster) recomputes
+    // immediately instead, since it is a single discrete change, not a rapid stream.
+    let clusterFrame = null;
+    const scheduleClusterUpdate = () => {
+      if (clusterFrame !== null) {
+        return;
+      }
+      clusterFrame = requestAnimationFrame(() => {
+        clusterFrame = null;
+        updateClustering();
+      });
     };
 
     const apply = () => {
@@ -895,7 +1071,29 @@
       const level = clamp(Math.round(zoom), ZOOM_MIN, ZOOM_MAX);
       svg.setAttribute("data-zoom", String(level));
       svg.style.setProperty("--map-zoom", String(zoom));
-      syncLabels(level);
+    };
+
+    // Tap or Enter on a cluster (Task-29 Execution Guide): the viewBox becomes the bounding box
+    // of its members with 20 percent padding, clamped to zoom 1-8 and to the map bounds.
+    const zoomToCluster = (group) => {
+      const paddedW = Math.max(group.maxX - group.minX, 0.001) * 1.2;
+      const paddedH = Math.max(group.maxY - group.minY, 0.001) * 1.2;
+      const targetZoom = clamp(
+        Math.min(BASE_VIEW.w / paddedW, BASE_VIEW.h / paddedH),
+        ZOOM_MIN,
+        ZOOM_MAX,
+      );
+      const newW = BASE_VIEW.w / targetZoom;
+      const newH = BASE_VIEW.h / targetZoom;
+      const cx = (group.minX + group.maxX) / 2;
+      const cy = (group.minY + group.maxY) / 2;
+      view.x = clamp(cx - newW / 2, BASE_VIEW.x, BASE_VIEW.x + BASE_VIEW.w - newW);
+      view.y = clamp(cy - newH / 2, BASE_VIEW.y, BASE_VIEW.y + BASE_VIEW.h - newH);
+      view.w = newW;
+      view.h = newH;
+      zoom = targetZoom;
+      apply();
+      updateClustering();
     };
 
     const toSvgPoint = (clientX, clientY) => {
@@ -918,6 +1116,7 @@
       view.h = newH;
       zoom = newZoom;
       apply();
+      scheduleClusterUpdate();
     };
 
     svg.classList.add("map--zoomable");
@@ -990,9 +1189,11 @@
       view.h = BASE_VIEW.h;
       zoom = ZOOM_MIN;
       apply();
+      updateClustering();
     };
 
     apply();
+    updateClustering();
     return { reset };
   };
 
@@ -1010,6 +1211,10 @@
       layersRaw === null || layersRaw === undefined
         ? new Set(areaLayers.map(slugOf))
         : new Set(layersRaw.split(",").filter(Boolean));
+    // Kept by id so attachMapView can hide and show them again as clusters form and split
+    // (Task-29), without rebuilding the point markup on every zoom change.
+    const pointGroups = ordered.map((c) => renderPoint(c, c === selected, filter.id, layersRaw));
+    const pointGroupsById = new Map(ordered.map((c, i) => [c.id, pointGroups[i]]));
     const svg = s(
       "svg",
       {
@@ -1024,7 +1229,7 @@
       // over every one of them; see this task's Status notes).
       s("g", { class: "map__land" }, s("path", { d: pack.outline })),
       ...pack.layers.map((layer) => renderLayerGroup(layer, visibleSlugs)),
-      ...ordered.map((c) => renderPoint(c, c === selected, filter.id, layersRaw)),
+      ...pointGroups,
     );
     main.textContent = "";
     const bar = renderFilterTabs(filter, selected ? selected.id : null, layersRaw);
@@ -1033,7 +1238,7 @@
       renderLayerChips(areaLayers, visibleSlugs, filter.id, selected ? selected.id : null, layersRaw),
     );
     main.appendChild(svg);
-    const mapView = attachMapView(svg, shown, selected ? selected.id : null);
+    const mapView = attachMapView(svg, shown, selected ? selected.id : null, pointGroupsById);
     const resetButton = h(
       "button",
       { type: "button", class: "button button--secondary map-controls__reset" },

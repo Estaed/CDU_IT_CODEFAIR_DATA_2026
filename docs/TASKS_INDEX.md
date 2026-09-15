@@ -45,7 +45,7 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-26: Small fixes before outside testers, and the page that never updates (added 2026-09-15)
 - [ ] Task-27: Transfer by camera, visible progress and missed-frame repair (added 2026-09-15)
 - [x] Task-28: Install as a real home-screen app, tactics from the Calisthenics app (added 2026-09-15)
-- [ ] Task-29: Map points cluster by zoom, tactic from the AI Challenge app (added 2026-09-15)
+- [x] Task-29: Map points cluster by zoom, tactic from the AI Challenge app (added 2026-09-15)
 
 ## Execution routing
 

@@ -233,14 +233,42 @@ a.button { text-decoration: none; }
 
 .map-controls__reset { width: auto; margin: var(--space-sm) auto var(--space-sm); }
 
-/* Point markers, the selection ring, every community label and the town markers counter-scale
-   against the viewBox zoom (--map-zoom, set by app.js) around their own centre, so they read
-   at a constant screen size instead of growing as the map zooms in (Task-21 Execution Guide). */
-.map__pt, .map__ring, .map__label, .map__town-dot, .map__town-label {
+/* Point markers, the selection ring, every community label, the town markers and (since
+   Task-29) the cluster fill/ring/count counter-scale against the viewBox zoom (--map-zoom, set
+   by app.js) around their own centre, so they read at a constant screen size instead of growing
+   as the map zooms in (Task-21 Execution Guide). */
+.map__pt, .map__ring, .map__label, .map__town-dot, .map__town-label,
+.map__cluster-fill, .map__cluster-arc, .map__cluster-count {
   transform-box: fill-box;
   transform-origin: center;
   transform: scale(calc(1 / var(--map-zoom, 1)));
 }
+
+/* Task-29 map clustering: nearby points merge into one bubble at CLUSTER_RADIUS / zoom
+   (app.js), so overlapping markers in the Top End read at every zoom. New classes only, tokens
+   only (layer rule 5); .map__hit above already gives the cluster its tap target. */
+
+.map__cluster { cursor: pointer; }
+
+.map__cluster-fill {
+  fill: var(--surface-page);
+  stroke: var(--border-hairline);
+  stroke-width: var(--size-hairline);
+  vector-effect: non-scaling-stroke;
+}
+
+.map__cluster-arc {
+  fill: none;
+  stroke-width: var(--size-focus-ring);
+  vector-effect: non-scaling-stroke;
+}
+
+.map__cluster-arc--works { stroke: var(--verdict-works-text); }
+.map__cluster-arc--degraded { stroke: var(--verdict-degraded-text); }
+.map__cluster-arc--fails { stroke: var(--verdict-fails-text); }
+.map__cluster-arc--nodata { stroke: var(--verdict-nodata-text); }
+
+.map__cluster-count { font: var(--text-label); fill: var(--text-heading); }
 
 /* Task-24: the update chip beside the existing offline chip. New classes only, tokens only
    (layer rule 5); .chip is screens.css's own base (padding, radius, background), reused here
