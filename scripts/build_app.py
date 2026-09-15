@@ -1,18 +1,27 @@
 """Inline the tokens, the app CSS/JS and the data pack into one file: dist/index.html.
 
-Concatenation only - this script imports nothing from the pipeline and computes nothing.
+Concatenation only - this script imports nothing from the pipeline and computes no verdict.
+It also renders the share screen's QR code, records the pack and app sizes in a meta tag and
+copies the two host-only PWA files next to the page.
 Run from the project root: ``PYTHONUTF8=1 .venv/Scripts/python scripts/build_app.py``.
 """
 
 from __future__ import annotations
 
+import json
+import shutil
 from pathlib import Path
+
+import qrcode
 
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = ROOT / "app/index.html"
 OUT = ROOT / "dist/index.html"
 PACK = ROOT / "data/out/data_pack.json"
 JS = ROOT / "app/app.js"
+# Served by the host only; dist/index.html never depends on them.
+HOST_FILES = (ROOT / "app/sw.js", ROOT / "app/manifest.webmanifest")
+SIZES_PLACEHOLDER = "<!-- SIZES -->"
 
 # Order fixed by CLAUDE.md Part 2: tokens, base, the reference screens, then the app.
 CSS_FILES = (
@@ -43,16 +52,63 @@ def inline(template: str, css_parts: list[str], js: str, pack_json: str) -> str:
     return template
 
 
+def qr_svg(text: str) -> str:
+    """The QR code for text as one inline SVG path, markup as design/screens/assets/qr.svg."""
+    code = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M, border=4)
+    code.add_data(text)
+    code.make(fit=True)
+    matrix = code.get_matrix()
+    modules = "".join(
+        f"M{x} {y}h1v1h-1z"
+        for y, row in enumerate(matrix)
+        for x, dark in enumerate(row)
+        if dark
+    )
+    n = len(matrix)
+    return (
+        '<svg class="qr" role="img" aria-label="QR code that opens Crosscheck on another phone"'
+        f' viewBox="0 0 {n} {n}" shape-rendering="crispEdges">'
+        f'<path class="qr__modules" d="{modules}"/></svg>'
+    )
+
+
+def add_share_blocks(template: str, qr: str) -> str:
+    """Put the QR <template> before the pack (the JS reads it) and a sizes slot into <head>."""
+    for marker in ("</head>", "<!-- PACK -->"):
+        if marker not in template:
+            raise ValueError(f"the template has no {marker}")
+    template = template.replace("</head>", f"{SIZES_PLACEHOLDER}\n</head>", 1)
+    return template.replace("<!-- PACK -->", f'<template id="qr">{qr}</template>\n<!-- PACK -->', 1)
+
+
+def with_sizes(page: str, pack_bytes: int) -> str:
+    """Fill the sizes meta; the app size includes the meta itself, so iterate until stable."""
+    app_bytes = 0
+    while True:
+        meta = f'<meta name="crosscheck-sizes" content="pack={pack_bytes};app={app_bytes}">'
+        result = page.replace(SIZES_PLACEHOLDER, meta, 1)
+        size = len(result.encode("utf-8"))
+        if size == app_bytes:
+            return result
+        app_bytes = size
+
+
 def main() -> str:
-    """Build dist/index.html and return what was written."""
+    """Build dist/index.html, copy the host-only files, and return what was written."""
+    pack_text = PACK.read_text(encoding="utf-8")
+    # APP_URL comes from constants.md through the pack, so the QR and the share button agree.
+    qr = qr_svg(json.loads(pack_text)["app_url"])
     page = inline(
-        TEMPLATE.read_text(encoding="utf-8"),
+        add_share_blocks(TEMPLATE.read_text(encoding="utf-8"), qr),
         [path.read_text(encoding="utf-8") for path in CSS_FILES],
         JS.read_text(encoding="utf-8"),
-        PACK.read_text(encoding="utf-8").strip(),
+        pack_text.strip(),
     )
+    page = with_sizes(page, PACK.stat().st_size)
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(page, encoding="utf-8", newline="\n")
+    OUT.write_bytes(page.encode("utf-8"))
+    for path in HOST_FILES:
+        shutil.copyfile(path, OUT.parent / path.name)
     print(f"{OUT.relative_to(ROOT)}: {OUT.stat().st_size} bytes")
     return page
 

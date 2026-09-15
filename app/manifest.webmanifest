@@ -1,0 +1,7 @@
+{
+  "name": "Crosscheck",
+  "short_name": "Crosscheck",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone"
+}

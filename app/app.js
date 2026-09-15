@@ -568,11 +568,107 @@
     activeTab.scrollIntoView({ inline: "nearest", block: "nearest" });
   };
 
-  const render = (text) => {
-    const line = document.createElement("p");
-    line.textContent = text;
+  // The page as a standalone file: the rendered screen and host-only links are dropped, so the
+  // copy is the built file again and renders itself when opened.
+  const pageHtml = () => {
+    const copy = document.documentElement.cloneNode(true);
+    copy.querySelector("main").textContent = "";
+    copy.querySelector("footer.footer").textContent = "";
+    for (const link of copy.querySelectorAll("link[rel=manifest]")) {
+      link.remove();
+    }
+    return `<!DOCTYPE html>\n${copy.outerHTML}`;
+  };
+
+  const saveFile = () => {
+    const url = URL.createObjectURL(new Blob([pageHtml()], { type: "text/html" }));
+    const link = h("a", { href: url, download: "crosscheck.html", hidden: "" });
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const shareApp = async () => {
+    if (navigator.share) {
+      const file = new File([pageHtml()], "crosscheck.html", { type: "text/html" });
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: "Crosscheck" });
+        } else {
+          await navigator.share({ url: pack.app_url, title: "Crosscheck" });
+        }
+        return;
+      } catch (error) {
+        if (error.name === "AbortError") {
+          return;
+        }
+      }
+    }
+    saveFile();
+  };
+
+  const renderShare = () => {
+    const sizes = Object.fromEntries(
+      document
+        .querySelector("meta[name=crosscheck-sizes]")
+        .content.split(";")
+        .map((pair) => pair.split("=")),
+    );
+    const kb = (bytes) => `${Math.floor(Number(bytes) / 1024)} KB`;
+    const shareButton = h("button", { type: "button", class: "button button--primary" }, "Share this app");
+    const saveButton = h("button", { type: "button", class: "button button--secondary" }, "Save file");
+    shareButton.addEventListener("click", shareApp);
+    saveButton.addEventListener("click", saveFile);
     main.textContent = "";
-    main.appendChild(line);
+    main.appendChild(
+      h(
+        "div",
+        { class: "share" },
+        h(
+          "div",
+          { class: "share-card" },
+          h("div", { class: "share-card__qr" }, document.getElementById("qr").content.cloneNode(true)),
+          h(
+            "div",
+            { class: "share-card__meta" },
+            h(
+              "div",
+              {},
+              "Data pack ",
+              h("span", { class: "fig" }, pack.built),
+              " · ",
+              h("span", { class: "fig" }, kb(sizes.pack)),
+            ),
+            h("div", {}, "App ", h("span", { class: "fig" }, kb(sizes.app))),
+            h(
+              "span",
+              { class: "source-line" },
+              "Crosscheck build · ",
+              h("span", { class: "fig fig--xs" }, pack.built),
+            ),
+          ),
+          h("div", { class: "share-card__buttons" }, shareButton, saveButton),
+          h(
+            "p",
+            { class: "share-card__statement" },
+            "Crosscheck shows what published sources say about a community's connectivity and what that allows. It does not measure signal. Every value shows its source and date.",
+          ),
+        ),
+      ),
+    );
+  };
+
+  // Host-only install support: never touched over file://, so the single file stands alone.
+  const registerHost = () => {
+    if (location.protocol !== "https:") {
+      return;
+    }
+    document.head.appendChild(h("link", { rel: "manifest", href: "manifest.webmanifest" }));
+    if ("serviceWorker" in navigator) {
+      window.__swRegistered = true;
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    }
   };
 
   const screenOf = (hash) => SCREENS.find((screen) => hash.startsWith(screen)) || SCREENS[0];
@@ -599,7 +695,7 @@
       const selectedParam = query.get("selected");
       renderMap(query.get("filter") || "all", selectedParam ? Number(selectedParam) : null);
     } else if (screen === "#/share") {
-      render("Share");
+      renderShare();
     } else {
       const match = hash.match(/^#\/community\/(\d+)/);
       renderCommunity(match ? Number(match[1]) : DEFAULT_ID);
@@ -616,4 +712,5 @@
   setChip();
   renderFooter();
   route();
+  registerHost();
 })();
