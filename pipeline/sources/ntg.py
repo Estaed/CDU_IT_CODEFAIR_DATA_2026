@@ -3,7 +3,7 @@
 Reads the four frozen spreadsheets written by ``pipeline.fetch.ntg`` and emits the *listed*
 publisher line, keyed on ``bushtel_id``: whether each community appears on each list (matched
 by normalised name and BushTel aliases), the 2022 macro / small cell / proximity basis and
-provider, and the 2019 backhaul type. Ported from ``spike/lane_rrl_ntg.py`` part (b)
+provider, and the 2019 backhaul type. Ported from the 2026-09-12 throwaway RRL/NTG lane part (b)
 (2026-09-12) with the matching rules unchanged.
 
 Source: data.nt.gov.au (Northern Territory Government open data, CC BY), resolved through the

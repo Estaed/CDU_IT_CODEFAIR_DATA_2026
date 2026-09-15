@@ -2,7 +2,7 @@
 
 Reads the frozen detail snapshot written by ``pipeline.fetch.bushtel`` and emits the base
 frame every other source joins onto, keyed on ``bushtel_id``. Ported from
-``spike/lane_bushtel.py`` (2026-09-12); the spike's ``communities.csv`` is not read here
+the 2026-09-12 throwaway BushTel lane (2026-09-12); the spike's ``communities.csv`` is not read here
 because the detail snapshot already carries every identity field it held.
 
 Source: https://bushtel.nt.gov.au/api/Community/{id} (undocumented public API, (c) Northern

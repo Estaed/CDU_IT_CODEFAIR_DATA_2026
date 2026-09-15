@@ -3,7 +3,7 @@
 Reads the frozen bulk extract of the ACMA Register of Radiocommunications Licences written by
 ``pipeline.fetch.rrl`` and emits the *licensed* publisher line, keyed on ``bushtel_id``: for
 each carrier group, whether a site lies within 5, 10 and 40 km, and the nearest site's
-distance, carrier, name and precision. Ported from ``spike/lane_rrl_ntg.py`` part (a)
+distance, carrier, name and precision. Ported from the 2026-09-12 throwaway RRL/NTG lane part (a)
 (2026-09-12) without changing the licence filtering.
 
 Source: https://web.acma.gov.au/rrl/spectra_rrl.zip (301 -> https://cdn.acma.gov.au/rrl/

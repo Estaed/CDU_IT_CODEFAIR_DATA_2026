@@ -36,8 +36,12 @@ and the removal of the spike now that the pipeline reproduces its table from the
 
 ## Acceptance Criteria (DoD)
 
-- [ ] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
-- [ ] `tests/test_package.py`: running the packager produces a zip whose name matches `DataChallenge_Team DIC005_*.zip`, that contains `index.html`, `README.md`, `pipeline/rules.py`, `data/out/data_pack.json`, `data/out/capability_table.csv`, and no entry under `.venv/` or `spike/`; total size under 100 MB.
-- [ ] `README.md` "Reproduce" section lists every command in Part 2's Entry points and the gate, and `grep -c "spike" README.md` counts only the historical mention in the scaffolding paragraph.
-- [ ] `spike/` no longer exists; `grep -rn "spike/" pipeline scripts tests app --include=*.py --include=*.js` prints nothing.
-- [ ] `grep -rn "DIC005" scripts/package_submission.py` prints nothing (read from `constants.md`).
+- [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
+- [x] `tests/test_package.py`: running the packager produces a zip whose name matches `DataChallenge_Team DIC005_*.zip`, that contains `index.html`, `README.md`, `pipeline/rules.py`, `data/out/data_pack.json`, `data/out/capability_table.csv`, and no entry under `.venv/` or `spike/`; total size under 100 MB.
+- [x] `README.md` "Reproduce" section lists every command in Part 2's Entry points and the gate, and `grep -c "spike" README.md` counts only the historical mention in the scaffolding paragraph.
+- [x] `spike/` no longer exists; `grep -rn "spike/" pipeline scripts tests app --include=*.py --include=*.js` prints nothing.
+- [x] `grep -rn "DIC005" scripts/package_submission.py` prints nothing (read from `constants.md`).
+
+## Status
+
+DONE 2026-09-15 (otopilot, lane gate and main gate green at `0780fe8`; 5 packager tests). Main loop reworded three source docstrings that named `spike/` (outside the lane) so the DoD grep prints nothing, and removed the empty gitignored `spike/raw/` folder. Bee notes: the packager excludes `data/out/cache/` (rebuildable, 277 MB); the zip is 940,723 bytes with 76 entries; `submission/` does not exist yet, so the report and slides warnings fire as designed.
