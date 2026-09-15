@@ -70,11 +70,12 @@ def test_column_name_links_back(browser):
 def test_compare_box_navigates(browser):
     page, blocked, errors = _open_page(browser, "#/community/9")
 
-    box = page.locator(".compare-search")
-    box.get_by_role("searchbox", name="Compare with...").fill("Bani")
-    result = box.locator(".result-row").filter(has_text="Baniyala")
-    expect(result).to_have_count(1)
-    result.click()
+    page.locator(".search-input").fill("Bani")
+    item = page.locator("li").filter(has=page.locator(".result-row").filter(has_text="Baniyala"))
+    expect(item).to_have_count(1)
+    compare = item.locator("button.result-row__compare")
+    expect(compare).to_have_count(1)
+    compare.click()
 
     expect(page).to_have_url(re.compile(r"#/compare/9/458$"))
     expect(page.locator(".community-header__name")).to_have_text(["Amoonguna", "Baniyala"])

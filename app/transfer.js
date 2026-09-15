@@ -364,6 +364,21 @@ window.CrosscheckTransfer = (() => {
     let timer = null;
     let playing = false;
     let frameCount = 0;
+    // Task-30: the showing phone must not dim mid-transfer; best effort where Wake Lock exists.
+    let wakeLock = null;
+    const holdScreen = async () => {
+      try {
+        wakeLock = navigator.wakeLock ? await navigator.wakeLock.request("screen") : null;
+      } catch (error) {
+        wakeLock = null;
+      }
+    };
+    const releaseScreen = () => {
+      if (wakeLock) {
+        wakeLock.release().catch(() => {});
+        wakeLock = null;
+      }
+    };
 
     const step = () => {
       const { index, pass } = sequence.next();
@@ -381,6 +396,7 @@ window.CrosscheckTransfer = (() => {
         timer = null;
       }
       playing = false;
+      releaseScreen();
       button.textContent = "Show";
     };
 
@@ -391,6 +407,7 @@ window.CrosscheckTransfer = (() => {
       }
       playing = true;
       button.textContent = "Stop";
+      holdScreen();
       built = await encoder(getPageHtml());
       if (!playing) {
         return; // Stopped again while the page was being encoded.
@@ -401,7 +418,21 @@ window.CrosscheckTransfer = (() => {
       step();
     });
 
-    return { el: el("div", { class: "transfer__section" }, button, stage), stop };
+    return {
+      el: el(
+        "div",
+        { class: "transfer__section" },
+        el("h2", { class: "transfer__title" }, "Send this app by camera"),
+        el(
+          "p",
+          { class: "transfer__note" },
+          "No internet needed. The other phone taps Receive and points its camera at the moving code.",
+        ),
+        button,
+        stage,
+      ),
+      stop,
+    };
   };
 
   // Reads the frames back with the camera and reassembles, inflates and offers the result.
@@ -442,6 +473,7 @@ window.CrosscheckTransfer = (() => {
     );
 
     let stream = null;
+    let untune = null;
     let scanTimer = null;
     let scanning = false;
     let currentReceiver = null;
@@ -468,6 +500,10 @@ window.CrosscheckTransfer = (() => {
     };
 
     const stopStream = () => {
+      if (untune) {
+        untune();
+        untune = null;
+      }
       if (stream) {
         for (const track of stream.getTracks()) {
           track.stop();
@@ -565,9 +601,10 @@ window.CrosscheckTransfer = (() => {
 
     const start = async () => {
       resetReceived();
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      stream = await navigator.mediaDevices.getUserMedia(window.CrosscheckScan.constraints());
       video.srcObject = stream;
       video.hidden = false;
+      untune = window.CrosscheckScan.tune(stream, video);
       scanning = true;
       button.textContent = "Stop";
       scan();
@@ -608,6 +645,12 @@ window.CrosscheckTransfer = (() => {
       el: el(
         "div",
         { class: "transfer__section" },
+        el("h2", { class: "transfer__title" }, "Receive the app by camera"),
+        el(
+          "p",
+          { class: "transfer__note" },
+          "Point this camera at the other phone's moving code. The app arrives in pieces; missed pieces are repaired.",
+        ),
         button,
         readerKind,
         note,

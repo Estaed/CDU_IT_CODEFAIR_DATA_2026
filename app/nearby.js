@@ -247,12 +247,17 @@ window.CrosscheckNearby = (() => {
     wrap.append(button, readerKind, video);
 
     let stream = null;
+    let untune = null;
     let timer = null;
 
     const stop = () => {
       if (timer !== null) {
         clearTimeout(timer);
         timer = null;
+      }
+      if (untune) {
+        untune();
+        untune = null;
       }
       if (stream) {
         for (const track of stream.getTracks()) {
@@ -296,13 +301,14 @@ window.CrosscheckNearby = (() => {
         return;
       }
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        stream = await navigator.mediaDevices.getUserMedia(window.CrosscheckScan.constraints());
       } catch (error) {
         return;
       }
       activeScans.add(stop);
       video.srcObject = stream;
       video.hidden = false;
+      untune = window.CrosscheckScan.tune(stream, video);
       button.textContent = "Stop";
       tick();
     });

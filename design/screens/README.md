@@ -156,7 +156,17 @@ component key is given in the first column. Every class is defined once in `scre
   the selected tab into view, so in the phone frame the selected "Share" tab and the selected
   "Licensed mast, no coverage map" filter sit past the right edge. Decided 2026-09-13: the app
   scrolls the selected tab into view on load; DESIGN.md is unchanged. Moving the screen tabs to
-  their own row is a v1.1 candidate in `BACKLOG.md`.
+  their own row is a v1.1 candidate in `BACKLOG.md`. **Superseded 2026-09-16 (Task-30):** the
+  screen tabs now have their own full-width row in the app, and a tab row that still scrolls
+  (the map filters) fades on the side that hides more, because Chrome on Android shows no
+  scrollbar and testers did not notice the row scrolled.
+- **Community screen, Task-30 (2026-09-16, Tarik's phone feedback, decisions delegated).** The
+  app departs from `community.html` in six ways: one search bar (Compare sits inside each
+  result instead of a second box); a "Use my location" button under it; a one-sentence intro;
+  "What the connection allows" comes first, followed by a legend of the four verdict words,
+  then the sources, then "What exists here", which is a sentence rather than chips (testers
+  read the chips as buttons); and the footer's attribution lines are folded under "Sources and
+  licences". The QR codes a camera has to read fill the content width instead of `--size-qr`.
 - **Map height at 768.** The mirror's map is `width: 100%; height: auto` on a 300 × 480 view box,
   so inside the 640px content column it would be 1024px tall and the selected label would scale
   with it. Decided 2026-09-13: `screens.css` caps the map at `--size-viewport-min-height` and

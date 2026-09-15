@@ -51,25 +51,6 @@ a.button { text-decoration: none; }
 
 .compare__service { padding: var(--space-xs) var(--space-md); }
 
-/* The compare box looks like the main search input but cannot share its class: tests address
-   the main box as the only .search-input on Screen 1. */
-.compare-search__input {
-  display: block;
-  width: 100%;
-  height: var(--size-control);
-  padding: 0 var(--space-sm);
-  font: var(--text-body-md);
-  color: var(--text-heading);
-  background: var(--surface-page);
-  border: var(--size-hairline) solid var(--border-hairline);
-  border-radius: var(--radius-md);
-  appearance: none;
-}
-
-.compare-search__input::placeholder { color: var(--text-secondary); }
-
-.compare-search__input:focus { border-color: var(--text-heading); }
-
 /* Task-18 transfer by camera: Show and Receive on the share screen. New classes only, tokens
    only (layer rule 5); the share card above is untouched and its own tests still address it. */
 
@@ -310,3 +291,109 @@ a.button { text-decoration: none; }
 .link-row--changes { flex-wrap: wrap; row-gap: var(--space-xxs); }
 .link-row--changes .link-row__text { flex: 1 1 100%; min-width: 0; }
 .link-row--changes .link-row__date { flex: 0 0 100%; margin: 0; }
+
+/* Task-30 clarity batch (Tarik on a phone, 2026-09-16). New classes only, tokens only. */
+
+/* The three screen tabs get their own full-width row under the title, so none hides past the
+   right edge at 360 (design/screens/README.md, "Tabs at 360", superseded 2026-09-16). */
+.top-bar__inner { flex-wrap: wrap; height: auto; min-height: var(--size-topbar); }
+.top-bar__title { flex: 1 1 auto; min-height: var(--size-touch); display: flex; align-items: center; }
+.top-bar__inner > .header-chips { order: 1; }
+.top-bar__inner > .tabs {
+  order: 2;
+  flex: 1 0 calc(100% + 2 * var(--space-md));
+  margin: 0 calc(-1 * var(--space-md));
+}
+.top-bar__inner > .tabs .tab { flex: 1 1 0; justify-content: center; }
+
+/* A tab row that scrolls fades on the side that hides more (app.js sets data-overflow). The
+   mask is alpha, not a colour: black and transparent only say how much of the row shows. */
+.tabs[data-overflow~="right"] {
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - var(--space-xxl)), transparent);
+  mask-image: linear-gradient(to right, black calc(100% - var(--space-xxl)), transparent);
+}
+.tabs[data-overflow~="left"] {
+  -webkit-mask-image: linear-gradient(to left, black calc(100% - var(--space-xxl)), transparent);
+  mask-image: linear-gradient(to left, black calc(100% - var(--space-xxl)), transparent);
+}
+.tabs[data-overflow~="left"][data-overflow~="right"] {
+  -webkit-mask-image: linear-gradient(to right, transparent, black var(--space-xxl), black calc(100% - var(--space-xxl)), transparent);
+  mask-image: linear-gradient(to right, transparent, black var(--space-xxl), black calc(100% - var(--space-xxl)), transparent);
+}
+
+.intro { margin: 0; padding: var(--space-sm) var(--space-md) 0; font: var(--text-body-sm); color: var(--text-body); }
+
+/* One search bar: the location button sits under it, Compare sits inside each result. */
+.search__tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); margin-top: var(--space-xs); }
+
+.locate-button, .result-row__compare {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--size-touch);
+  padding: 0 var(--space-md);
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  font: var(--text-button);
+  color: var(--text-heading);
+  background: var(--surface-page);
+  cursor: pointer;
+}
+.locate-button:active, .result-row__compare:active { background: var(--surface-block); }
+.locate-button:disabled { color: var(--text-secondary); }
+
+.locate-status { margin: 0; font: var(--text-body-sm); color: var(--text-body); }
+.locate-status:empty { display: none; }
+
+.search-results__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding-right: var(--space-md);
+  border-bottom: var(--size-hairline) solid var(--border-hairline-soft);
+}
+.search-results__item .result-row { flex: 1 1 auto; min-width: 0; border-bottom: 0; }
+.result-row__compare { flex: 0 0 auto; }
+
+/* What each verdict word means, under the section title. */
+.verdict-legend {
+  display: grid;
+  gap: var(--space-xxs);
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  list-style: none;
+  font: var(--text-caption);
+  color: var(--text-body);
+}
+.legend-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xxs);
+  height: var(--size-badge);
+  padding: 0 var(--space-xs);
+  border-radius: var(--radius-xs);
+  font: var(--text-label);
+  white-space: nowrap;
+}
+.legend-badge--works { color: var(--verdict-works-text); background: var(--verdict-works-fill); }
+.legend-badge--degraded { color: var(--verdict-degraded-text); background: var(--verdict-degraded-fill); }
+.legend-badge--fails { color: var(--verdict-fails-text); background: var(--verdict-fails-fill); }
+.legend-badge--nodata { color: var(--verdict-nodata-text); background: var(--verdict-nodata-fill); }
+
+/* What exists here: a sentence, so nothing looks tappable that is not. */
+.present-list { margin: 0; padding: var(--space-xs) var(--space-md) 0; font: var(--text-body-sm); color: var(--text-body); }
+
+/* Attributions folded into one line; the team line stays open below it. */
+.footer__summary { cursor: pointer; color: var(--text-body); }
+.footer__source { display: block; margin-top: var(--space-xs); }
+
+/* The QR a camera has to read fills the content width instead of the 200 icon-sized box. */
+.transfer__svg, .nearby__qr { width: 100%; height: auto; max-width: var(--size-viewport-min-height); aspect-ratio: 1; }
+
+.transfer__title { margin: 0; font: var(--text-title-md); color: var(--text-heading); }
+
+.scan-hint { margin: 0; font: var(--text-body-sm); color: var(--text-secondary); }
+.scan-zoom { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: var(--space-sm); font: var(--text-body-sm); color: var(--text-body); }
+/* A tall portrait stream otherwise fills the whole screen and pushes the hint out of sight; the
+   square preview is the centred square the jsQR path reads (scan.js cropRect). */
+.transfer__video, .nearby__video { cursor: pointer; aspect-ratio: 1; object-fit: cover; }

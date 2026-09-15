@@ -126,10 +126,13 @@
       "section",
       { class: "section" },
       h("h2", { class: "section__title" }, "What exists here"),
+      // Plain text, not chips: testers read the chips as buttons (Task-30).
       h(
-        "div",
-        { class: "chips" },
-        community.present.map((item) => h("span", { class: "chip" }, item.name)),
+        "p",
+        { class: "present-list" },
+        community.present.length
+          ? community.present.map((item) => item.name).join(" · ")
+          : "Not recorded",
       ),
     );
     for (const flag of community.flags) {
@@ -201,6 +204,35 @@
       VERDICTS[verdictId].word,
     );
 
+  // What each verdict word means, in the words of pipeline/rules.py, for a first-time reader
+  // (Task-30). Static labels: the verdicts themselves still come from the pack.
+  const VERDICT_MEANING = {
+    works: "the best available path meets the published requirement",
+    degraded: "may work, but falls short of the requirement",
+    fails: "no published path can carry it",
+    nodata: "no source records enough to judge",
+  };
+
+  // Not .verdict-badge: tests count those per service row and per compare column.
+  const renderVerdictLegend = () =>
+    h(
+      "ul",
+      { class: "verdict-legend" },
+      Object.keys(VERDICTS).map((verdictId) =>
+        h(
+          "li",
+          { class: "verdict-legend__item" },
+          h(
+            "span",
+            { class: `legend-badge legend-badge--${verdictId}` },
+            h("span", { "aria-hidden": "true" }, VERDICTS[verdictId].glyph),
+            VERDICTS[verdictId].word,
+          ),
+          ` ${VERDICT_MEANING[verdictId]}`,
+        ),
+      ),
+    );
+
   const renderServiceRow = (service) => {
     const panel = service.sources.length
       ? h(
@@ -264,6 +296,8 @@
     for (const service of community.services) {
       section.appendChild(renderServiceRow(service));
     }
+    // After the four answers, not before them: the answer is what a reader came for.
+    section.appendChild(renderVerdictLegend());
     return section;
   };
 
@@ -439,18 +473,26 @@
 
   const renderFooter = () => {
     footer.textContent = "";
+    // Folded by default (Task-30): the attribution lines stay one tap away, as the licences
+    // require, without filling the bottom of every screen.
+    const sources = h(
+      "details",
+      { class: "footer__sources" },
+      h("summary", { class: "footer__summary" }, `Sources and licences (${pack.attributions.length})`),
+    );
     for (const item of pack.attributions) {
       const parts = [item.text];
       if (item.licence) {
         parts.push(item.licence);
       }
-      const span = h("span", {}, parts.join(" · "));
+      const span = h("span", { class: "footer__source" }, parts.join(" · "));
       if (item.date) {
         span.appendChild(document.createTextNode(" · "));
         span.appendChild(h("span", { class: "fig fig--xs" }, item.date));
       }
-      footer.appendChild(span);
+      sources.appendChild(span);
     }
+    footer.appendChild(sources);
     footer.appendChild(
       h(
         "span",
@@ -472,18 +514,79 @@
   const matchedAlias = (community, query) =>
     community.aliases.find((alias) => matchesText(alias, query)) || null;
 
-  const renderSearch = ({
-    inputClass = "search-input",
-    placeholder = `Search ${pack.count} communities`,
-    label = "Search communities",
-    hashFor = (community) => `#/community/${community.id}`,
-  } = {}) => {
+  // Great-circle distance in km between two latitude/longitude points (mean Earth diameter
+  // 12,742 km). Layout for "Use my location", not a verdict (Task-30).
+  const distanceKm = (lat1, lon1, lat2, lon2) => {
+    const rad = Math.PI / 180;
+    const a =
+      Math.sin(((lat2 - lat1) * rad) / 2) ** 2 +
+      Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(((lon2 - lon1) * rad) / 2) ** 2;
+    return 12742 * Math.asin(Math.sqrt(a));
+  };
+
+  const nearestCommunity = (lat, lon) => {
+    let best = null;
+    for (const community of pack.communities) {
+      const km = distanceKm(lat, lon, community.lat, community.lon);
+      if (!best || km < best.km) {
+        best = { community, km };
+      }
+    }
+    return best;
+  };
+
+  // Shown once on the community "Use my location" opened, then cleared.
+  let locateNote = null;
+
+  const renderLocate = (community) => {
+    const status = h("p", { class: "locate-status", role: "status" });
+    if (locateNote && locateNote.id === community.id) {
+      status.textContent = locateNote.text;
+    }
+    locateNote = null;
+    const button = h("button", { type: "button", class: "locate-button" }, "Use my location");
+    const fail = () => {
+      button.disabled = false;
+      status.textContent = "Location not available on this phone";
+    };
+    button.addEventListener("click", () => {
+      if (!navigator.geolocation) {
+        fail();
+        return;
+      }
+      button.disabled = true;
+      status.textContent = "Finding your location...";
+      // The phone's own GPS answers with no network; nothing is stored or sent.
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const found = nearestCommunity(position.coords.latitude, position.coords.longitude);
+          locateNote = {
+            id: found.community.id,
+            text: `Nearest community: ${found.community.name}, ${Math.round(found.km)} km away`,
+          };
+          const hash = `#/community/${found.community.id}`;
+          if (location.hash === hash) {
+            route();
+          } else {
+            location.hash = hash;
+          }
+        },
+        fail,
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 600000 },
+      );
+    });
+    return [button, status];
+  };
+
+  // One bar for search and compare (Task-30): a result opens its community, and its Compare
+  // button compares it with the community on screen.
+  const renderSearch = (current) => {
     const results = h("ul", { class: "search-results" });
     const input = h("input", {
-      class: inputClass,
+      class: "search-input",
       type: "search",
-      placeholder,
-      "aria-label": label,
+      placeholder: `Search ${pack.count} communities`,
+      "aria-label": "Search communities",
     });
     input.addEventListener("input", () => {
       const query = input.value.trim().toLowerCase();
@@ -506,12 +609,28 @@
           ),
         );
         row.addEventListener("click", () => {
-          location.hash = hashFor(community);
+          location.hash = `#/community/${community.id}`;
         });
-        results.appendChild(h("li", {}, row));
+        const item = h("li", { class: "search-results__item" }, row);
+        if (current && community.id !== current.id) {
+          const compare = h("button", { type: "button", class: "result-row__compare" }, "Compare");
+          compare.addEventListener("click", () => {
+            location.hash = `#/compare/${current.id}/${community.id}`;
+          });
+          item.appendChild(compare);
+        }
+        results.appendChild(item);
       }
     });
-    return [h("div", { class: "search" }, input), results];
+    return [
+      h(
+        "div",
+        { class: "search" },
+        input,
+        current ? h("div", { class: "search__tools" }, renderLocate(current)) : null,
+      ),
+      results,
+    ];
   };
 
   // Set when a compare route names no known community: Screen 1 opens with its search focused.
@@ -522,33 +641,29 @@
       pack.communities.find((c) => c.id === id) ||
       pack.communities.find((c) => c.id === DEFAULT_ID);
     main.textContent = "";
-    for (const node of renderSearch()) {
+    for (const node of renderSearch(community)) {
       main.appendChild(node);
     }
-    main.appendChild(
-      h(
-        "div",
-        { class: "compare-search" },
-        renderSearch({
-          inputClass: "compare-search__input",
-          placeholder: "Compare with...",
-          label: "Compare with...",
-          hashFor: (other) => `#/compare/${community.id}/${other.id}`,
-        }),
-      ),
-    );
     if (openSearch) {
       openSearch = false;
       main.querySelector(".search-input").focus();
     }
+    main.appendChild(
+      h(
+        "p",
+        { class: "intro" },
+        "What published sources say about phone and internet at this community, and what that allows. Crosscheck does not measure signal.",
+      ),
+    );
     const header = renderHeader(community);
     header.appendChild(renderFreshness(community));
     main.appendChild(header);
-    main.appendChild(renderPresent(community));
-    main.appendChild(renderPublishers(community));
+    // Plainest answer first (Task-30): what works, then who says so, then the detail.
     const services = renderServices(community);
     services.appendChild(renderStatementButtons(community));
     main.appendChild(services);
+    main.appendChild(renderPublishers(community));
+    main.appendChild(renderPresent(community));
     main.appendChild(renderActions(community));
   };
 
@@ -1254,6 +1369,7 @@
     }
     const activeTab = bar.querySelector("[aria-selected=true]");
     activeTab.scrollIntoView({ inline: "nearest", block: "nearest" });
+    watchOverflow(bar);
   };
 
   // The page as a standalone file: the rendered screen and host-only links are dropped, so the
@@ -1589,12 +1705,21 @@
   const screenOf = (hash) =>
     hash.startsWith("#/nearby") ? "#/share" : SCREENS.find((screen) => hash.startsWith(screen)) || SCREENS[0];
 
+  let lastPath = null;
+
   const route = () => {
     if (!location.hash) {
       location.hash = DEFAULT_HASH;
     }
     const hash = location.hash || DEFAULT_HASH;
     const screen = screenOf(hash);
+    // A new screen or community opens at its top (Task-30): the previous scroll offset hid the
+    // map filters and the search results on a phone. Query-only changes (a map selection) keep it.
+    const path = hash.split("?")[0];
+    if (path !== lastPath) {
+      lastPath = path;
+      window.scrollTo(0, 0);
+    }
     let selected = null;
     for (const tab of tabs) {
       const isSelected = tab.getAttribute("href").startsWith(screen);
@@ -1691,6 +1816,32 @@
       route();
     }
   };
+
+  // A scrollable tab row says which side hides more tabs (Task-30): Chrome on Android shows no
+  // scrollbar, so without this nothing tells a reader the row scrolls. app.css fades that edge.
+  const updateOverflow = (bar) => {
+    const hidden = bar.scrollWidth - bar.clientWidth;
+    const sides = [];
+    if (bar.scrollLeft > 1) {
+      sides.push("left");
+    }
+    if (bar.scrollLeft < hidden - 1) {
+      sides.push("right");
+    }
+    bar.setAttribute("data-overflow", sides.join(" "));
+  };
+
+  const watchOverflow = (bar) => {
+    bar.addEventListener("scroll", () => updateOverflow(bar), { passive: true });
+    updateOverflow(bar);
+  };
+
+  window.addEventListener("resize", () => {
+    for (const bar of document.querySelectorAll(".tabs")) {
+      updateOverflow(bar);
+    }
+  });
+  watchOverflow(document.querySelector(".top-bar .tabs"));
 
   window.addEventListener("hashchange", route);
   window.addEventListener("online", setChip);
