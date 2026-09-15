@@ -34,7 +34,11 @@ verdict counts per service with population affected. Written to `data/out/figure
 
 ## Acceptance Criteria (DoD)
 
-- [ ] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
-- [ ] `tests/test_figures.py`: both PNGs exist after `figures.main()`, open with Pillow at 2000×3200, and are not a single colour (more than 1,000 distinct pixel values); `disagreement_patterns.csv` sums `n` to 96 and has a row with `n == 31` for "disagree" or the six patterns summing to 31; `verify_on_the_ground.csv` has exactly 11 rows including Baniyala; `verdict_counts.csv` telehealth rows read works 1, degraded 58, fails 11, nodata 26.
-- [ ] No hex literal in `pipeline/figures.py`: `grep -nE "#[0-9a-fA-F]{3,6}" pipeline/figures.py` prints nothing (colours are read from `tokens.json`).
-- [ ] `grep -n "vulnerable\|disadvantaged\|at-risk\|underserved" data/out/tables/*.csv pipeline/figures.py` prints nothing.
+- [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
+- [x] `tests/test_figures.py`: both PNGs exist after `figures.main()`, open with Pillow at 2000×3200, and are not a single colour (more than 1,000 distinct pixel values); `disagreement_patterns.csv` sums `n` to 96 and has a row with `n == 31` for "disagree" or the six patterns summing to 31; `verify_on_the_ground.csv` has exactly 11 rows including Baniyala; `verdict_counts.csv` telehealth rows read works 1, degraded 58, fails 11, nodata 26.
+- [x] No hex literal in `pipeline/figures.py`: `grep -nE "#[0-9a-fA-F]{3,6}" pipeline/figures.py` prints nothing (colours are read from `tokens.json`).
+- [x] `grep -n "vulnerable\|disadvantaged\|at-risk\|underserved" data/out/tables/*.csv pipeline/figures.py` prints nothing.
+
+## Status
+
+DONE 2026-09-15 (otopilot, lane gate and main gate green at `48c8ab0`; 7 new unit tests). Advisory, for the team's eye: both PNGs draw every community as a hollow circle rather than the verdict glyph shapes, and the legend sits over the south-west corner of the outline. Neither is in the DoD.
