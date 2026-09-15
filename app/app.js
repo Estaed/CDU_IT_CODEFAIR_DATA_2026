@@ -259,6 +259,104 @@
     return section;
   };
 
+  // Short service names for the SMS text, where every character counts.
+  const SMS_LABEL = {
+    telehealth_video: "Telehealth video",
+    school_video_meeting: "School video",
+    mygov_text: "myGov",
+    voice_sms: "Voice/SMS",
+  };
+
+  const SMS_MAX_CHARS = 300;
+
+  const statementWord = (verdict) => (verdict === "nodata" ? "NOT RECORDED" : verdict.toUpperCase());
+
+  const plain = (text) => String(text).split("`").join("");
+
+  const oldestSource = (community) =>
+    `Oldest source: ${pack.sources[community.freshness.source].source} · ${community.freshness.date}`;
+
+  // One SMS-sized line from pack strings: the reason only for the first service that does not
+  // work, dropped whole (never cut mid-word) if the text would pass the limit.
+  const statementShort = (community) => {
+    const firstNotWorks = community.services.find((service) => service.verdict !== "works");
+    const build = (withReason) =>
+      `${community.name}: ${community.services
+        .map((service) => {
+          const label = `${SMS_LABEL[service.service] || service.service} ${statementWord(service.verdict)}`;
+          return withReason && service === firstNotWorks ? `${label} (${plain(service.reason)})` : label;
+        })
+        .join(" · ")}. Crosscheck, data ${pack.built}.`;
+    const full = build(true);
+    return full.length < SMS_MAX_CHARS ? full : build(false);
+  };
+
+  const statementLong = (community) => {
+    const population = pack.sources[community.population.src];
+    const services = community.services.map(
+      (service) =>
+        `${SERVICE_LABEL[service.service] || service.service}: ${statementWord(service.verdict)}, ${plain(service.reason)}.`,
+    );
+    return [
+      `${community.name} (${community.region}) has a population of ${community.population.value.toLocaleString("en-US")} (${population.source}, ${population.date}).`,
+      `${community.agreement.covered} of ${community.agreement.available} sources say covered (${community.agreement.note}).`,
+      `Best available path: ${plain(community.path.note)} (${community.path.rule}, ${community.path.date}).`,
+      ...services,
+      `${oldestSource(community)}.`,
+      "Every figure is from a published source; the app measures nothing.",
+    ].join(" ");
+  };
+
+  // Clipboard first; a selected off-screen textarea where the Clipboard API is refused.
+  const copyText = async (text) => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return;
+      } catch (error) {
+        // Fall through to the textarea.
+      }
+    }
+    const area = h("textarea", {
+      class: "statement-copy",
+      readonly: "",
+      "aria-hidden": "true",
+      style: "position: fixed; opacity: 0",
+    });
+    area.value = text;
+    document.body.appendChild(area);
+    area.select();
+    document.execCommand("copy");
+    area.remove();
+  };
+
+  const renderStatementButtons = (community) => {
+    const smsLink = h(
+      "a",
+      { class: "button button--primary", href: `sms:?body=${encodeURIComponent(statementShort(community))}` },
+      "Send as SMS",
+    );
+    const copyButton = h("button", { type: "button", class: "button button--secondary" }, "Copy statement");
+    let resetTimer = null;
+    copyButton.addEventListener("click", async () => {
+      await copyText(statementLong(community));
+      copyButton.textContent = "Copied";
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(() => {
+        copyButton.textContent = "Copy statement";
+      }, 2000);
+    });
+    return h("div", { class: "share" }, h("div", { class: "share-card__buttons" }, smsLink, copyButton));
+  };
+
+  const renderFreshness = (community) =>
+    h(
+      "span",
+      { class: "source-line community-header__freshness" },
+      `Oldest source: ${pack.sources[community.freshness.source].source} · `,
+      h("span", { class: "fig fig--xs" }, community.freshness.date),
+    );
+
   const renderActions = (community) =>
     h(
       "section",
@@ -358,12 +456,19 @@
     for (const node of renderSearch()) {
       main.appendChild(node);
     }
-    main.appendChild(renderHeader(community));
+    const header = renderHeader(community);
+    header.appendChild(renderFreshness(community));
+    main.appendChild(header);
     main.appendChild(renderPresent(community));
     main.appendChild(renderPublishers(community));
-    main.appendChild(renderServices(community));
+    const services = renderServices(community);
+    services.appendChild(renderStatementButtons(community));
+    main.appendChild(services);
     main.appendChild(renderActions(community));
   };
+
+  // Exposed for the browser test, which runs the builders over every community in the pack.
+  window.__statement = { short: statementShort, long: statementLong };
 
   // The HTML parser places <svg> in the SVG namespace; reading it back keeps a namespace URL
   // literal out of the built file (tests/test_build.py forbids one outside the pack).
