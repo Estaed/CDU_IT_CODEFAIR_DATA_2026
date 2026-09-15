@@ -77,6 +77,22 @@
     border: 1px solid #444444;
   }
   #sendBtn { flex: 0 0 auto; min-width: 90px; }
+  h2 { font-size: 16px; margin: 4px 0 8px; }
+  .manual textarea {
+    display: block;
+    width: 100%;
+    font-family: monospace;
+    font-size: 12px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #444444;
+    background: #000000;
+    color: #00ff00;
+    margin-bottom: 8px;
+    resize: vertical;
+  }
+  #offerOut, #answerOut { height: 100px; }
+  #offerIn, #answerIn { height: 80px; }
 </style>
 </head>
 <body>
@@ -89,6 +105,30 @@
   <input type="checkbox" id="revealIps">
   Reveal real IPs (asks microphone permission)
 </label>
+<div class="manual">
+  <h2>Manual mode (no laptop, no server)</h2>
+  <div class="row">
+    <button id="btnManualA" type="button">A: create offer</button>
+  </div>
+  <textarea id="offerOut" readonly placeholder="A's offer JSON appears here"></textarea>
+  <div class="row">
+    <button id="copyOfferOut" type="button">Copy offer</button>
+  </div>
+
+  <textarea id="offerIn" placeholder="B: paste A's offer JSON here"></textarea>
+  <div class="row">
+    <button id="btnManualB" type="button">B: paste offer, create answer</button>
+  </div>
+  <textarea id="answerOut" readonly placeholder="B's answer JSON appears here"></textarea>
+  <div class="row">
+    <button id="copyAnswerOut" type="button">Copy answer</button>
+  </div>
+
+  <textarea id="answerIn" placeholder="A: paste B's answer JSON here"></textarea>
+  <div class="row">
+    <button id="btnManualApplyAnswer" type="button">A: paste answer</button>
+  </div>
+</div>
 <div id="status">idle</div>
 <div id="log"></div>
 <div id="messages"></div>
@@ -108,6 +148,15 @@
   var revealIps = document.getElementById("revealIps");
   var msgInput = document.getElementById("msgInput");
   var sendBtn = document.getElementById("sendBtn");
+  var btnManualA = document.getElementById("btnManualA");
+  var offerOut = document.getElementById("offerOut");
+  var copyOfferOut = document.getElementById("copyOfferOut");
+  var offerIn = document.getElementById("offerIn");
+  var btnManualB = document.getElementById("btnManualB");
+  var answerOut = document.getElementById("answerOut");
+  var copyAnswerOut = document.getElementById("copyAnswerOut");
+  var answerIn = document.getElementById("answerIn");
+  var btnManualApplyAnswer = document.getElementById("btnManualApplyAnswer");
 
   var pc = null;
   var dc = null;
@@ -351,8 +400,101 @@
     }
   }
 
+  function copyTextarea(ta) {
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    try {
+      var ok = document.execCommand("copy");
+      log(ok ? "copied to clipboard" : "copy command returned false");
+    } catch (err) {
+      log("copy error: " + err);
+    }
+  }
+
+  async function manualCreateOffer() {
+    btnManualA.disabled = true;
+    try {
+      await maybeRevealIps();
+      log("manual A: create connection and data channel");
+
+      pc = new RTCPeerConnection({ iceServers: [] });
+      wirePeerConnection();
+      dc = pc.createDataChannel("chat");
+      wireDataChannel();
+
+      var offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      log("manual A: local description set, waiting for ICE gathering");
+      await waitForIceGatheringComplete(pc);
+
+      offerOut.value = JSON.stringify(pc.localDescription);
+      setStatus("offer ready, send it to B");
+      log("manual A: offer ready");
+    } catch (err) {
+      log("manual A error: " + err);
+      setStatus("ERROR: " + err);
+    } finally {
+      btnManualA.disabled = false;
+    }
+  }
+
+  async function manualCreateAnswer() {
+    btnManualB.disabled = true;
+    try {
+      var offer = JSON.parse(offerIn.value);
+      await maybeRevealIps();
+
+      pc = new RTCPeerConnection({ iceServers: [] });
+      wirePeerConnection();
+      pc.addEventListener("datachannel", function (e) {
+        log("manual B: ondatachannel");
+        dc = e.channel;
+        wireDataChannel();
+      });
+
+      await pc.setRemoteDescription(offer);
+      log("manual B: remote description set");
+
+      var answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      log("manual B: local description set, waiting for ICE gathering");
+      await waitForIceGatheringComplete(pc);
+
+      answerOut.value = JSON.stringify(pc.localDescription);
+      setStatus("answer ready, send it back to A");
+      log("manual B: answer ready");
+    } catch (err) {
+      log("manual B error: " + err);
+      setStatus("ERROR: " + err);
+    } finally {
+      btnManualB.disabled = false;
+    }
+  }
+
+  async function manualApplyAnswer() {
+    btnManualApplyAnswer.disabled = true;
+    try {
+      if (!pc) throw new Error("no connection yet; create an offer first");
+      var answer = JSON.parse(answerIn.value);
+      await pc.setRemoteDescription(answer);
+      setStatus("answer set, connecting...");
+      log("manual A: remote description set");
+    } catch (err) {
+      log("manual A error: " + err);
+      setStatus("ERROR: " + err);
+    } finally {
+      btnManualApplyAnswer.disabled = false;
+    }
+  }
+
   btnA.addEventListener("click", function () { runA(); });
   btnB.addEventListener("click", function () { runB(); });
+  btnManualA.addEventListener("click", function () { manualCreateOffer(); });
+  btnManualB.addEventListener("click", function () { manualCreateAnswer(); });
+  btnManualApplyAnswer.addEventListener("click", function () { manualApplyAnswer(); });
+  copyOfferOut.addEventListener("click", function () { copyTextarea(offerOut); });
+  copyAnswerOut.addEventListener("click", function () { copyTextarea(answerOut); });
 
   sendBtn.addEventListener("click", function () {
     var text = msgInput.value;
