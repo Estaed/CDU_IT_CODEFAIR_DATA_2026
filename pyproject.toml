@@ -29,7 +29,7 @@ package = false
 [tool.ruff]
 line-length = 100
 target-version = "py313"
-extend-exclude = ["spike", "design", ".venv"]
+extend-exclude = ["spike", "design", "reports", ".venv"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]

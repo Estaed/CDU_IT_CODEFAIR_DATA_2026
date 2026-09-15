@@ -312,6 +312,33 @@
     ].join(" ");
   };
 
+  // Byte size limit for one LoRa/Meshtastic packet payload (Task-22): the app never talks to a
+  // radio, but the text must be short enough to be pasted into one packet by hand.
+  const MESH_MAX_BYTES = 200;
+
+  const byteLength = (text) => new TextEncoder().encode(text).length;
+
+  // The third statement: community name and "crosscheck" always stay; the fields between them
+  // (the four services, the agreement count, the build date) are dropped from the end, least
+  // essential first, until the whole line fits one mesh packet.
+  const statementMesh = (community) => {
+    const serviceParts = community.services.map(
+      (service) => `${SMS_LABEL[service.service] || service.service} ${statementWord(service.verdict)}`,
+    );
+    const droppable = [
+      ...serviceParts,
+      `agree ${community.agreement.covered}/${community.agreement.available}`,
+      pack.built.slice(0, 10),
+    ];
+    for (let count = droppable.length; count >= 0; count -= 1) {
+      const text = [community.name, ...droppable.slice(0, count), "crosscheck"].join(" - ");
+      if (byteLength(text) <= MESH_MAX_BYTES) {
+        return text;
+      }
+    }
+    throw new Error(`statementMesh: ${community.name} exceeds ${MESH_MAX_BYTES} bytes`);
+  };
+
   // Clipboard first; a selected off-screen textarea where the Clipboard API is refused.
   const copyText = async (text) => {
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -351,7 +378,31 @@
         copyButton.textContent = "Copy statement";
       }, 2000);
     });
-    return h("div", { class: "share" }, h("div", { class: "share-card__buttons" }, smsLink, copyButton));
+    const meshText = statementMesh(community);
+    const meshButton = h(
+      "button",
+      { type: "button", class: "button", "data-text": meshText },
+      "Copy mesh text",
+    );
+    let meshResetTimer = null;
+    meshButton.addEventListener("click", async () => {
+      await copyText(meshText);
+      meshButton.textContent = "Copied";
+      clearTimeout(meshResetTimer);
+      meshResetTimer = setTimeout(() => {
+        meshButton.textContent = "Copy mesh text";
+      }, 2000);
+    });
+    const meshCaption = h(
+      "div",
+      { class: "source-line" },
+      `Fits one LoRa mesh packet (${MESH_MAX_BYTES} bytes)`,
+    );
+    return h(
+      "div",
+      { class: "share" },
+      h("div", { class: "share-card__buttons" }, smsLink, copyButton, meshButton, meshCaption),
+    );
   };
 
   const renderFreshness = (community) =>
@@ -527,7 +578,7 @@
   };
 
   // Exposed for the browser test, which runs the builders over every community in the pack.
-  window.__statement = { short: statementShort, long: statementLong };
+  window.__statement = { short: statementShort, long: statementLong, mesh: statementMesh };
 
   // The HTML parser places <svg> in the SVG namespace; reading it back keeps a namespace URL
   // literal out of the built file (tests/test_build.py forbids one outside the pack).

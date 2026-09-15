@@ -18,7 +18,8 @@ ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = ROOT / "app/index.html"
 OUT = ROOT / "dist/index.html"
 PACK = ROOT / "data/out/data_pack.json"
-JS = ROOT / "app/app.js"
+# Order fixed by CLAUDE.md Part 2: qr.js, transfer.js, nearby.js, app.js; later tasks append.
+JS_FILES = (ROOT / "app/qr.js", ROOT / "app/app.js")
 # Served by the host only; dist/index.html never depends on them.
 HOST_FILES = (ROOT / "app/sw.js", ROOT / "app/manifest.webmanifest")
 SIZES_PLACEHOLDER = "<!-- SIZES -->"
@@ -101,7 +102,7 @@ def main() -> str:
     page = inline(
         add_share_blocks(TEMPLATE.read_text(encoding="utf-8"), qr),
         [path.read_text(encoding="utf-8") for path in CSS_FILES],
-        JS.read_text(encoding="utf-8"),
+        "\n".join(path.read_text(encoding="utf-8") for path in JS_FILES),
         pack_text.strip(),
     )
     page = with_sizes(page, PACK.stat().st_size)

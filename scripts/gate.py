@@ -21,7 +21,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 APP_MAX_BYTES = 1_048_576
-PACK_MAX_BYTES = 307_200
+# 260 KB base pack + ~184 KB of map layers (Task-20, reports/2026-09-15-map-bytes.md OQ13).
+PACK_MAX_BYTES = 512_000
 ENV = {**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
 
 

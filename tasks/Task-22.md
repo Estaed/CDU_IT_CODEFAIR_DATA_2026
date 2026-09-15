@@ -30,11 +30,21 @@ batch; PRD §6 "Mesh-size statement fits one packet".
 
 ## Acceptance Criteria (DoD)
 
-- [ ] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
-- [ ] `tests/browser/test_statement.py` (appended): for every community id in `data/out/data_pack.json`, navigating to `#/community/<id>` yields a `button[data-text]` labelled `Copy mesh text` whose `data-text` is at most 200 bytes UTF-8, contains only printable ASCII, starts with the community name and contains `crosscheck`; Wadeye's text is asserted verbatim in the test once the builder is written (the bee writes the expected string into the test from the pack strings, not by hand).
-- [ ] The existing SMS and statement assertions in the same file stay green.
-- [ ] `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.js` prints nothing; zero non-`file:` requests and no console errors.
+- [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0. (Run by the main loop at integration, 2026-09-15: GATE GREEN.)
+- [x] `tests/browser/test_statement.py` (appended): for every community id in `data/out/data_pack.json`, navigating to `#/community/<id>` yields a `button[data-text]` labelled `Copy mesh text` whose `data-text` is at most 200 bytes UTF-8, contains only printable ASCII, starts with the community name and contains `crosscheck`; Wadeye's text is asserted verbatim in the test once the builder is written (the bee writes the expected string into the test from the pack strings, not by hand).
+- [x] The existing SMS and statement assertions in the same file stay green.
+- [x] `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.js` prints nothing; zero non-`file:` requests and no console errors.
 
 ## Status
 
-Not started.
+DONE 2026-09-15 (main loop: integrated from the worker's worktree, gate green; mutation check:
+`MESH_MAX_BYTES` 200 to 100 turns `test_copy_mesh_text` red, restored). Worker notes follow.
+
+Ran (worktree interpreter from the main `.venv`, not `gate.py`): `ruff check --no-cache .` →
+`All checks passed!`; `scripts/build_app.py` → `dist\index.html: 320688 bytes`; `pytest
+tests/browser/test_statement.py tests/browser/test_community.py tests/browser/test_smoke.py -q`
+→ 13 passed, zero non-`file:` requests, zero console errors. Wadeye's mesh text: `Wadeye -
+Telehealth video DEGRADED - School video DEGRADED - myGov WORKS - Voice/SMS WORKS - agree 4/4 -
+2026-09-15 - crosscheck` (128 bytes UTF-8); no drop was needed for any of the 96 communities —
+the longest is Hodgson River Station at 151 bytes, all under the 200-byte limit. `grep -nE
+"#[0-9a-fA-F]{3}|[0-9]px" app/app.js` printed nothing.

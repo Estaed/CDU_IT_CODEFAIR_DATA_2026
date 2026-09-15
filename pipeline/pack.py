@@ -12,7 +12,7 @@ import re
 from datetime import date
 from pathlib import Path
 
-from pipeline import changes, outline, provenance, rules
+from pipeline import changes, layers, outline, provenance, rules
 
 ROOT = Path(__file__).resolve().parent.parent
 TABLE = ROOT / "data/out/capability_table.csv"
@@ -20,6 +20,7 @@ THRESHOLDS = ROOT / "pipeline/thresholds.csv"
 OUT_PACK = ROOT / "data/out/data_pack.json"
 CONSTANTS = ROOT / "constants.md"
 BOUNDARY_RAW = ROOT / "data/raw" / outline.RAW_NAME
+RAW_DIR = ROOT / "data/raw"
 HISTORY_DIR = ROOT / "data/out/history"
 
 PACK_VERSION = 1
@@ -373,18 +374,28 @@ def dated_lines(community: dict):
     yield from community["flags"]
 
 
-def source_table(communities: list[dict], cited: dict[str, dict[str, str]]) -> dict[str, dict]:
+def source_table(
+    communities: list[dict], cited: dict[str, dict[str, str]], layers: list[dict] = ()
+) -> dict[str, dict]:
     """Fold every (source, date) pair into one header entry and leave an ``src`` id behind.
 
     The same four publishers and the same requirement figures are cited by all 96
     communities; naming each of them once and referring to it by ``s<n>`` is what keeps the
-    pack inside its byte budget (PRD decision log, 2026-09-13).
+    pack inside its byte budget (PRD decision log, 2026-09-13). Map layers cite the same way:
+    each layer's ``src`` starts as a provenance ``pack_source`` name and is folded into the
+    same table, exactly as publisher lines are (Part 2 "Map layer" seam).
     """
-    pairs = sorted({(line["source"], line["date"]) for c in communities for line in dated_lines(c)})
+    community_pairs = {
+        (line["source"], line["date"]) for c in communities for line in dated_lines(c)
+    }
+    layer_pairs = {(layer["src"], cited[layer["src"]]["date"]) for layer in layers}
+    pairs = sorted(community_pairs | layer_pairs)
     ids = {pair: f"s{index}" for index, pair in enumerate(pairs, 1)}
     for community in communities:
         for line in dated_lines(community):
             line["src"] = ids[(line.pop("source"), line.pop("date"))]
+    for layer in layers:
+        layer["src"] = ids[(layer["src"], cited[layer["src"]]["date"])]
     table = {}
     for (source, published), key in ids.items():
         entry = {"source": source, "date": published}
@@ -504,13 +515,15 @@ def build_pack(
     built: str,
     boundary_path: Path = BOUNDARY_RAW,
     history_dir: Path = HISTORY_DIR,
+    raw_dir: Path = RAW_DIR,
 ) -> dict:
     """The whole pack, version 1, communities sorted by BushTel id."""
     cited = citations(thresholds)
     communities = sorted(
         (_community(row, thresholds, cited) for row in rows), key=lambda entry: entry["id"]
     )
-    sources = source_table(communities, cited)
+    map_layers = layers.build_layers(raw_dir, boundary_path)
+    sources = source_table(communities, cited, map_layers)
     for community in communities:
         community["freshness"] = freshness_for(community, sources)
     return {
@@ -520,6 +533,7 @@ def build_pack(
         "team": team,
         "count": len(communities),
         "outline": outline.outline_path(boundary_path),
+        "layers": map_layers,
         "filters": filters(rows),
         "legend": legend(communities),
         "sources": sources,

@@ -199,7 +199,7 @@ def test_committed_data_pack_file():
         committed = json.load(f)
     assert committed["pack_version"] == 1
     assert committed["count"] == 96
-    assert path.stat().st_size <= 307_200
+    assert path.stat().st_size <= 512_000
 
 
 def test_filters_order_labels_and_counts(data_pack):
@@ -291,6 +291,27 @@ def test_changes_names_milingimbi_wifi(data_pack):
 def test_changes_excludes_5g_columns(data_pack):
     serialised = json.dumps(data_pack["changes"], ensure_ascii=False)
     assert "5g" not in serialised.lower()
+
+
+def test_layers_key_present_and_src_resolves(data_pack):
+    # Task-20: the pack's map layers, each src a key of the pack's own sources table.
+    layers = data_pack["layers"]
+    assert layers, "pack layers list must not be empty"
+    for layer in layers:
+        assert layer["kind"] in {"point", "line", "area"}
+        assert layer["paths"]
+        assert layer["src"] in data_pack["sources"]
+
+
+def test_layers_ids_and_order(data_pack):
+    ids = [layer["id"] for layer in data_pack["layers"]]
+    assert ids == ["cov-telstra", "cov-optus", "cov-tpg", "regions-sa3", "towns"]
+
+
+def test_pack_version_and_count_unaffected_by_layers(data_pack):
+    assert data_pack["pack_version"] == 1
+    assert data_pack["count"] == 96
+    assert len(data_pack["communities"]) == 96
 
 
 def test_pack_build_imports_no_fetch_module():

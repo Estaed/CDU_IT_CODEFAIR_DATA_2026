@@ -138,6 +138,41 @@ SOURCES = (
         "fetch_command": "PYTHONUTF8=1 .venv/Scripts/python -m pipeline.fetch.abs_boundary",
     },
     {
+        "id": "abs_sa3_2021",
+        "name": "ABS ASGS Edition 3 SA3 boundary 2021",
+        "pack_source": "ABS ASGS SA3 2021",
+        "url": (
+            "https://www.abs.gov.au/statistics/standards/"
+            "australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/"
+            "access-and-downloads/digital-boundary-files/SA3_2021_AUST_SHP_GDA2020.zip"
+        ),
+        "licence": "CC BY 4.0",
+        "attribution": (
+            "Australian Bureau of Statistics, ASGS Edition 3 SA3 boundaries 2021"
+        ),
+        "pattern": "abs_sa3_20*",
+        "date": "2021-07-20",
+        "fetch_command": "PYTHONUTF8=1 .venv/Scripts/python -m pipeline.fetch.abs_sa3",
+    },
+    {
+        "id": "abs_ucl_2021",
+        "name": "ABS ASGS Edition 3 UCL boundary 2021",
+        "pack_source": "ABS ASGS UCL 2021",
+        "url": (
+            "https://www.abs.gov.au/statistics/standards/"
+            "australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/"
+            "access-and-downloads/digital-boundary-files/UCL_2021_AUST_GDA2020_SHP.zip"
+        ),
+        "licence": "CC BY 4.0",
+        "attribution": (
+            "Australian Bureau of Statistics, ASGS Edition 3 Urban Centres and "
+            "Localities boundaries 2021"
+        ),
+        "pattern": "abs_ucl_20*",
+        "date": "2021-07-20",
+        "fetch_command": "PYTHONUTF8=1 .venv/Scripts/python -m pipeline.fetch.abs_ucl",
+    },
+    {
         "id": "ntg_smallcell",
         "name": "Remote Sites with Mobile Phone Small Cell Coverage",
         "pack_source": "",

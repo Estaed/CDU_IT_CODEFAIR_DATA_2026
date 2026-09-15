@@ -276,11 +276,13 @@ What the app shows for one community; not a schema.
     assumption into a rule; ACCC MBA reports are the likely source.
 12. **Team number** — ANSWERED 2026-09-12: **DIC005**. Held in `constants.md`; header, footer
     and file name read it from there. (The sibling AI Challenge entry is AIC014, not this one.)
-13. **Pack cap after the map layers.** External to this session: the byte cost of each map
-    layer (towns, highways, region boundaries, ACCC polygons per carrier) at two or three
-    simplification tolerances is being measured (`reports/2026-09-15-map-bytes.md`, Eko).
-    The cap is set from the numbers, not guessed; until then the gate keeps 300 KB and the map
-    task cannot be marked DONE.
+13. **Pack cap after the map layers** — ANSWERED 2026-09-15 from
+    `reports/2026-09-15-map-bytes.md`: tolerance 0.02 degrees for every layer (0.01 and 0.02
+    are indistinguishable at phone scale); Telstra 4G, Optus 4G, MOCN 4G (shown as TPG), SA3
+    regions and five towns add about 184 KB to the 260 KB pack; **cap 512,000 bytes**.
+    Highways could not be downloaded by script (Geoscience Australia file is 775 MB with no
+    licence stated; NT Government roads host returns 403 to scripts, CC BY on the page) and
+    wait for a browser download by Tarik (Task-23).
 14. **Does a phone hotspot let two clients talk to each other?** Tarik's test with
     `reports/spike-webrtc-hotspot/` on the S24 as host: CONNECTED and messages after the
     laptop server is killed means yes. If no on both phones as host, nearby chat ships with
@@ -333,3 +335,4 @@ D5. **National scope** — only if the NT is finished early; the brief allows it
 | 2026-09-15 | Nearby chat is a live channel, not one-shot; dropped if the hotspot test fails on both phones (OQ14). The spike page connected two real phones over the home router the same day | Tarik |
 | 2026-09-15 | The map may break the pack cap, DESIGN.md's colour rule (carrier layers) and the "no images" rule (relief base, only if needed); it may not make a network request. Zero runtime requests is the one line that stays | Tarik, "break a few rules if needed" |
 | 2026-09-15 | The pack cap is set after the layers are measured (OQ13), not before | Eko |
+| 2026-09-15 | OQ13 closed: tolerance 0.02, three carrier layers (Telstra, Optus, MOCN as TPG), SA3 regions, five towns; pack cap 512,000 bytes; highways deferred to Task-23 pending a browser download of the NT Government roads file | Eko, on Tarik's instruction to decide |

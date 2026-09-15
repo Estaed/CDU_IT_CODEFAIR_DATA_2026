@@ -41,12 +41,38 @@ PRD §4.2 second batch; CLAUDE.md Part 2 "Where the code lives" and layer rule 7
 
 ## Acceptance Criteria (DoD)
 
-- [ ] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
-- [ ] `tests/browser/test_qr.py` (marker `browser`): opens `dist/index.html`, and for each of three inputs computes the oracle in the test with Python `qrcode` (`border=0`, `fit=True`, the same level, `QRCode.add_data` with the byte string) and asserts `CrosscheckQR.encode(...)` returns the identical `version`, `size` and module array. Inputs: `"Crosscheck"` at M; the `APP_URL` from `constants.md` at M; a fixed 1,000-byte pseudo-random `Uint8Array` (seeded, generated in both the test and the page from the same integer sequence) at L.
-- [ ] `tests/test_build.py` (appended): `dist/index.html` contains the string `window.CrosscheckQR` exactly once and `app/qr.js` appears before `app/app.js` in the inlined script.
-- [ ] `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/qr.js` prints nothing; `grep -nE "fetch\(|XMLHttpRequest|WebSocket|https?://" app/qr.js` prints nothing.
-- [ ] Zero non-`file:` requests and no console errors on load (existing smoke test stays green).
+- [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0. (Run by the main loop at integration, 2026-09-15: GATE GREEN, 137 unit and 35 browser tests.)
+- [x] `tests/browser/test_qr.py` (marker `browser`): opens `dist/index.html`, and for each of three inputs computes the oracle in the test with Python `qrcode` (`border=0`, `fit=True`, the same level, `QRCode.add_data` with the byte string) and asserts `CrosscheckQR.encode(...)` returns the identical `version`, `size` and module array. Inputs: `"Crosscheck"` at M; the `APP_URL` from `constants.md` at M; a fixed 1,000-byte pseudo-random `Uint8Array` (seeded, generated in both the test and the page from the same integer sequence) at L.
+- [x] `tests/test_build.py` (appended): `dist/index.html` contains the string `window.CrosscheckQR` exactly once and `app/qr.js` appears before `app/app.js` in the inlined script.
+- [x] `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/qr.js` prints nothing; `grep -nE "fetch\(|XMLHttpRequest|WebSocket|https?://" app/qr.js` prints nothing.
+- [x] Zero non-`file:` requests and no console errors on load (existing smoke test stays green).
 
 ## Status
 
-Not started.
+DONE 2026-09-15 (main loop: integrated from the worker's worktree, gate green; mutation check:
+disabling penalty rule 2 in `qr.js` turns `test_qr.py` red, restored). Worker notes follow.
+
+Ran `ruff check --no-cache .` (clean), `scripts/build_app.py` (`dist/index.html` built), and
+`pytest tests/test_build.py tests/browser/test_qr.py tests/browser/test_smoke.py -q` (12
+passed). Did not run the full `scripts/gate.py` or the full suite per the Lane instructions —
+the worktree has no `data/raw/`, so pipeline/source tests fail there for reasons unrelated to
+this task; confirmed this out of caution and it is exactly the pre-existing gap the caller
+described, not a regression from this change.
+
+The oracle test forces `code.add_data(data, optimize=0)` on the Python side so the oracle
+always builds a single byte-mode `QRData`, matching `qr.js`'s byte-mode-only encoder (default
+`optimize=20` can otherwise split alphanumeric/numeric runs into separate segments). The
+1,000-byte input is a seeded 32-bit LCG (`state = (1103515245*state+12345) & 0xFFFFFFFF`,
+byte = `(state>>16)&0xFF`); the test computes it in Python for the oracle and the page
+regenerates the identical sequence itself in JS from the same seed and constants
+(`Math.imul` for the 32-bit multiply), so no byte array crosses the Python/JS boundary for
+that input.
+
+One real bug found and fixed during verification: `mapData`'s zigzag column loop mutated the
+JS `for` loop's own counter (`if (col <= 6) col -= 1`) inside the body, which then fed into
+the loop's own `col -= 2` step — unlike Python's `for col in range(...)`, where mutating `col`
+inside the body never affects the next value `range` yields. This desynced every column after
+the timing strip and dropped column 0 entirely. Fixed by deriving `col` from a separate,
+un-mutated `colBase` counter. Found by a temporary debug harness (built, run, and deleted
+during this task; not part of the diff) that dumped per-mask-pattern lost-point scores and
+candidate matrices from both sides and diffed them cell by cell.

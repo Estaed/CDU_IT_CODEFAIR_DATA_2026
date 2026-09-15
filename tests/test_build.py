@@ -111,3 +111,14 @@ def test_with_sizes_counts_its_own_meta():
     app_bytes = int(re.search(r"app=(\d+)", page).group(1))
     assert app_bytes == len(page.encode("utf-8"))
     assert "pack=7;" in page
+
+
+def test_qr_js_inlined_once_before_app_js():
+    build_app.main()
+    html = (ROOT / "dist" / "index.html").read_text(encoding="utf-8")
+
+    assert html.count("window.CrosscheckQR") == 1
+    qr_index = html.index("window.CrosscheckQR")
+    # DEFAULT_HASH is a unique app.js identifier (Task-17 Execution Guide: qr.js before app.js).
+    app_index = html.index("DEFAULT_HASH")
+    assert qr_index < app_index
