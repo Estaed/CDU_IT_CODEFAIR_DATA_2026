@@ -28,7 +28,10 @@
 
   const main = document.querySelector("main");
   const footer = document.querySelector("footer.footer");
-  const pack = JSON.parse(document.getElementById("pack").textContent);
+  // Reassigned once, at most, by maybeApplyStoredPack below (Task-24): every render reads this
+  // variable through closure, so swapping it and calling route() again is the whole update.
+  let pack = JSON.parse(document.getElementById("pack").textContent);
+  const builtInBuilt = pack.built;
 
   if (pack.pack_version !== 2) {
     main.textContent = "Unknown data pack";
@@ -1336,9 +1339,22 @@
         messages.appendChild(h("div", { class: `nearby__msg nearby__msg--${event.who}` }, event.text));
         messages.scrollTop = messages.scrollHeight;
       } else if (event.type === "pack") {
-        messages.appendChild(
-          h("div", { class: "nearby__msg nearby__msg--peer" }, "Data pack received."),
+        // nearby.js already saved this pack (Task-24) before it emitted the event; tapping the
+        // message just reloads to pick it up through the normal startup path.
+        let received;
+        try {
+          received = JSON.parse(event.json);
+        } catch (error) {
+          received = null;
+        }
+        const useButton = h(
+          "button",
+          { type: "button", class: "nearby__msg nearby__msg--peer nearby__use-pack" },
+          received ? `Pack ${received.built} received, tap to use` : "Pack received, tap to use",
         );
+        useButton.addEventListener("click", () => location.reload());
+        messages.appendChild(useButton);
+        messages.scrollTop = messages.scrollHeight;
       } else if (event.type === "error") {
         setState("error");
       }
@@ -1428,6 +1444,49 @@
     chip.textContent = navigator.onLine ? "Offline-ready" : "Offline";
   };
 
+  // Task-24: a pack held in the browser's own storage (store.js) that is newer than the
+  // built-in one. The chip sits beside the existing offline chip; index.html carries no markup
+  // for it (only app.js owns this feature), so the wrapper and the chip are both built here.
+  const updateChipText = h("span", { class: "update-chip__text" });
+  const useBuiltInButton = h(
+    "button",
+    { type: "button", class: "update-chip__button" },
+    "Use built-in pack",
+  );
+  const updateChip = h("span", { class: "chip update-chip", hidden: "" }, updateChipText, useBuiltInButton);
+  const headerChips = h("span", { class: "header-chips" });
+  chip.replaceWith(headerChips);
+  headerChips.appendChild(chip);
+  headerChips.appendChild(updateChip);
+
+  useBuiltInButton.addEventListener("click", async () => {
+    try {
+      await window.CrosscheckStore.clear();
+    } catch (error) {
+      // Storage is optional; a reload with nothing stored returns to the built-in pack anyway.
+    }
+    location.reload();
+  });
+
+  // Swaps to a stored pack that is newer than the built-in one, if any, and re-renders once.
+  // Runs after the first synchronous render from the built-in pack so the existing browser
+  // tests that wait for the first screen keep passing (Execution Guide).
+  const maybeApplyStoredPack = async () => {
+    let stored = null;
+    try {
+      stored = await window.CrosscheckStore.load();
+    } catch (error) {
+      stored = null;
+    }
+    if (stored && typeof stored.built === "string" && stored.built > builtInBuilt) {
+      pack = stored;
+      updateChipText.textContent = `Pack updated ${stored.built}`;
+      updateChip.hidden = false;
+      renderFooter();
+      route();
+    }
+  };
+
   window.addEventListener("hashchange", route);
   window.addEventListener("online", setChip);
   window.addEventListener("offline", setChip);
@@ -1435,4 +1494,5 @@
   renderFooter();
   route();
   registerHost();
+  maybeApplyStoredPack();
 })();

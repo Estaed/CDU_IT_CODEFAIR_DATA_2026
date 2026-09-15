@@ -145,8 +145,21 @@ window.CrosscheckNearby = (() => {
         }
         packChunks[message.i] = message.part;
         if (packChunks.every((part) => part !== null)) {
-          emit({ type: "pack", json: packChunks.join("") });
+          const json = packChunks.join("");
           packChunks = null;
+          // Task-24: kept for next start if it validates (store.js checks pack_version and the
+          // community count on its own); the event fires only after the save settles, so a
+          // listener that reacts to it can rely on the store already holding this pack.
+          (async () => {
+            if (window.CrosscheckStore) {
+              try {
+                await window.CrosscheckStore.save(json);
+              } catch (error) {
+                // Storage is optional; the chat and the pack event still work without it.
+              }
+            }
+            emit({ type: "pack", json });
+          })();
         }
       }
     });

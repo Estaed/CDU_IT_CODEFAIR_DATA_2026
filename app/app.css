@@ -242,6 +242,34 @@ a.button { text-decoration: none; }
   transform: scale(calc(1 / var(--map-zoom, 1)));
 }
 
+/* Task-24: the update chip beside the existing offline chip. New classes only, tokens only
+   (layer rule 5); .chip is screens.css's own base (padding, radius, background), reused here
+   the same way .offline-chip already does. */
+
+.header-chips { display: flex; align-items: center; gap: var(--space-xs); }
+
+.update-chip { display: inline-flex; align-items: center; gap: var(--space-xs); }
+
+/* Task-26 lesson repeated here: .chip sets its own `display`, which as normal-author CSS
+   outranks the UA stylesheet's [hidden]{display:none} regardless of specificity. */
+.update-chip[hidden] { display: none; }
+
+.update-chip__button {
+  height: var(--size-chip);
+  padding: 0 var(--space-xs);
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-pill);
+  font: var(--text-label);
+  color: var(--text-heading);
+  background: var(--surface-page);
+  cursor: pointer;
+}
+
+/* The nearby "tap to use" message is a button styled as a peer chat bubble (.nearby__msg--peer
+   already sets its background, border and font); only the two UA button defaults it does not
+   cover need a rule here. */
+.nearby__use-pack { cursor: pointer; text-align: left; }
+
 /* Task-26: the Share screen's Changes row. screens.css's .link-row is a plain flex row with no
    wrap, which overflows a 360 px screen and left a trailing "." before app.js stopped joining
    the sentence and the date with one; this modifier wraps the name+sentence together and puts

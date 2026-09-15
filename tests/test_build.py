@@ -162,6 +162,27 @@ def test_get_user_media_only_in_transfer_and_nearby():
     assert files == ["nearby.js", "transfer.js"]
 
 
+def test_store_js_inlined_once_before_app_js():
+    # Task-24: store.js sits between nearby.js and app.js (build_app.JS_FILES); app.js reads
+    # window.CrosscheckStore at startup, so it must already be defined by then.
+    build_app.main()
+    html = (ROOT / "dist" / "index.html").read_text(encoding="utf-8")
+
+    assert html.count("window.CrosscheckStore = ") == 1
+    store_index = html.index("window.CrosscheckStore = ")
+    app_index = html.index("DEFAULT_HASH")
+    assert store_index < app_index
+
+
+def test_store_js_has_no_network_words():
+    # The Python equivalent of `grep -nE "fetch\\(|XMLHttpRequest|WebSocket|EventSource|https?://"
+    # app/store.js` (CLAUDE.md Part 2, layer rule 7); no shelling out, Windows has no `grep` on
+    # PATH by default.
+    source = (ROOT / "app" / "store.js").read_text(encoding="utf-8")
+    for token in ("fetch(", "XMLHttpRequest", "WebSocket", "EventSource", "http://", "https://"):
+        assert token not in source
+
+
 def test_sw_cache_name_is_build_hash():
     # Task-26: a phone that opened Pages once kept showing that build forever because the
     # cache name never changed. dist/sw.js now carries this build's own hash.

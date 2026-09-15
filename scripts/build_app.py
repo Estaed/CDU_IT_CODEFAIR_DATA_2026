@@ -21,11 +21,13 @@ ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = ROOT / "app/index.html"
 OUT = ROOT / "dist/index.html"
 PACK = ROOT / "data/out/data_pack.json"
-# Order fixed by CLAUDE.md Part 2: qr.js, transfer.js, nearby.js, app.js; later tasks append.
+# Order fixed by CLAUDE.md Part 2: qr.js, transfer.js, nearby.js, store.js, app.js; later tasks
+# append. store.js sits before app.js because app.js reads window.CrosscheckStore at startup.
 JS_FILES = (
     ROOT / "app/qr.js",
     ROOT / "app/transfer.js",
     ROOT / "app/nearby.js",
+    ROOT / "app/store.js",
     ROOT / "app/app.js",
 )
 # Served by the host only; dist/index.html never depends on them.

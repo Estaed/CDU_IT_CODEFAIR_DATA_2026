@@ -219,6 +219,13 @@ window.CrosscheckTransfer = (() => {
       { type: "button", class: "transfer__button", hidden: "" },
       "Open received app",
     );
+    // Task-24: kept in the browser's own storage (store.js) so the installed app updates in
+    // place on the next start; the download button stays for the phone-to-phone file handoff.
+    const useReceivedButton = el(
+      "button",
+      { type: "button", class: "transfer__button", hidden: "" },
+      "Use received pack now",
+    );
     const downloadLink = el(
       "a",
       { class: "transfer__button", download: "crosscheck.html", hidden: "" },
@@ -244,6 +251,7 @@ window.CrosscheckTransfer = (() => {
       counter.hidden = true;
       counter.textContent = "";
       openButton.hidden = true;
+      useReceivedButton.hidden = true;
       downloadLink.hidden = true;
       revokeReceivedUrl();
     };
@@ -289,6 +297,17 @@ window.CrosscheckTransfer = (() => {
       downloadLink.setAttribute("href", receivedUrl);
       counter.hidden = false;
       counter.textContent = "Received the app.";
+      // Task-24: the received page's own pack, kept for next start if it validates (store.js
+      // rejects anything with a different pack_version or community count on its own).
+      const packEl = parsed.getElementById("pack");
+      if (packEl && window.CrosscheckStore) {
+        try {
+          const result = await window.CrosscheckStore.save(packEl.textContent);
+          useReceivedButton.hidden = !result || !result.built;
+        } catch (error) {
+          // Storage is optional; Open and Download still work without it.
+        }
+      }
     };
 
     const scan = async () => {
@@ -357,6 +376,10 @@ window.CrosscheckTransfer = (() => {
       }
     });
 
+    useReceivedButton.addEventListener("click", () => {
+      location.reload();
+    });
+
     return {
       el: el(
         "div",
@@ -366,14 +389,17 @@ window.CrosscheckTransfer = (() => {
         video,
         counter,
         openButton,
+        useReceivedButton,
         downloadLink,
       ),
       stop,
+      finish,
     };
   };
 
   let currentStop = null;
   let listenerAdded = false;
+  let mountedReceiveFinish = null;
 
   // Builds the Show and Receive controls into container, replacing any previous ones and
   // stopping their timers and camera track first. getPageHtml is app.js's own pageHtml, the
@@ -385,6 +411,7 @@ window.CrosscheckTransfer = (() => {
     }
     const show = buildShow(getPageHtml);
     const receive = buildReceive();
+    mountedReceiveFinish = receive.finish;
     container.textContent = "";
     container.appendChild(show.el);
     container.appendChild(receive.el);
@@ -403,5 +430,9 @@ window.CrosscheckTransfer = (() => {
     }
   };
 
-  return { frames, reassemble, inflate, mount };
+  // Exposed for the browser test, which has no camera: drives the same completion path the
+  // scan loop calls once the camera has read every frame (Task-24 DoD).
+  const testReceiveComplete = (bytes) => mountedReceiveFinish(bytes);
+
+  return { frames, reassemble, inflate, mount, testReceiveComplete };
 })();
