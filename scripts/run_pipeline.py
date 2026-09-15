@@ -18,7 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from pipeline import merge, pack, provenance, rules  # noqa: E402
+from pipeline import figures, merge, pack, provenance, rules  # noqa: E402
 from pipeline.sources import accc, bushtel, nbn, ntg, rrl  # noqa: E402
 
 RAW = ROOT / "data/raw"
@@ -81,6 +81,7 @@ def main() -> None:
     print(f"{PROVENANCE.relative_to(ROOT).as_posix()}: written")
 
     pack.main()
+    figures.main()
 
 
 if __name__ == "__main__":

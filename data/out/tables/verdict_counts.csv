@@ -1,0 +1,21 @@
+service,verdict,communities,population
+Telehealth video,works,1,771
+Telehealth video,degraded,58,33272
+Telehealth video,fails,11,696
+Telehealth video,nodata,26,928
+Telehealth video,under 100,29,suppressed
+School video meeting,works,1,771
+School video meeting,degraded,69,33885
+School video meeting,fails,0,0
+School video meeting,nodata,26,1011
+School video meeting,under 100,29,suppressed
+myGov and banking,works,96,35667
+myGov and banking,degraded,0,0
+myGov and banking,fails,0,0
+myGov and banking,nodata,0,0
+myGov and banking,under 100,29,suppressed
+Voice and SMS,works,74,34865
+Voice and SMS,degraded,5,277
+Voice and SMS,fails,17,525
+Voice and SMS,nodata,0,0
+Voice and SMS,under 100,29,suppressed

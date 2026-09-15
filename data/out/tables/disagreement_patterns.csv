@@ -1,0 +1,11 @@
+pattern,n,reading,communities
+accc=0;ntg2022=0;rrl5=0;bushtel=0,11,All four publishers agree the community has no recorded path,Areyonga; Dhalinybuy; Gan Gan; Gochan Jiny Jirra; Gurrumuru; Haasts Bluff; Hodgson River Station; Imangara; Irrultja; Likkaparta; Mungkarta
+accc=0;ntg2022=0;rrl5=1;bushtel=0,8,"Licensed site within 5 km; no carrier prediction, no 2022 listing, no BushTel record",Amanbidji; Baniyala; Birany Birany; Mapuru; Nitjpurru; Rittarangu; Woodycupaldiya; Wurankuwu
+accc=0;ntg2022=0;rrl5=1;bushtel=1,3,"Licensed site within 5 km and BushTel says covered; no carrier prediction, no 2022 listing",Manmoyi; Orrtipa-Thurra; Rorruwuy
+accc=1;ntg2022=0;rrl5=0;bushtel=0,2,"Carrier predicts coverage; not on the 2022 list, no licensed site within 5 km, no BushTel record",Arawerr; Iwupataka
+accc=1;ntg2022=0;rrl5=1;bushtel=0,2,"Carrier predicts coverage and a licensed site is within 5 km; not on the 2022 list, no BushTel record",Tara; Wandangula
+accc=1;ntg2022=0;rrl5=1;bushtel=1,10,"Carrier predicts coverage, licensed site within 5 km, BushTel says covered; not on the 2022 list",Canteen Creek; Finke; Laramba; Milyakburra; Nyirripi; Pickertaramoor; Willowra; Wilora; Wutunugurra; Yuelamu
+accc=1;ntg2022=1;rrl5=0;bushtel=0,2,"Carrier predicts coverage and it is on the 2022 list; no licensed site within 5 km, no BushTel record",Ngangalala; Yathalamarra
+accc=1;ntg2022=1;rrl5=0;bushtel=1,3,"Carrier predicts coverage, on the 2022 list, BushTel says covered; no licensed site within 5 km",Amoonguna; Daguragu; Nturiya
+accc=1;ntg2022=1;rrl5=1;bushtel=0,1,"Carrier predicts coverage, on the 2022 list, licensed site within 5 km; no BushTel record",Marlinja
+accc=1;ntg2022=1;rrl5=1;bushtel=1,54,All four publishers agree the community is covered,Ali Curung; Alpurrurulam; Ampilatwatja; Angurugu; Atitjere; Barunga; Belyuen; Binjari; Bulla; Bulman; Engawala; Galiwinku; Gapuwiyak; Gunbalanya; Gunyangara; Hermannsburg; Imanpa; Jilkminggan; Kalkarindji; Kaltukatjara; Kintore; Kybrook Farm; Lajamanu; Maningrida; Manyallaluk; Milikapiti; Milingimbi; Minjilang; Minyerri; Mount Liebig; Mutitjulu; Nauiyu; Nganmarriyanga; Ngukurr; Numbulwar; Papunya; Peppimenarti; Pirlangimpi; Pmara Jutunta; Ramingining; Robinson River; Rockhole; Santa Teresa; Titjikala; Umbakumba; Wadeye; Wallace Rockhole; Warruwi; Weemol; Wugularr; Wurrumiyanga; Yarralin; Yirrkala; Yuendumu
