@@ -1,0 +1,60 @@
+# Builds dist/ from the committed pack and publishes it to GitHub Pages.
+# Why: the camera features (transfer by camera, nearby chat) need a secure origin; Chrome on
+# Android answers NotAllowedError to getUserMedia on a file:// page (measured on a Samsung S24,
+# 2026-09-15). The Pages address is APP_URL in constants.md and is what the URL QR encodes.
+# No data/raw/ is needed: build_app.py reads data/out/data_pack.json, which is committed.
+name: pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "design/**"
+      - "data/out/data_pack.json"
+      - "scripts/build_app.py"
+      - "constants.md"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install uv
+        run: python -m pip install uv
+      - name: Sync runtime dependencies
+        run: uv sync --frozen --no-dev
+      - name: Build dist/index.html
+        env:
+          PYTHONUTF8: "1"
+        run: uv run python scripts/build_app.py
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
