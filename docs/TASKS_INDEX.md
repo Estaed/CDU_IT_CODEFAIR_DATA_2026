@@ -44,6 +44,7 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [ ] Task-25: QR reading on every browser, jsQR fallback for iPhone (added 2026-09-15, OQ15)
 - [x] Task-26: Small fixes before outside testers, and the page that never updates (added 2026-09-15)
 - [ ] Task-27: Transfer by camera, visible progress and missed-frame repair (added 2026-09-15)
+- [ ] Task-28: Install as a real home-screen app, tactics from the Calisthenics app (added 2026-09-15)
 
 ## Execution routing
 
@@ -88,6 +89,7 @@ advisory only.
 | Task-24 | claude-worker | no | high | Task-26 | 19 |
 | Task-25 | claude-worker | no | high | Task-24 | 20 |
 | Task-27 | claude-worker | no | high | Task-25 | 21 |
+| Task-28 | claude-worker | no | medium | Task-26 | 19 (beside Task-24; disjoint files) |
 
 Second batch (2026-09-15) execution note: Codex quota is exhausted until 2026-09-19, so every
 lane is a Claude worker. Wave 14 is three disjoint lanes; 15 to 17 are serial because each
