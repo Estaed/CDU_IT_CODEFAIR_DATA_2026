@@ -25,7 +25,7 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-05: Merge, provenance, and the pipeline entry point
 - [x] Task-06: NT outline, projected points, filters and actions in the pack
 - [x] Task-07: Community screen in the app
-- [ ] Task-08: Map screen in the app
+- [x] Task-08: Map screen in the app
 - [ ] Task-09: Share screen, QR, save-as-file, and the host-only PWA files
 - [ ] Task-10: Report-ready figures and tables
 - [ ] Task-11: Reproduction README, submission packaging, spike retirement

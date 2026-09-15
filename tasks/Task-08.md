@@ -39,10 +39,14 @@ nothing but which points to show.
 
 ## Acceptance Criteria (DoD)
 
-- [ ] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
-- [ ] `tests/browser/test_map.py` (marker `browser`): `#/map` renders 96 `.map__community`; `#/map?filter=licensed-no-map` renders 11, of which 6 carry `.map__pt--fails` and 5 `.map__pt--nodata`; `#/map?filter=clinic-no-terrestrial` renders 12; `#/map?filter=carrier-yes-list-no` renders 14.
-- [ ] With `selected=458`, exactly one `.map__ring` exists and the `.map__label` text is `Baniyala`; the panel shows `1` of `4` in `.agreement__headline` and a `.verdict-badge--fails`.
-- [ ] Clicking a `.map__community` updates the hash to include its id; clicking `.text-link` navigates to `#/community/458`.
-- [ ] The legend row shows counts 1, 58, 11, 26 in `.map-legend__count` regardless of the active filter.
-- [ ] Zero non-`file:` requests and no console errors on every filter route.
-- [ ] `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js` prints nothing (SVG attributes `r="5"` etc. are user units, not px, and are allowed).
+- [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
+- [x] `tests/browser/test_map.py` (marker `browser`): `#/map` renders 96 `.map__community`; `#/map?filter=licensed-no-map` renders 11, of which 6 carry `.map__pt--fails` and 5 `.map__pt--nodata`; `#/map?filter=clinic-no-terrestrial` renders 12; `#/map?filter=carrier-yes-list-no` renders 14.
+- [x] With `selected=458`, exactly one `.map__ring` exists and the `.map__label` text is `Baniyala`; the panel shows `1` of `3` in `.agreement__headline` (was `4` from the mock; PRD decision 2026-09-13 counts only publishers that make a claim; corrected 2026-09-15 by the otopilot main loop) and a `.verdict-badge--fails`.
+- [x] Clicking a `.map__community` updates the hash to include its id; clicking `.text-link` navigates to `#/community/458`.
+- [x] The legend row shows counts 1, 58, 11, 26 in `.map-legend__count` regardless of the active filter.
+- [x] Zero non-`file:` requests and no console errors on every filter route.
+- [x] `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js` prints nothing (SVG attributes `r="5"` etc. are user units, not px, and are allowed).
+
+## Status
+
+DONE 2026-09-15 (otopilot, lane gate and main gate green at `c90c3bf`; `pack.filters[*].definition` absent so the map prints only "Showing n of 96"). review-visual pending.
