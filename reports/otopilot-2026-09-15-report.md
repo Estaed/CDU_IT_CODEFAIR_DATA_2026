@@ -9,9 +9,9 @@ approved 12:35. `BASE_SHA` `5826840` (the plan commit). Run started 12:43 local.
 | Task | Result | Bee tier | Attempts | Bee wall | Bee cost | Trajectory | Main commit |
 |---|---|---|---:|---:|---:|---|---|
 | Task-08 map screen | **green, review-visual pending** | opus | 1 (+ main-loop finish) | 8 min, 49 turns | $2.14 | lane gate 1 fail -> 0 after the PRD alignment below | `c90c3bf` + `6305792` (status) |
-| Task-10 figures | in flight | sonnet | | | | | |
-| Task-09 share screen | in flight (wave 2 opened 13:12, base `6305792`) | opus | | | | | |
-| Task-11 packaging | not started (wave 3) | sonnet | | | | | |
+| Task-10 figures | **green, DONE** | sonnet | 1 (+ main-loop commit) | 19 min, 100 turns | $2.73 | lane gate GREEN first run (no commands ran in the bee, 20 refusals) | `48c8ab0` + `d186138` (status) |
+| Task-09 share screen | **green, review-visual pending** | opus | 1 | 6 min, 25 turns | $1.74 | lane gate GREEN, main gate GREEN, 0 refusals with `--allowedTools` | `b7c3234` + `e62ff08` (status) |
+| Task-11 packaging | in flight (wave 3 opened 13:20, base `e62ff08`) | sonnet | | | | | |
 
 ## Checkpoint after wave 1 (Task-08 integrated 13:08)
 
@@ -32,3 +32,22 @@ approved 12:35. `BASE_SHA` `5826840` (the plan commit). Run started 12:43 local.
   the task file).
 - Wave 2 opened before Task-10 finished: Task-09 depends only on Task-08 and its OWNS is
   disjoint from Task-10's, so both plan invariants hold.
+
+## Checkpoint after wave 2 (Task-10 integrated 13:15, Task-09 integrated 13:19)
+
+- Claude 5-hour window reset during the wave (30% -> 0% at 13:11, new window); weekly
+  43% -> 44%. Codex unused. Wave 2 cost cannot be read as a 5-hour delta across the reset;
+  weekly delta 1 point.
+- Task-10 bee wrote `figures.py`, the test and the `run_pipeline.py` line with no command
+  run (20 refusals, same cause as Task-08); the main loop ran the lane gate: GREEN first time,
+  7 new unit tests, PNGs 2000x3200, tables 11/8+2/21 rows, greps clean. The main loop
+  committed the lane (bee had not) and integrated. Advisory for the team's eye, not in the
+  DoD: both maps draw hollow circles instead of the verdict glyph shapes, and the legend
+  overlaps the south-west corner of the outline.
+- Task-09 bee (first with `--allowedTools`) ran ruff, its tests and the full gate itself,
+  committed once, 0 refusals. Departures it recorded: APP_URL read from the pack, QR and
+  sizes meta inserted by text at `</head>` and the pack marker (`app/index.html` is outside
+  the lane), manifest link added by script over `https:` only, `crosscheck-v1` cache name,
+  nothing exercised over `https:`. `dist/` now holds `index.html` (305,315 bytes), `sw.js`,
+  `manifest.webmanifest`.
+- Wave 3: Task-11 on `sonnet`, base `e62ff08`, launched 13:20 with a 60-minute timebox.
