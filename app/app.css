@@ -112,6 +112,14 @@ a.button { text-decoration: none; }
 
 .map--zoomable { touch-action: none; }
 
+/* Task-33: the HTML `[hidden]{display:none}` UA rule does not reach an SVG `<g>` in this
+   engine -- confirmed by measuring the element's own bounding box, not just reading its
+   `hidden` attribute back: with the attribute set but no rule below, cov-telstra/optus/tpg and
+   regions-sa3 still had a non-zero on-screen rect at first load. `.map__layer` is the only
+   toggled group (towns is never hidden), so this rule cannot hide anything the contract wants
+   visible. */
+.map__layer[hidden] { display: none; }
+
 .map__layer--area .map__layer-shape { stroke: none; fill-opacity: var(--layer-fill-opacity); }
 
 .map__layer--line .map__layer-shape {
@@ -188,10 +196,14 @@ a.button { text-decoration: none; }
 
 .map__pt-half { fill: var(--verdict-degraded-text); stroke: none; }
 
-/* The service selector, above the filter tabs. */
+/* The service selector, above the filter tabs. ``width: 100%`` is of `main` (edge to edge, no
+   padding of its own -- unlike `.search-input`, which sits inside `.search`'s own padded box),
+   so the side margins have to be subtracted back out of the width, the same fix already applied
+   to `.report-button` above for the same reason: `width: 100%` plus margin is wider than the
+   container. */
 .map-service {
   display: block;
-  width: 100%;
+  width: calc(100% - 2 * var(--space-md));
   min-height: var(--size-control);
   margin: var(--space-sm) var(--space-md) 0;
   padding: 0 var(--space-md);

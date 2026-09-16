@@ -216,11 +216,16 @@ def test_area_chip_toggles_hidden_on_its_group(browser):
 def test_area_layers_start_hidden(browser):
     page, blocked, errors = _open_page(browser, "#/map")
 
+    # `to_be_hidden()`, not just `to_have_attribute("hidden", "")`: the attribute alone does not
+    # prove the layer is off-screen -- the HTML `[hidden]{display:none}` UA rule does not reach
+    # an SVG `<g>` in this engine, so a build without `.map__layer[hidden]{display:none}` in
+    # app.css passed the attribute check while the coverage blobs and the SA3 borders were still
+    # painted on first load (the defect this test exists to catch).
     for layer_id in AREA_LAYER_IDS:
-        expect(page.locator(f'g[data-layer="{layer_id}"]')).to_have_attribute("hidden", "")
-    expect(page.locator('g[data-layer="regions-sa3"]')).to_have_attribute("hidden", "")
+        expect(page.locator(f'g[data-layer="{layer_id}"]')).to_be_hidden()
+    expect(page.locator('g[data-layer="regions-sa3"]')).to_be_hidden()
     # Towns are never toggled: no chip, always visible.
-    expect(page.locator('g[data-layer="towns"]')).not_to_have_attribute("hidden", "")
+    expect(page.locator('g[data-layer="towns"]')).to_be_visible()
     expect(page.locator(".map__town")).to_have_count(5)
 
     assert errors == []
