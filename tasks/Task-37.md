@@ -74,4 +74,69 @@ under 10 s) and the Android-to-iPhone case, which no phone here can test.
 
 ## Status
 
-Status: TODO
+Status: implemented by the lane 2026-09-16, commit `609de81`; `verify-task` from the main loop
+still owns DONE. Nothing outside the Lane's OWNS list was touched.
+
+**What shipped.** `app/transfer.js` is v4: prefix `CP`, payload `packText()` = the currently
+effective pack with `layers: []`, `JSON.stringify`d and gzipped at Show time. Everything else of
+v3 is unchanged (750-byte blocks, the same header, robust soliton c 0.1 delta 0.5, one source
+pass then repair, `requestAnimationFrame` with `HOLD_REFRESHES = 16`, the receiver's main-thread
+`setTimeout` 100 ms loop through `CrosscheckScan`). `finish(bytes)` inflates, `JSON.parse`s,
+hands the text to `CrosscheckStore.save` and prints one of three sentences. `isLite`,
+`payloadBytes`, `appUrl`, `buildComplete`, `finishHtml`, the `fetch(`, `Open received app` and
+`Download crosscheck.html` are gone. `app/store.js` gained `effective()` (stored pack when it is
+newer than the built-in one, the same test app.js applies at startup; exported) and the layers
+carry-over in `save`, which now also reports `reason: "pack_version"` on that one refusal.
+`scripts/build_app.py` lost `LITE_OUT`, `LITE_PLACEHOLDER`, `LITE_CONSTANT`, `strip_jsqr`,
+`strip_lite_constant`, `empty_layers`, `mark_lite`, `build_lite`, `PACK_RE`, `HTML_TAG_RE` and
+the `base64`/`gzip` imports; it writes one page.
+
+**Numbers.** `dist/index.html` **899,186 bytes**, down **98,584** from Task-36's 997,770 (85.7 %
+of the 1,048,576 limit, was 95.2 %); no `dist/lite.html` is written. Payload: pack JSON with
+`layers: []` **260,945 characters**, gzipped to **K 24** blocks (about 17.6 KB), against K 341
+for the whole page and K 97 for the lite copy. `ruff check --no-cache .` → `All checks passed!`.
+`pytest tests/test_build.py -q` → **23 passed**. `pytest -m browser -q` → **98 passed**
+(`tests/browser/test_transfer.py` alone: 13). Loss tests, seed 20260915, at K 24: 10 % → **31**
+pushed (cap 39), 50 % → **40** (cap 68), 70 % → **30** (cap 108); sources 0..19 never delivered
+→ **32** pushed (cap 42). Part 2 greps: rule 5 prints nothing; rule 7 prints nothing; rule 8
+prints exactly `app/transfer.js` and `audio: true` prints nothing.
+`grep -rn "lite.html|CrosscheckLite|data-lite|fetch\(" app scripts tests` prints `app/sw.js`
+twice (the host-only exception Part 2 names) and test assertion text only.
+
+**Deviations, and why.**
+
+1. **`CrosscheckStore.effective()` is new and exported.** Item 1 and item 4 both need "the
+   currently effective pack", and app.js (MUST NOT TOUCH) does not expose which pack it is
+   rendering. One definition in `store.js` beside the stored record is the honest place for it;
+   duplicating the `stored.built > builtIn.built` test inside `transfer.js` would have been a
+   second definition of the same rule.
+2. **`save` returns `{built: null, reason: "pack_version"}`.** The receiving screen has to tell
+   a version refusal from a malformed pack, and the validation lives in `store.js`. The existing
+   `{built}` shape is unchanged, so `tests/browser/test_update.py`'s older assertions still hold.
+3. **A refusal that is not `pack_version` reuses the parse-failure sentence.** Item 3 names only
+   the two messages; a pack that validates as JSON but has the wrong community count is not a
+   third case worth a third sentence, and "that did not look like Crosscheck data" is true of it.
+4. **`testPayloadText` was added to the test hooks.** Without it the round-trip test would
+   rebuild the payload itself and never exercise `packText()` — that is, it would not test what
+   Show actually plays. Same shape as the existing `testPushFrame` and `testReceiveComplete`.
+5. **`mount(container)` ignores its second argument.** `app.js` still passes `pageHtml` and is
+   not this task's to change; Show no longer plays the page, so the parameter is dropped from
+   the signature and the call keeps working.
+6. **The `CZ`/`CY` ignore test is one parametrised test, not two.** Item "Tests" asks for both
+   prefixes; one body with `["CY", "CZ"]` is the same coverage in half the lines.
+7. **`tests/browser/test_transfer.py` no longer lists `fetch(` among its forbidden tokens.**
+   `tests/test_build.py::test_no_fetch_anywhere_in_the_app` asserts zero across all of `app/`,
+   which subsumes it, and keeping it here would have left a second `fetch(` in the repo grep for
+   no extra coverage.
+8. **`blocking_page` was removed from `tests/browser/conftest.py`.** It existed only for
+   Task-36's lite-page test and had no other caller; the Lane allows dropping it if unused.
+
+**Open, for the main loop.** `.github/workflows/pages.yml` lines 41-43 still name
+`dist/lite.html` in a comment and a step name. The step only runs `scripts/build_app.py`, so the
+deploy is correct, but the text is now wrong. That file is outside this Lane's OWNS list, so it
+was left alone.
+
+**Out of the gate, unchanged:** the S24 run from the share screen and the Android-to-iPhone case
+(no phone here can test it). The full gate cannot run here: `data/raw/` is gitignored and lives
+only in the main tree, so `pytest -m "not browser"` errors on the pipeline snapshots. The four
+steps this task can affect were run on their own and are green.
