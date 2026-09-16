@@ -1,0 +1,110 @@
+/* Task-31 spike pages. Plain CSS with literal values: this is not the app, so layer rule 5
+   (tokens only) does not apply under reports/. Nothing here is copied into app/. */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #000000;
+  color: #ffffff;
+  font-family: system-ui, sans-serif;
+  font-size: 15px;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.spike-title {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+.spike-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+}
+
+.spike-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.spike-select,
+.spike-input {
+  min-height: 32px;
+  padding: 2px 6px;
+  border: 1px solid #666666;
+  border-radius: 4px;
+  background: #111111;
+  color: #ffffff;
+  font: inherit;
+}
+
+.spike-input {
+  width: 96px;
+}
+
+.spike-button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #000000;
+  font: inherit;
+  font-weight: 600;
+}
+
+.spike-counter,
+.spike-note {
+  width: 100%;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.spike-note {
+  color: #aaaaaa;
+}
+
+/* The stage takes everything the controls leave, and the canvas is the largest square in it:
+   the number that matters in this experiment is how many screen pixels one module gets. */
+.spike-stage {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  background: #ffffff;
+}
+
+.spike-canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+.spike-video {
+  width: 100%;
+  max-height: 50vh;
+  background: #111111;
+  object-fit: contain;
+}
+
+.spike-log {
+  width: 100%;
+  margin: 0;
+  padding: 6px;
+  overflow-x: auto;
+  border-radius: 4px;
+  background: #111111;
+  font-size: 13px;
+  white-space: pre;
+}
