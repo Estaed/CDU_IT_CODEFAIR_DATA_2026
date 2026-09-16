@@ -9,7 +9,7 @@
 > path), this file · MUST NOT TOUCH `app/`, `tests/`, `scripts/`, `pipeline/`, `design/` ·
 > GATE `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` (must stay green: the spike is outside
 > the app and ruff excludes `reports/`) plus `PYTHONUTF8=1 .venv/Scripts/python
-> reports/spike-qr/build.py` writes four files under `dist/spike/` · DEPENDS ON none
+> reports/spike-qr/build.py` writes `dist/spike/send.html` and `receive.html` · DEPENDS ON none
 
 ## Why
 
