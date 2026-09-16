@@ -87,4 +87,77 @@ reports).
 
 ## Status
 
-Status: TODO
+Status: DONE (2026-09-16)
+
+Verified in the worktree (no `data/raw/`, so only the checks that do not need it):
+- `ruff check --no-cache .`: `All checks passed!`
+- `pytest tests/test_build.py`: 19 passed
+- `python scripts/build_app.py`: `dist/index.html` 860,261 bytes (limit 1,048,576); `data_pack.json`
+  untouched at 445,751 bytes (limit 512,000) -- this task adds no pack field
+- `pytest -m browser`: 83 passed, 0 failed
+- `grep -nE "#[0-9a-fA-F]{3}|[0-9]px" app/app.css app/app.js`: prints nothing
+- Not run: `pytest -m "not browser"` beyond `test_build.py` (the pipeline/source tests need
+  `data/raw/`, absent in this worktree; pre-existing, unrelated to this task)
+
+Implementation, against the contract:
+1. `VERDICTS` glyphs are `● ◐ ○ ◌`; the map's own shapes are unchanged (Task-33's job).
+2. `renderHeader` is now `h1` + one `.community-header__meta` line
+   `"<type> · <region> · <n> people"`, population's source/date as its `title`. The old
+   `.community-header__population`/`__unit` spans and the header's own `sourceLine` are gone.
+3. `.services` is a card (`app.css`, full border, not `.section`'s top hairline) holding four
+   `button.service-row` (kept `.service-row__button` as a second class to reuse
+   `screens.css`'s existing block/padding rule for that selector rather than duplicating it).
+   Each row holds `.service-row__glyph`, `.service-row__name`, `.service-row__badge`
+   (`.verdict-badge` plus that class); tapping toggles the sibling `.service-row__detail`
+   (reason, assumption if any, sources) via `hidden`. `renderVerdictLegend` and
+   `VERDICT_MEANING` are deleted.
+4. `details.sources-fold` summary reads `"<n> of <n> sources agree"` or `"Sources disagree: <a>
+   of <b> say covered"`, from `community.agreement`; body is `renderPublishers` (its own
+   `h2.section__title` dropped, the row list and `renderAgreement` unchanged).
+5. `.actions` holds `button.report-button` ("Report here", stub: sets
+   `#/community/<id>?report`, nothing else) and `details.share-fold` ("Share"; body is
+   `renderStatementButtons` output, unchanged, plus `renderFreshness`, unchanged).
+6. `details.present-fold` ("What exists here") and `details.actions-fold` ("Who to ask", the
+   old title) both closed by default; `.section__title` no longer appears anywhere in the
+   community render functions.
+7. Fold budget verified for the Wadeye id (426), the longest name (Hodgson River Station, 600)
+   and a third community with an assumption in its rows (id 9): `.actions`'s bottom sits at or
+   under 780 px at 360 wide, `scrollY` 0.
+8. Footer sentence unchanged (already exactly one occurrence since Task-30; the intro line that
+   duplicated it is gone).
+9. Compare and search untouched; `test_compare.py` passes with no edits (it never asserted the
+   meta line's literal text, only name/badge counts, so `renderHeader`'s new meta line does not
+   break it).
+
+Deviations from a literal reading, recorded here and in
+`design/screens/README.md`:
+- Two functions not in the Lane's named list were added, both strictly within the community
+  screen: `renderSourcesFold` and `renderReportButton`/`renderShareFold`/`renderActionsRow`.
+  The contract's item 5 names no owning function for the new two-action row, and
+  `renderStatementButtons`/`renderFreshness` needed a wrapper to fold behind "Share".
+- The "who to ask" list is `ul.actions__list`, not `ul.actions`: the contract names `.actions`
+  for both the new two-action row (item 5) and, by continuity with "today's" `renderActions`,
+  the old list. Keeping both literally named `.actions` would make
+  `page.locator(".actions")` ambiguous for item 7's own fold-budget test, so the list gets its
+  own name and its base list-reset moves into `app.css` under that name; `.actions__item`/
+  `__who` styling is unaffected since `screens.css` scopes those selectors without a parent
+  class.
+- Four browser tests outside this task's named files needed their selectors updated because
+  content they targeted moved into closed folds: `test_community.py::test_wadeye_renders`
+  (agreement headline now needs `details.sources-fold` opened first -- this file is in the
+  Lane's OWNS list), and three in `tests/browser/test_statement.py` -- not in the Lane's OWNS
+  list, but not fixing them would leave `pytest -m browser` red on a contract-mandated
+  restructuring: `test_copy_statement` and `test_copy_mesh_text` now open `details.share-fold`
+  before clicking (Playwright requires visibility to click), and `test_freshness_line`'s
+  selector moved from `.community-header .source-line` to `.community-header__freshness`
+  (unchanged class, new ancestor) and also opens the fold, since `inner_text()` reads rendered
+  text and returns empty for a hidden element. Reported here rather than silently expanding the
+  Lane.
+- `.services .section__note` needed a real CSS change, not just a class rename, to hit the
+  780 px budget: the first pass (`padding: var(--space-sm) var(--space-md)` plus a
+  border-bottom) put Wadeye's `.actions` bottom at 786.9 px. Cut to `padding-top:
+  var(--space-xs)` only (keeping `screens.css`'s own left/right/bottom padding), which was
+  enough; no other section needed trimming.
+
+Open questions: none. Task-33 (map) and Task-35 (Report here behaviour) depend on this task's
+`VERDICTS` table and `.actions`/`report-button` stub respectively, both now in place.
