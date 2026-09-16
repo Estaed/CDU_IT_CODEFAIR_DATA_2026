@@ -277,6 +277,7 @@ What the app shows for one community; not a schema.
 | ~~Nearby chat works with no internet~~ | Struck 2026-09-16: nearby chat removed (§4.2, third batch) |
 | A report stays on the phone and travels only by the person's choice | Browser test: after `Report here`, the record is in IndexedDB, no request left the page, and the exported line is at most 200 bytes UTF-8; a second page fed that line shows "Reports from here: 1" and no verdict changes (Task-35) |
 | Transfer completes on a real phone | Tarik: the winner of the Task-31 sweep completes 5 of 5 runs on the S24 and the Mi 6; the browser test holds the 10, 50 and 70 % loss budgets set from that measurement (Task-36) |
+| The file reaches a second phone with no network | DONE 2026-09-16, Tarik: Share on the S24 → Bluetooth → the Mi 6 received `crosscheck.html` and opened it in Chrome. Quick Share was not available on the Mi 6; Bluetooth was. The demo's guaranteed offline handoff |
 | The map reads without explanation | Advisory eye review at 360 px against the layer list in §4.2, plus Tarik's own verdict on his phone; not a gate |
 | Mesh-size statement fits one packet | Unit test: every community's text is ≤ 200 bytes in UTF-8 |
 | Verdict rules are correct as written | Unit tests on the rule functions with hand-built rows for every pattern in the spike (unanimous yes, unanimous no, the six disagreement patterns, fixed line) |
