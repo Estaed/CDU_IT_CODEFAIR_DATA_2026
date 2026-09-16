@@ -349,3 +349,59 @@ a.button { text-decoration: none; }
 /* A tall portrait stream otherwise fills the whole screen and pushes the hint out of sight; the
    square preview is the centred square the jsQR path reads (scan.js cropRect). */
 .transfer__video { cursor: pointer; aspect-ratio: 1; object-fit: cover; }
+
+/* Task-35 Report here (2026-09-16): the form the button opens, the saved line with its own QR,
+   the count line, the paste-in fold and Copy evidence. Tokens only, like every rule above. */
+.report-form { display: grid; gap: var(--space-sm); margin: var(--space-sm) var(--space-md) 0; }
+.report-form__note { margin: 0; font: var(--text-body-sm); color: var(--text-secondary); }
+.report-form__row { display: flex; flex-wrap: wrap; gap: var(--space-xs); padding: 0; }
+.report-form__status {
+  flex: 1 1 0;
+  min-height: var(--size-touch);
+  padding: 0 var(--space-sm);
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  font: var(--text-button);
+  color: var(--text-heading);
+  background: var(--surface-page);
+  cursor: pointer;
+}
+.report-form__status[aria-pressed="true"] { border-color: var(--text-heading); background: var(--surface-block); }
+.report-form__carrier { border: var(--size-hairline) solid transparent; cursor: pointer; }
+.report-form__carrier[aria-pressed="true"] { border-color: var(--text-heading); background: var(--surface-pressed); }
+.report-form__location { display: flex; align-items: center; gap: var(--space-xs); min-height: var(--size-touch); font: var(--text-body-sm); color: var(--text-body); }
+.report-form__save[disabled] { background: var(--action-disabled); cursor: default; }
+.report-form__result:empty { display: none; }
+
+/* The saved line: read as a figure, wrapped rather than cut, with the two ways to send it and
+   the QR a second phone reads. */
+.report-line { margin: 0; padding: var(--space-sm); font: var(--text-figure-xs); color: var(--text-body); background: var(--surface-block); border-radius: var(--radius-md); white-space: pre-wrap; overflow-wrap: anywhere; }
+.report-line__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm); margin-top: var(--space-xs); }
+.report-line__copy { font: var(--text-button); color: var(--link); background: transparent; border: 0; cursor: pointer; }
+.report-line__sms { font: var(--text-body-md); color: var(--link); text-decoration: underline; }
+.report-line__qr { display: block; width: var(--size-qr); height: var(--size-qr); margin-top: var(--space-sm); background: var(--surface-page); }
+
+/* The count line and what sits with it: a sentence, a fold and one button. */
+.reports { display: grid; gap: var(--space-xs); }
+.reports-line { margin: 0; padding: 0 var(--space-md); font: var(--text-body-sm); color: var(--text-body); }
+.reports-fold { padding: 0 var(--space-md); font: var(--text-body-sm); color: var(--text-body); }
+.reports-fold > summary { cursor: pointer; color: var(--text-secondary); }
+.reports-fold__text { display: block; width: 100%; margin-top: var(--space-xs); padding: var(--space-xs); font: var(--text-figure-xs); color: var(--text-heading); background: var(--surface-page); border: var(--size-hairline) solid var(--border-hairline); border-radius: var(--radius-md); }
+.reports-import { margin-top: var(--space-xs); }
+.reports-import__result { margin: var(--space-xs) 0 0; font: var(--text-caption); color: var(--text-secondary); }
+.evidence-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--size-control);
+  min-width: var(--size-touch);
+  margin: 0 var(--space-md);
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  font: var(--text-button);
+  color: var(--text-heading);
+  background: var(--surface-page);
+  cursor: pointer;
+}
+.evidence-button:active { background: var(--surface-block); }

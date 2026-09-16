@@ -183,6 +183,40 @@ def test_store_js_has_no_network_words():
         assert token not in source
 
 
+def test_report_js_inlined_once_between_store_js_and_app_js():
+    # Task-35: report.js sits after store.js (it calls window.CrosscheckStore) and before
+    # app.js (which calls window.CrosscheckReport while rendering a community).
+    build_app.main()
+    html = (ROOT / "dist" / "index.html").read_text(encoding="utf-8")
+
+    assert html.count("window.CrosscheckReport = ") == 1
+    store_index = html.index("window.CrosscheckStore = ")
+    report_index = html.index("window.CrosscheckReport = ")
+    app_index = html.index("DEFAULT_HASH")
+    assert store_index < report_index < app_index
+
+
+def test_report_js_makes_no_request_and_holds_no_verdict():
+    # Task-35, CLAUDE.md Part 2 layer rules 4 and 7: report.js requests nothing, and a report
+    # never touches a badge -- `grep -n "verdict" app/report.js` prints nothing. The Python
+    # equivalent of the greps; Windows has no `grep` on PATH by default.
+    source = (ROOT / "app" / "report.js").read_text(encoding="utf-8")
+    for token in (
+        "fetch(",
+        "XMLHttpRequest",
+        "WebSocket",
+        "EventSource",
+        "RTCPeerConnection",
+        "http://",
+        "https://",
+        "verdict",
+    ):
+        assert token not in source
+    # The position is asked for in exactly one place, the save handler's own helper, and only
+    # when the checkbox is ticked.
+    assert source.count("getCurrentPosition") == 1
+
+
 def test_sw_cache_name_is_build_hash():
     # Task-26: a phone that opened Pages once kept showing that build forever because the
     # cache name never changed. dist/sw.js now carries this build's own hash.

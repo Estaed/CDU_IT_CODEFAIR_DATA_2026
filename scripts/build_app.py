@@ -22,15 +22,17 @@ TEMPLATE = ROOT / "app/index.html"
 OUT = ROOT / "dist/index.html"
 PACK = ROOT / "data/out/data_pack.json"
 # Order fixed by CLAUDE.md Part 2: vendor/jsQR.js, qr.js, scan.js, transfer.js, store.js,
-# app.js; later tasks append. store.js sits before app.js because app.js reads
+# report.js, app.js; later tasks append. store.js sits before app.js because app.js reads
 # window.CrosscheckStore at startup; scan.js sits before transfer.js because it
-# calls window.CrosscheckScan (Task-25).
+# calls window.CrosscheckScan (Task-25); report.js sits after store.js and before app.js
+# because app.js calls window.CrosscheckReport while rendering a community (Task-35).
 JS_FILES = (
     ROOT / "app/vendor/jsQR.js",
     ROOT / "app/qr.js",
     ROOT / "app/scan.js",
     ROOT / "app/transfer.js",
     ROOT / "app/store.js",
+    ROOT / "app/report.js",
     ROOT / "app/app.js",
 )
 # jsQR 1.4.0, Apache-2.0 (Task-25, OQ15): the one library exception CLAUDE.md Part 2 allows.

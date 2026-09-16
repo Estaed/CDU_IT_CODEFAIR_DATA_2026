@@ -199,6 +199,8 @@ def test_folds_in_order(browser):
         [
             "4 of 4 sources agree",
             "Share",
+            # Task-35, 2026-09-16: Report here's paste-in fold, below the actions row.
+            "Add reports",
             "What exists here",
             "Who to ask",
         ]

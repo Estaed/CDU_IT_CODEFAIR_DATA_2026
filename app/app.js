@@ -471,13 +471,42 @@
     );
 
   // Task-34, 2026-09-16: the two-action row under the sources fold (item 5, item 7).
-  const renderActionsRow = (community) =>
-    h(
+  // Task-35: `?report` in the hash opens the form under the row, so the route survives a reload.
+  const renderActionsRow = (community) => {
+    const row = h(
       "div",
       { class: "actions section" },
       renderReportButton(community),
       renderShareFold(community),
     );
+    const query = new URLSearchParams(location.hash.split("?")[1] || "");
+    if (query.has("report")) {
+      row.appendChild(window.CrosscheckReport.renderForm(community));
+    }
+    return row;
+  };
+
+  // Task-35: the pack half of the Copy evidence block -- this is the only file that reads the
+  // pack's service words, so report.js takes these lines already assembled and appends the
+  // stored reports and the closing sentence (Task-35 contract item 6).
+  const evidenceHeader = (community) => {
+    const cite = (srcId) => {
+      const entry = pack.sources[srcId];
+      return `(${entry.source}, ${entry.date})`;
+    };
+    return [
+      `${community.name} (BushTel id ${community.id})`,
+      ...community.services.map((service) => {
+        const label = SERVICE_LABEL[service.service] || service.service;
+        const source = service.sources.length ? ` ${cite(service.sources[0].src)}` : "";
+        return `${label}: ${VERDICTS[service.verdict].word} — ${plain(service.reason)}${source}`;
+      }),
+      ...community.publishers.map((publisher) => {
+        const says = SAYS_LABEL[publisher.says_covered] || publisher.says_covered;
+        return `${publisher.publisher}: ${says} — ${plain(publisher.detail)} ${cite(publisher.src)}`;
+      }),
+    ];
+  };
 
   // Task-34, 2026-09-16: folded behind "Who to ask" (the old title "Who does what"), closed by
   // default (item 6).
@@ -683,6 +712,10 @@
     main.appendChild(renderServices(community));
     main.appendChild(renderSourcesFold(community));
     main.appendChild(renderActionsRow(community));
+    // Task-35: the community's own reports -- the count line, the paste-in fold and Copy
+    // evidence -- sit under the sources fold, and below the row whose Report here button
+    // writes one: above that row they would push it past Task-34's 780 px fold budget.
+    main.appendChild(window.CrosscheckReport.renderReports(community, evidenceHeader(community)));
     main.appendChild(renderPresent(community));
     main.appendChild(renderActions(community));
   };
