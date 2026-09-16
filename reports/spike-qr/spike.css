@@ -19,6 +19,19 @@ body {
   min-height: 100vh;
 }
 
+/* The send page is one screenful and never scrolls: the stage gets exactly what the controls
+   leave, so the code's side is min(100vw, 100vh - controls) and min(100vw, 100vh) once
+   fullscreen hides them. The receive page keeps scrolling -- it has a video and a log. */
+body[data-page="send"] {
+  height: 100vh;
+  overflow: hidden;
+}
+
+body[data-page="send"] #app {
+  height: 100vh;
+  min-height: 0;
+}
+
 .spike-title {
   margin: 0 0 8px;
   font-size: 17px;
@@ -75,22 +88,27 @@ body {
   color: #aaaaaa;
 }
 
-/* The stage takes everything the controls leave, and the code fills it: the number that
-   matters in this experiment is how many screen pixels one module gets. The SVG keeps its own
-   aspect ratio, so a square code is centred in a stage of any shape. */
+/* The stage takes everything the controls leave and centres the code in it: the number that
+   matters in this experiment is how many screen pixels one module gets. The grid cell has a
+   definite height, so height:100% + aspect-ratio makes the SVG a square of that side, and
+   max-width clamps it on a window narrower than it is tall. The padding is the white quiet
+   zone the decoder needs; the stage's own white supplies it. */
 .spike-stage {
-  display: flex;
+  display: grid;
+  place-items: center;
   flex: 1 1 auto;
-  align-items: stretch;
-  justify-content: center;
   min-height: 0;
+  padding: 8px;
+  overflow: hidden;
   background: #ffffff;
 }
 
 .spike-svg {
   display: block;
-  width: 100%;
+  width: auto;
   height: 100%;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
 }
 
 .spike-video {
