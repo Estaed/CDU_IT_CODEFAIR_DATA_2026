@@ -89,4 +89,51 @@ a lite copy that travelled by Quick Share.
 
 ## Status
 
-Status: TODO (round two)
+Status: round two built and measured on the laptop; the phone runs are Tarik's and are not part
+of this task's gate. `reports/spike-qr/` rewritten in place (`build.py`, `page.html`,
+`spike.css`, `spike.js`, `README.md`); nothing outside that folder and this file was touched.
+
+**The payload.** `build.py` prints `lite copy: 451,623 bytes, gzipped 69,554 bytes, K 93`
+(2026-09-16, SHA-256 `c39ed0d5…`), against v2's 233 blocks — a 2.5x cut, close to the task's
+estimate of about 65 KB and K about 90. `dist/spike/send.html` 403,566 bytes,
+`dist/spike/receive.html` 403,575 bytes; neither has a `src=`, an `href=` or a `fetch(`, and
+neither makes a non-`file:` request in headless Chromium.
+
+**Loopback, no camera** (own Playwright script, run from the worktree root, not committed):
+
+- every frame pushed in order: complete at **93 pushed = exactly K**, and the reassembled bytes
+  equal the sender's payload byte for byte and hash to the build's constant;
+- every third frame pushed (67 % loss): complete at **120 pushed** out of 360 shown —
+  1.29 x K pushed, 3.87 x K shown — same bytes as the lossless run;
+- the inflated payload parses as HTML with `data-lite="1"`, carries no vendored jsQR, and its
+  pack has `layers` empty, 96 communities, `pack_version` 2;
+- the send page at hold 12 drew 8 version-23 codes (109 modules) in 1.4 s in headless Chromium.
+
+**Gate.** `ruff check --no-cache .` clean; `pytest -m browser -q` 93 passed (the app suite is
+untouched); `scripts/build_app.py` and `reports/spike-qr/build.py` both run from the root.
+
+### Deviations
+
+1. **"Drop that whole `<script>`" is a cut, not an element.** `scripts/build_app.py` concatenates
+   every JS file into **one** `<script>`, so there is no jsQR element to remove. `build.py` cuts
+   the licence-comment marker plus the vendored file's own text, both read from the tree, and
+   raises if that exact block is not present — so a change in `build_app.py`'s marker fails the
+   spike build loudly instead of shipping a payload with jsQR still in it.
+2. **"No `jsQR` text" is checked as "no vendored jsQR".** `app/scan.js` names `window.jsQR` as
+   its fallback reader and is inlined in every build, so the literal string survives in the lite
+   copy by design. The loopback check asserts the library itself is gone: neither its licence
+   marker nor its `function jsQR(` definition appears.
+3. **The frame SVG is cloned from a `<template>` in `page.html`.** `build.py` refuses a `</`
+   inside an inlined script, which rules out `transfer.js`'s own namespace-derivation trick, and
+   an SVG namespace URL literal would put a URL in the page. The element is written once in
+   markup and cloned; the two lines that draw it (set `viewBox`, set the path's `d` from
+   `CrosscheckQR.toSvgPath`) are the app's, unchanged.
+4. **The payload is injected as its own small script** (`window.SpikePayload`, carrying the
+   base64, the SHA-256 and the two byte counts) rather than as a placeholder inside `spike.js`,
+   so `spike.js` stays a plain file with no build-time substitution in it.
+5. **`data/raw/` is not in a worktree** (gitignored, it lives only in the main tree), so
+   `scripts/gate.py`'s unit step errors there on missing snapshots until the folder is linked in,
+   and with it linked `tests/test_regression.py` re-runs the whole pipeline from cold and takes
+   far longer than it does in the main tree. The link is not committed and nothing about it is a
+   code change. The three gate steps this task can affect were run on their own and are green:
+   lint, `scripts/build_app.py`, and the browser suite. The full gate belongs to the main tree.
