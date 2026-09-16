@@ -95,7 +95,9 @@ def test_copy_statement(context):
     oldest_date = community["freshness"]["date"]
     page, blocked, errors = _open_page(context, "#/community/9")
 
-    button = page.locator(".section button.button--secondary")
+    # Task-34: the statement buttons fold behind "Share", closed by default.
+    page.locator("details.share-fold > summary").click()
+    button = page.locator("details.share-fold button.button--secondary")
     expect(button).to_have_count(1)
     expect(button).to_have_text("Copy statement")
     button.click()
@@ -121,7 +123,9 @@ def test_freshness_line(context):
     source_name = pack["sources"][community["freshness"]["source"]]["source"]
     page, blocked, errors = _open_page(context, "#/community/9")
 
-    line = page.locator(".community-header .source-line", has_text="Oldest source:")
+    # Task-34: the freshness line moved into the "Share" fold (unchanged selector otherwise).
+    page.locator("details.share-fold > summary").click()
+    line = page.locator(".community-header__freshness", has_text="Oldest source:")
     expect(line).to_have_count(1)
     text = line.inner_text()
     assert source_name in text
@@ -221,6 +225,8 @@ def test_copy_mesh_text(context):
     expected = _expected_mesh_text(pack, community)
     page, blocked, errors = _open_page(context, f"#/community/{community['id']}")
 
+    # Task-34: the mesh-text button folds behind "Share", closed by default.
+    page.locator("details.share-fold > summary").click()
     button = page.locator("button[data-text]")
     expect(button).to_have_count(1)
     expect(button).to_have_text("Copy mesh text")

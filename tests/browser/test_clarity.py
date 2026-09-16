@@ -186,48 +186,23 @@ def test_use_my_location_refused(browser):
 # 5-9. Community screen ------------------------------------------------------------------------
 
 
-def test_intro_line(browser):
+# Task-34, 2026-09-16: the community screen's third pass folds everything past the four
+# service rows behind a `details`/`summary`, closed by default, so the whole first screen fits
+# above the fold (item 7). test_intro_line and test_verdict_legend_in_first_section are gone
+# with the elements they tested (item 3: no intro line, no verdict legend on this screen).
+
+
+def test_folds_in_order(browser):
     page, blocked, errors = _open_page(browser, "#/community/426")
 
-    intro = page.locator(".intro")
-    expect(intro).to_have_count(1)
-    expect(intro).to_contain_text("does not measure signal")
-    first_title = page.locator("main .section__title").first
-    assert intro.bounding_box()["y"] < first_title.bounding_box()["y"]
-
-    assert errors == []
-    assert blocked == []
-    page.close()
-
-
-def test_section_order_plainest_first(browser):
-    page, blocked, errors = _open_page(browser, "#/community/426")
-
-    expect(page.locator("main .section__title")).to_have_text(
+    expect(page.locator("main details > summary")).to_have_text(
         [
-            "What the connection allows",
-            "What the sources say",
+            "4 of 4 sources agree",
+            "Share",
             "What exists here",
-            "Who does what",
+            "Who to ask",
         ]
     )
-
-    assert errors == []
-    assert blocked == []
-    page.close()
-
-
-def test_verdict_legend_in_first_section(browser):
-    page, blocked, errors = _open_page(browser, "#/community/426")
-
-    legend = page.locator("main .section").first.locator(".verdict-legend")
-    expect(legend).to_have_count(1)
-    text = " ".join(legend.inner_text().split())
-    for word in ("Works", "Degraded", "Fails", "No data"):
-        assert word in text
-    # Each verdict carries its meaning: at least one word per verdict beyond the five words
-    # of the verdict names ("No data" is two).
-    assert len(text.split()) >= 5 + 4
 
     assert errors == []
     assert blocked == []
@@ -237,7 +212,9 @@ def test_verdict_legend_in_first_section(browser):
 def test_what_exists_here_is_text(browser):
     page, blocked, errors = _open_page(browser, "#/community/426")
 
-    present = page.locator("main .present-list")
+    fold = page.locator("details.present-fold")
+    expect(fold.locator("summary")).to_have_text("What exists here")
+    present = fold.locator(".present-list")
     expect(present).to_have_count(1)
     for facility in ("Health centre", "School", "Store"):
         expect(present).to_contain_text(facility)
@@ -246,6 +223,78 @@ def test_what_exists_here_is_text(browser):
     assert errors == []
     assert blocked == []
     page.close()
+
+
+def test_four_rows_with_new_glyphs(browser):
+    page, blocked, errors = _open_page(browser, "#/community/426")
+
+    rows = page.locator("button.service-row")
+    expect(rows).to_have_count(4)
+    glyph_texts = rows.locator(".service-row__glyph").all_text_contents()
+    for glyph in glyph_texts:
+        assert glyph in "●◐○◌"
+    badge_texts = [
+        "".join(text.split()) for text in rows.locator(".service-row__badge").all_text_contents()
+    ]
+    assert badge_texts == ["◐Degraded", "◐Degraded", "●Works", "●Works"]
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_row_toggle_opens_detail(browser):
+    page, blocked, errors = _open_page(browser, "#/community/426")
+
+    button = page.locator("button.service-row").first
+    detail = page.locator(".service-row__detail").first
+    expect(button).to_have_attribute("aria-expanded", "false")
+    expect(detail).to_be_hidden()
+
+    button.click()
+
+    expect(button).to_have_attribute("aria-expanded", "true")
+    expect(detail).to_be_visible()
+    expect(detail.locator(".service-row__reason")).not_to_be_empty()
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_first_screen_holds_actions_at_360x780(browser):
+    # Item 7: the acceptance criterion this task exists for. Checked for the Wadeye id, the
+    # community with the longest name, and one whose rows include an assumption (closed, so
+    # the assumption text does not add height).
+    probe_page, _, _ = _open_page(browser, "#/community/426")
+    ids = probe_page.evaluate(
+        """() => {
+            const pack = JSON.parse(document.getElementById('pack').textContent);
+            const longest = pack.communities.reduce(
+                (a, b) => (b.name.length > a.name.length ? b : a),
+            );
+            const withAssumption = pack.communities.find(
+                (c) => c.id !== 426 && c.id !== longest.id
+                    && c.services.some((s) => s.assumption),
+            );
+            return [426, longest.id, withAssumption.id];
+        }"""
+    )
+    probe_page.close()
+
+    for community_id in ids:
+        page, blocked, errors = _open_page(
+            browser, f"#/community/{community_id}", viewport=PHONE
+        )
+        actions = page.locator(".actions").first
+        box = actions.bounding_box()
+        assert box is not None
+        assert box["y"] + box["height"] <= 780, f"community {community_id}: {box}"
+        assert page.evaluate("() => window.scrollY") == 0
+
+        assert errors == []
+        assert blocked == []
+        page.close()
 
 
 def test_footer_sources_collapsed(browser):

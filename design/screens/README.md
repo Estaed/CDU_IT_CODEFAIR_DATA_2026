@@ -167,6 +167,14 @@ component key is given in the first column. Every class is defined once in `scre
   then the sources, then "What exists here", which is a sentence rather than chips (testers
   read the chips as buttons); and the footer's attribution lines are folded under "Sources and
   licences". The QR codes a camera has to read fill the content width instead of `--size-qr`.
+- **Community screen, Task-34 (2026-09-16, PRD §4.2 third batch, one screen before scrolling).**
+  Task-30's items 5 and 7 above are reversed: the intro line and the verdict legend are gone.
+  The verdict glyphs are one shape in four fill states, `● ◐ ○ ◌`, departed from DESIGN.md's
+  `● ▲ ■ –`. What was the sources section, the "who does what" section and the QR's freshness
+  line now sit behind `details`/`summary` folds, closed by default, and the bottom action row
+  holds two items only -- `Report here` and a `Share` fold -- instead of DESIGN.md's action
+  list. The result is that the four service answers and the two-action row sit inside the
+  first 780 px at 360 wide with no scrolling.
 - **Map height at 768.** The mirror's map is `width: 100%; height: auto` on a 300 × 480 view box,
   so inside the 640px content column it would be 1024px tall and the selected label would scale
   with it. Decided 2026-09-13: `screens.css` caps the map at `--size-viewport-min-height` and

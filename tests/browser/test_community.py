@@ -54,7 +54,7 @@ def test_wadeye_renders(browser):
     # textContent, not innerText: the badge is inline-flex with a gap, and Chromium renders
     # that gap as a line break in innerText while the DOM text is the glyph and the word.
     texts = ["".join(text.split()) for text in badges.all_text_contents()]
-    assert texts == ["▲Degraded", "▲Degraded", "●Works", "●Works"]
+    assert texts == ["◐Degraded", "◐Degraded", "●Works", "●Works"]
 
     # design/screens/community.html shows an .assumption-note both on the one row
     # that is expanded and on a collapsed row (aria-expanded="false"), so an
@@ -66,6 +66,9 @@ def test_wadeye_renders(browser):
         buttons.nth(i).click()
     expect(page.locator(".assumption-note")).to_have_count(2)
 
+    # Task-34: the agreement line and the publisher rows fold behind "Sources", closed by
+    # default.
+    page.locator("details.sources-fold > summary").click()
     headline_text = page.locator(".agreement__headline").inner_text()
     assert headline_text.count("4") >= 2
 
@@ -95,21 +98,25 @@ def test_search_port_keats(browser):
 
 
 def test_service_row_toggle(browser):
+    # Task-34: the row is `button.service-row` itself; the toggled detail is its sibling
+    # `.service-row__detail`, present in the DOM either way and shown or hidden by aria-expanded.
     page, blocked = _open_page(browser, "#/community/426")
 
-    button = page.locator(".service-row__button").first
+    button = page.locator("button.service-row").first
+    detail = page.locator(".service-row__detail").first
+    sources_panel = detail.locator(".service-row__sources")
     expect(button).to_have_attribute("aria-expanded", "false")
-    expect(page.locator(".service-row").first.locator(".service-row__sources")).to_have_count(0)
+    expect(detail).to_be_hidden()
+    expect(sources_panel).to_have_count(1)
 
     button.click()
     expect(button).to_have_attribute("aria-expanded", "true")
-    sources_panel = page.locator(".service-row").first.locator(".service-row__sources")
-    expect(sources_panel).to_have_count(1)
+    expect(detail).to_be_visible()
     expect(sources_panel.locator(".source-line")).to_have_count(3)
 
     button.click()
     expect(button).to_have_attribute("aria-expanded", "false")
-    expect(page.locator(".service-row").first.locator(".service-row__sources")).to_have_count(0)
+    expect(detail).to_be_hidden()
 
     assert blocked == []
     page.close()

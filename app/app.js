@@ -13,11 +13,14 @@
     voice_sms: "Voice and SMS",
   };
 
+  // Task-34, 2026-09-16: one shape (a circle) in four fill states, departed from DESIGN.md's
+  // triangle/square/dash set (design/screens/README.md); the map's own point geometry follows
+  // in Task-33.
   const VERDICTS = {
     works: { glyph: "●", word: "Works" },
-    degraded: { glyph: "▲", word: "Degraded" },
-    fails: { glyph: "■", word: "Fails" },
-    nodata: { glyph: "–", word: "No data" },
+    degraded: { glyph: "◐", word: "Degraded" },
+    fails: { glyph: "○", word: "Fails" },
+    nodata: { glyph: "◌", word: "No data" },
   };
 
   const SAYS_LABEL = {
@@ -97,35 +100,37 @@
     );
   };
 
-  const renderHeader = (community, headingTag = "h1") =>
-    h(
+  // Task-34, 2026-09-16: one meta line -- "<type> · <region> · <n> people" -- carries the
+  // population's source and date as a title attribute rather than a visible line, so the
+  // header fits one screen's worth of the fold budget (item 7).
+  const renderHeader = (community, headingTag = "h1") => {
+    const population = pack.sources[community.population.src];
+    return h(
       "div",
       { class: "community-header" },
       h(headingTag, { class: "community-header__name" }, community.name),
       h(
         "div",
-        { class: "community-header__meta" },
-        `${community.region} · ${community.type} community`,
+        {
+          class: "community-header__meta",
+          title: `${population.source} · ${population.date}`,
+        },
+        `${community.type} · ${community.region} · ${community.population.value.toLocaleString("en-US")} people`,
       ),
-      h(
-        "div",
-        { class: "community-header__population" },
-        h("span", { class: "fig fig--md" }, community.population.value.toLocaleString("en-US")),
-        " ",
-        h("span", { class: "community-header__unit" }, "people"),
-      ),
-      sourceLine(community.population.src),
     );
+  };
 
   // "What exists here": the present chips, then a data-backed fact line per flag the pack
   // carries. BushTel's WiFi hours, STAND site and road-condition free text stay out of the
   // pack until OQ1 is answered (pipeline/pack.py BUSHTEL_TEXT_ALLOWED), so only the two
   // flags the pack does carry (road_seasonal_cut, backhaul_2019) render here.
+  // Task-34, 2026-09-16: folded behind "What exists here", closed by default -- one of the
+  // screen's four folded sections that keep the first screen under the fold (item 6).
   const renderPresent = (community) => {
-    const section = h(
-      "section",
-      { class: "section" },
-      h("h2", { class: "section__title" }, "What exists here"),
+    const fold = h(
+      "details",
+      { class: "present-fold section" },
+      h("summary", {}, "What exists here"),
       // Plain text, not chips: testers read the chips as buttons (Task-30).
       h(
         "p",
@@ -137,7 +142,7 @@
     );
     for (const flag of community.flags) {
       if (flag.name === "road_seasonal_cut" && flag.value) {
-        section.appendChild(
+        fold.appendChild(
           h(
             "div",
             { class: "fact" },
@@ -146,12 +151,12 @@
           ),
         );
       } else if (flag.name === "backhaul_2019") {
-        section.appendChild(
+        fold.appendChild(
           h("div", { class: "fact" }, `Backhaul: ${flag.value}`, sourceLine(flag.src)),
         );
       }
     }
-    return section;
+    return fold;
   };
 
   const renderAgreement = (community) =>
@@ -170,12 +175,7 @@
     );
 
   const renderPublishers = (community) => {
-    const section = h(
-      "section",
-      { class: "section" },
-      h("h2", { class: "section__title" }, "What the sources say"),
-      renderAgreement(community),
-    );
+    const section = h("section", { class: "publishers" }, renderAgreement(community));
     for (const publisher of community.publishers) {
       section.appendChild(
         h(
@@ -196,77 +196,58 @@
     return section;
   };
 
-  const renderBadge = (verdictId) =>
+  // Task-34, 2026-09-16: folded behind the agreement line, closed by default (item 4); the
+  // wording matches what `renderAgreement` already says, in one line.
+  const renderSourcesFold = (community) => {
+    const { covered, available, note } = community.agreement;
+    const summary =
+      note === "Sources agree"
+        ? `${available} of ${available} sources agree`
+        : `Sources disagree: ${covered} of ${available} say covered`;
+    return h(
+      "details",
+      { class: "sources-fold section" },
+      h("summary", {}, summary),
+      renderPublishers(community),
+    );
+  };
+
+  const renderBadge = (verdictId, extraClass) =>
     h(
       "span",
-      { class: `verdict-badge verdict-badge--${verdictId}` },
+      { class: `verdict-badge verdict-badge--${verdictId}${extraClass ? ` ${extraClass}` : ""}` },
       h("span", { "aria-hidden": "true" }, VERDICTS[verdictId].glyph),
       VERDICTS[verdictId].word,
     );
 
-  // What each verdict word means, in the words of pipeline/rules.py, for a first-time reader
-  // (Task-30). Static labels: the verdicts themselves still come from the pack.
-  const VERDICT_MEANING = {
-    works: "the best available path meets the published requirement",
-    degraded: "may work, but falls short of the requirement",
-    fails: "no published path can carry it",
-    nodata: "no source records enough to judge",
-  };
-
-  // Not .verdict-badge: tests count those per service row and per compare column.
-  const renderVerdictLegend = () =>
-    h(
-      "ul",
-      { class: "verdict-legend" },
-      Object.keys(VERDICTS).map((verdictId) =>
-        h(
-          "li",
-          { class: "verdict-legend__item" },
-          h(
-            "span",
-            { class: `legend-badge legend-badge--${verdictId}` },
-            h("span", { "aria-hidden": "true" }, VERDICTS[verdictId].glyph),
-            VERDICTS[verdictId].word,
-          ),
-          ` ${VERDICT_MEANING[verdictId]}`,
-        ),
-      ),
-    );
-
+  // Task-34, 2026-09-16: the row is `button.service-row` itself (Task-07's wrapping div and
+  // inner button collapse into one element); tapping it toggles the detail beneath -- reason,
+  // assumption if any, and the sources -- so the closed row costs one line of height (item 3,
+  // item 7). `service-row__button` is kept as a second class only to reuse
+  // `design/screens/screens.css`'s existing block/padding/border rule for that selector.
   const renderServiceRow = (service) => {
-    const panel = service.sources.length
-      ? h(
-          "div",
-          { class: "service-row__sources", hidden: "" },
-          service.sources.map((source) => labeledSourceLine(source.label, source.src)),
-        )
-      : null;
     const button = h(
       "button",
-      { type: "button", class: "service-row__button", "aria-expanded": "false" },
+      { type: "button", class: "service-row service-row__button", "aria-expanded": "false" },
       h(
         "span",
         { class: "service-row__top" },
-        h("span", { class: "service-row__name" }, SERVICE_LABEL[service.service] || service.service),
-        renderBadge(service.verdict),
+        h(
+          "span",
+          { class: "service-row__label" },
+          h(
+            "span",
+            { class: `service-row__glyph service-row__glyph--${service.verdict}`, "aria-hidden": "true" },
+            VERDICTS[service.verdict].glyph,
+          ),
+          h("span", { class: "service-row__name" }, SERVICE_LABEL[service.service] || service.service),
+        ),
+        renderBadge(service.verdict, "service-row__badge"),
       ),
-      h("span", { class: "service-row__reason" }, figures(service.reason)),
     );
-    button.addEventListener("click", () => {
-      const expanded = button.getAttribute("aria-expanded") === "true";
-      button.setAttribute("aria-expanded", expanded ? "false" : "true");
-      // The sources panel exists in the DOM only while the row is expanded (Task-07 DoD).
-      if (panel) {
-        if (expanded) {
-          panel.remove();
-        } else {
-          button.after(panel);
-        }
-      }
-    });
-    const row = h("div", { class: "service-row" }, button);
+    const detailChildren = [h("p", { class: "service-row__reason" }, figures(service.reason))];
     if (service.assumption) {
-      row.appendChild(
+      detailChildren.push(
         h(
           "div",
           { class: "assumption-note" },
@@ -276,14 +257,30 @@
         ),
       );
     }
-    return row;
+    if (service.sources.length) {
+      detailChildren.push(
+        h(
+          "div",
+          { class: "service-row__sources" },
+          service.sources.map((source) => labeledSourceLine(source.label, source.src)),
+        ),
+      );
+    }
+    const detail = h("div", { class: "service-row__detail", hidden: "" }, detailChildren);
+    button.addEventListener("click", () => {
+      const expanded = button.getAttribute("aria-expanded") === "true";
+      button.setAttribute("aria-expanded", expanded ? "false" : "true");
+      detail.hidden = expanded;
+    });
+    return [button, detail];
   };
 
+  // Task-34, 2026-09-16: `.services` is one card, not a `.section` (no title, no legend --
+  // item 3, item 6): the four answers, closed, are what a reader came for.
   const renderServices = (community) => {
-    const section = h(
-      "section",
-      { class: "section" },
-      h("h2", { class: "section__title" }, "What the connection allows"),
+    const card = h(
+      "div",
+      { class: "services" },
       h(
         "div",
         { class: "section__note" },
@@ -294,11 +291,11 @@
       ),
     );
     for (const service of community.services) {
-      section.appendChild(renderServiceRow(service));
+      for (const node of renderServiceRow(service)) {
+        card.appendChild(node);
+      }
     }
-    // After the four answers, not before them: the answer is what a reader came for.
-    section.appendChild(renderVerdictLegend());
-    return section;
+    return card;
   };
 
   // Short service names for the SMS text, where every character counts.
@@ -452,14 +449,46 @@
       h("span", { class: "fig fig--xs" }, community.freshness.date),
     );
 
+  // Task-34, 2026-09-16: a stub (item 5). Task-35 owns what a tap here actually does; this
+  // only records the intent in the hash so the route survives a reload.
+  const renderReportButton = (community) => {
+    const button = h("button", { type: "button", class: "report-button" }, "Report here");
+    button.addEventListener("click", () => {
+      location.hash = `#/community/${community.id}?report`;
+    });
+    return button;
+  };
+
+  // Task-34, 2026-09-16: the three statement buttons and the freshness line, unchanged in
+  // behaviour and selectors, folded behind "Share" (item 5).
+  const renderShareFold = (community) =>
+    h(
+      "details",
+      { class: "share-fold section" },
+      h("summary", {}, "Share"),
+      renderStatementButtons(community),
+      renderFreshness(community),
+    );
+
+  // Task-34, 2026-09-16: the two-action row under the sources fold (item 5, item 7).
+  const renderActionsRow = (community) =>
+    h(
+      "div",
+      { class: "actions section" },
+      renderReportButton(community),
+      renderShareFold(community),
+    );
+
+  // Task-34, 2026-09-16: folded behind "Who to ask" (the old title "Who does what"), closed by
+  // default (item 6).
   const renderActions = (community) =>
     h(
-      "section",
-      { class: "section" },
-      h("h2", { class: "section__title" }, "Who does what"),
+      "details",
+      { class: "actions-fold section" },
+      h("summary", {}, "Who to ask"),
       h(
         "ul",
-        { class: "actions" },
+        { class: "actions__list" },
         community.actions.map((action) =>
           h(
             "li",
@@ -648,21 +677,12 @@
       openSearch = false;
       main.querySelector(".search-input").focus();
     }
-    main.appendChild(
-      h(
-        "p",
-        { class: "intro" },
-        "What published sources say about phone and internet at this community, and what that allows. Crosscheck does not measure signal.",
-      ),
-    );
-    const header = renderHeader(community);
-    header.appendChild(renderFreshness(community));
-    main.appendChild(header);
-    // Plainest answer first (Task-30): what works, then who says so, then the detail.
-    const services = renderServices(community);
-    services.appendChild(renderStatementButtons(community));
-    main.appendChild(services);
-    main.appendChild(renderPublishers(community));
+    // Task-34, 2026-09-16: no intro line, no verdict legend (item 3); the four rows, closed,
+    // are the whole answer, and everything past them folds behind a summary (item 6, item 7).
+    main.appendChild(renderHeader(community));
+    main.appendChild(renderServices(community));
+    main.appendChild(renderSourcesFold(community));
+    main.appendChild(renderActionsRow(community));
     main.appendChild(renderPresent(community));
     main.appendChild(renderActions(community));
   };

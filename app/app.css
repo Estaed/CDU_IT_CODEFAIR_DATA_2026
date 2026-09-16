@@ -233,8 +233,6 @@ a.button { text-decoration: none; }
   mask-image: linear-gradient(to right, transparent, black var(--space-xxl), black calc(100% - var(--space-xxl)), transparent);
 }
 
-.intro { margin: 0; padding: var(--space-sm) var(--space-md) 0; font: var(--text-body-sm); color: var(--text-body); }
-
 /* One search bar: the location button sits under it, Compare sits inside each result. */
 .search__tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); margin-top: var(--space-xs); }
 
@@ -267,33 +265,71 @@ a.button { text-decoration: none; }
 .search-results__item .result-row { flex: 1 1 auto; min-width: 0; border-bottom: 0; }
 .result-row__compare { flex: 0 0 auto; }
 
-/* What each verdict word means, under the section title. */
-.verdict-legend {
-  display: grid;
-  gap: var(--space-xxs);
-  margin: 0;
-  padding: var(--space-sm) var(--space-md);
-  list-style: none;
-  font: var(--text-caption);
-  color: var(--text-body);
-}
-.legend-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xxs);
-  height: var(--size-badge);
-  padding: 0 var(--space-xs);
-  border-radius: var(--radius-xs);
-  font: var(--text-label);
-  white-space: nowrap;
-}
-.legend-badge--works { color: var(--verdict-works-text); background: var(--verdict-works-fill); }
-.legend-badge--degraded { color: var(--verdict-degraded-text); background: var(--verdict-degraded-fill); }
-.legend-badge--fails { color: var(--verdict-fails-text); background: var(--verdict-fails-fill); }
-.legend-badge--nodata { color: var(--verdict-nodata-text); background: var(--verdict-nodata-fill); }
-
 /* What exists here: a sentence, so nothing looks tappable that is not. */
 .present-list { margin: 0; padding: var(--space-xs) var(--space-md) 0; font: var(--text-body-sm); color: var(--text-body); }
+
+/* Task-34 community screen, third pass (2026-09-16): the four answers as one card, everything
+   past them folded behind a summary, and a two-action row (design/screens/README.md). */
+
+/* The card holding the four service rows: a full border, unlike `.section`'s top hairline
+   (item 3). */
+.services {
+  margin: var(--space-md) var(--space-md) 0;
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.services .section__note { padding-top: var(--space-xs); border-bottom: var(--size-hairline) solid var(--border-hairline); }
+/* The card already carries its own bottom border; the last row does not need a second one.
+   `:last-of-type` (by tag, not class) reaches the last row's button through the detail panels
+   interleaved between rows. */
+.services button:last-of-type { border-bottom: 0; }
+
+/* A folded section's own title-sized summary line, replacing the banned `.section__title` on
+   this screen (item 6); `.section` still gives it the top hairline and vertical rhythm. */
+.section > summary {
+  padding: var(--space-xs) var(--space-md);
+  font: var(--text-title-md);
+  color: var(--text-heading);
+  cursor: pointer;
+  list-style: none;
+}
+.section > summary::-webkit-details-marker { display: none; }
+
+/* The glyph beside the service name, coloured like its badge (item 3). */
+.service-row__label { display: flex; align-items: center; gap: var(--space-xs); }
+.service-row__glyph--works { color: var(--verdict-works-text); }
+.service-row__glyph--degraded { color: var(--verdict-degraded-text); }
+.service-row__glyph--fails { color: var(--verdict-fails-text); }
+.service-row__glyph--nodata { color: var(--verdict-nodata-text); }
+
+/* The row's detail, beneath it once tapped: the reason needs its own horizontal padding now
+   that it no longer sits inside the button's own padded box. */
+.service-row__detail { padding-bottom: var(--space-sm); }
+.service-row__reason { padding: 0 var(--space-md); }
+
+/* The two-action row: Report here, then the Share fold (item 5). */
+.report-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--size-control);
+  min-width: var(--size-touch);
+  margin: var(--space-sm) var(--space-md) 0;
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  font: var(--text-button);
+  color: var(--text-heading);
+  background: var(--surface-page);
+  cursor: pointer;
+}
+.report-button:active { background: var(--surface-block); }
+
+/* Who to ask's own list: the base reset `.actions` gives it in screens.css, reused here under
+   its own name so it never collides with the two-action row above, which the fold test reads
+   by that class. */
+.actions__list { list-style: none; margin: 0; padding: 0; }
 
 /* Attributions folded into one line; the team line stays open below it. */
 .footer__summary { cursor: pointer; color: var(--text-body); }
