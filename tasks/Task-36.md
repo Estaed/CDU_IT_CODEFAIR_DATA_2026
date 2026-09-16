@@ -39,11 +39,31 @@ PRD §11 (2026-09-16). This task builds the measured winner into the app and rem
 7. Part 2's transfer paragraph is rewritten by the main loop to the v3 contract with the
    measured numbers, dated; the worker does not edit it.
 
-## The winner (filled by the main loop after Task-31)
+## Fixed since round two was approved (2026-09-16)
 
-⛔ Not yet written. Candidate: — . Hold: — . Median seconds S24 / Mi 6: — / — . Loss budgets:
-10 % — × K, 50 % — × K, 70 % — × K. If B or C: the frame layout and the reader change carried
-over from `reports/spike-qr/spike.js`, and for C the layer rule 5 exception line for Part 2.
+8. **The lite copy.** `scripts/build_app.py` also writes `dist/lite.html`: the same page with
+   `vendor/jsQR.js` not inlined, the pack's `layers` emitted as `[]`, and `data-lite="1"` on
+   `<html>`. The camera carries the lite copy only (`pageHtml()` on the Show side reads the
+   lite bytes, produced by the same build and inlined as a base64 gzip constant, not the
+   running page). The lite copy renders the map without layers (the app already draws only
+   what it is given) and its `Receive` button reads with `BarcodeDetector` only, saying so
+   when the browser has none.
+9. **Complete this copy.** On a lite page the share screen shows `Complete this copy`: on a
+   tap, `transfer.js` fetches `APP_URL` (from the pack header) once, and hands the text to the
+   same `finish()` path camera receive uses (validate, store, `Use full version now`). Offline,
+   the failure reads `No network yet, try again when this phone is online`. This is layer rule
+   7's one exception; the browser test asserts the full page makes no request at all, the lite
+   page makes none before the tap, and after the tap exactly one request to `APP_URL`
+   (aborted by the fixture, the message shown).
+10. **Sender rate.** 5 frames a second held on `requestAnimationFrame` (12 refreshes at 60 Hz);
+    the reader loop stays the v2 main-thread loop.
+
+## The measurement (filled by the main loop after Task-31 round two)
+
+⛔ Not yet written. Median seconds S24 / Mi 6 at hold 12: — / — . Worst: — . Loss budgets:
+10 % — × K, 50 % — × K, 70 % — × K. If round two fails the decision rule, this task shrinks to
+items 8 and 9 (lite copy by share sheet plus `Complete this copy`) and the Show/Receive
+controls are removed with a dated Part 2 line.
 
 ## Out of the gate
 
