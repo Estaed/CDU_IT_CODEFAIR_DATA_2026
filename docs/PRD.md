@@ -159,6 +159,72 @@ Tarik ruled out spending); NFC (888 bytes, Android only); a Meshtastic node pair
 money, shipping before Challenge Day); a room-range chat sold as community messaging (the
 range is the honest limit and is printed in the app).
 
+**v1 changes, third batch, decided 2026-09-16 (Tarik, after Eko's review of the phone test:
+transfer stalls near 110 blocks, the map is cluttered, the community screen is seven screens
+long, and the product's originality sits in "what works here and who disagrees", not in
+chat).** Source of truth for each is this section; the reference screens stay the reference
+for what they still show, and every departure is listed in `design/screens/README.md`.
+
+- *Nearby chat and the Wi-Fi join QR are removed* (Task-32). `#/nearby`, `nearby.js`, the
+  WebRTC channel, the pack-over-channel request and the `WIFI:` code all go; OQ14 closes as
+  moot. Transfer by camera already carries the app between two phones with no network, and a
+  room-range chat was the one feature a judge could call a gimmick. The 2026-09-15 spike stays
+  in `reports/` as a record.
+- *Report here* on Screen 1 (Task-35), the deferred D2 pulled into v1 with no network and no
+  measurement: a person in the community records, on their own phone, what their phone's
+  internet is doing right now (`works`, `slow`, `none`), which carrier if they know, the
+  Android browser's own connection estimate where it exists (`navigator.connection`:
+  `effectiveType`, `rtt`, `downlink`; absent on iPhone, then simply not recorded), the time, and
+  a coarse position (two decimals, about 1 km) if they allow it. The record stays on the phone
+  (IndexedDB). It leaves only when the person chooses: as one text line of at most 200 bytes,
+  the same channels the mesh text already uses (copy, SMS, one static QR). Any copy of the app
+  can take such lines in (paste or scan) and shows them under the published claims as a count,
+  never as a verdict: "Reports from here: 3, 2 say no connection, latest 20 Sep". One tap
+  copies an evidence text, the published claims and the reports for one community, addressed
+  to the Mobile Black Spot Program noticeboard or a carrier. The app makes no request; the
+  community's own evidence is the sixth line beside the five publishers, and the community
+  decides when it travels. This is the answer to §1's "a community cannot prove its own
+  situation".
+- *Community screen, third pass* (Task-34): one screen at 360 × 780 before any scrolling.
+  Name, type and population; the four service rows as one compact block, each a glyph, the
+  service name and the verdict word; tapping a row opens its reason, assumption and sources;
+  "N of M sources agree" folded to one line that opens the publisher list; two actions,
+  `Report here` and `Share` (the SMS, statement and mesh texts move under Share); "What exists
+  here" and "Who to ask" (the renamed "Who does what") folded. The verdict legend and the intro
+  sentence of Task-30 go: the glyph and word on each row are the legend, and "does not measure
+  signal" moves to the footer line.
+- *Map, third pass* (Task-33): the point shapes change from circle, triangle, square and dash
+  to one shape in four fill states, `●` Works (filled), `◐` Degraded (half), `○` Fails (ring),
+  `◌` No data (dotted ring); the same four glyphs replace `● ▲ ■ –` in every badge and legend,
+  so the map and the badges speak one language. Tarik: "üçgen kare falan sevmedim". A reader
+  with no colour perception still reads fill state. A service selector above the map chooses
+  which of the four verdicts colours the points (telehealth video by default); the legend
+  counts follow. The carrier coverage and SA3 region layers are off by default behind one
+  `Layers` control, so the default view is the outline, the five towns and the 96 points.
+  Below the map, a list of the shown communities worst first (Fails, then Degraded, then No
+  data, then Works), each row opening the community. Clusters stay (Task-29), restyled to the
+  new shapes.
+- *Transfer by camera, third version* (Task-31 experiment, Task-36 build). The v2 contract was
+  tuned against 10 % frame loss; a real phone loses half or more (the reader waits 100 ms
+  between reads and jsQR is slow), and at that loss the uniform 6..12 repair degree stalls
+  near half of K, which is the "110" Tarik saw. Four candidates are measured on the S24 and
+  the Mi 6 before anything is built: **A** the same frame with a robust-soliton degree, a
+  refresh-synchronised sender and a worker-side reader; **B** four codes per frame in a 2 × 2
+  grid; **C** three codes per frame multiplexed into the red, green and blue channels, our own
+  design; **B+C** together. Decision rule fixed in advance: among candidates that complete 5 of
+  5 runs on both phones, the shortest median time wins; ties go to the simpler one. The winner
+  becomes frame prefix `CZ`, pack-independent, and the browser test's loss scenarios grow to 10,
+  50 and 70 % with budgets set from the measurement. C breaks DESIGN.md's colour rule for the
+  frame only: the three colours are data, not style, like the carrier layers.
+
+Considered and dropped on 2026-09-16: a heat map (96 points on 1.35 million km² interpolate
+into a surface that claims signal where nobody lives; if a surface is ever wanted it is SA3
+regions coloured by the share of communities whose telehealth fails, which is honest); a ping
+from the app (the community has no address to ping, the phone sits behind carrier NAT, the
+browser cannot send ICMP, and a request from the app would break the one line that stays,
+zero runtime requests); cimbar (needs WASM, licence unverified) and Decimen (AGPL) as transfer
+libraries.
+
 ### 4.3 Report, slides, pitch
 
 Owned by Emma, Thanh and Will, built from §4.1 item 3. Structure and file rules are in
@@ -208,7 +274,9 @@ What the app shows for one community; not a schema.
 | Size (decided 2026-09-12; pack cap under review 2026-09-15): app HTML ≤ 1 MB, data pack ≤ 300 KB until OQ13 sets the new cap from the measured map layers | Measured by the gate on every build; over-size fails |
 | Phone-to-phone transfer works | Tarik sends the app from one phone to a second phone by QR and by share sheet, opens it there in flight mode; recorded in the demo checklist. Known since 2026-09-15: an `.html` received as a file does not run on an iPhone (Quick Look has no JavaScript); the iPhone gets the app from the URL before the day |
 | Transfer by camera works | Tarik plays the frames on one phone and receives on the other (Android receive; iPhone per OQ15), the received page opens and shows Wadeye's four verdicts; in the demo checklist. A unit test proves the frame set reassembles to the exact bytes of `dist/index.html` |
-| Nearby chat works with no internet | Tarik: two phones on one hotspot, both in flight mode except Wi-Fi, scan, send a message each way, then switch the hotspot off and confirm the channel drops with a plain message; in the demo checklist (OQ14) |
+| ~~Nearby chat works with no internet~~ | Struck 2026-09-16: nearby chat removed (§4.2, third batch) |
+| A report stays on the phone and travels only by the person's choice | Browser test: after `Report here`, the record is in IndexedDB, no request left the page, and the exported line is at most 200 bytes UTF-8; a second page fed that line shows "Reports from here: 1" and no verdict changes (Task-35) |
+| Transfer completes on a real phone | Tarik: the winner of the Task-31 sweep completes 5 of 5 runs on the S24 and the Mi 6; the browser test holds the 10, 50 and 70 % loss budgets set from that measurement (Task-36) |
 | The map reads without explanation | Advisory eye review at 360 px against the layer list in §4.2, plus Tarik's own verdict on his phone; not a gate |
 | Mesh-size statement fits one packet | Unit test: every community's text is ≤ 200 bytes in UTF-8 |
 | Verdict rules are correct as written | Unit tests on the rule functions with hand-built rows for every pattern in the spike (unanimous yes, unanimous no, the six disagreement patterns, fixed line) |
@@ -234,13 +302,13 @@ What the app shows for one community; not a schema.
 
 ## 8. Out of scope (v1)
 
-- Any measurement of signal or speed by the app; crowdsourced data (D2).
+- Any measurement of signal or speed by the app. Since 2026-09-16 the app *records what the
+  person says and what the Android browser already estimates* (§4.2 Report here, D2 pulled in);
+  it still sends no probe, makes no request and computes no verdict from a report.
 - Real-time outage feeds, road-report live data, Telstra outage pages.
-- ~~Bluetooth mesh or any peer networking beyond sharing the app file (recommendation only).~~
-  Struck 2026-09-15: the phone's own Wi-Fi hotspot plus a browser-to-browser channel turned
-  out to be free, serverless and buildable (spike 2026-09-15), so nearby chat is in v1 (§4.2).
-  Still out: Bluetooth (the browser cannot form a link between two pages), LoRa or any radio
-  hardware, message storage or relay of any kind, and any claim of range beyond the Wi-Fi.
+- Bluetooth mesh or any peer networking beyond sharing the app file. Nearby chat was in v1
+  from 2026-09-15 to 2026-09-16 and is removed (§4.2, third batch); Bluetooth, LoRa or any
+  radio hardware, message storage or relay of any kind stay out.
 - Map tiles, base maps fetched at runtime, or any request at all while the app runs.
 - Communities outside the 96 (D3); Australia outside the NT.
 - A native app, a server, a database, user accounts, analytics.
@@ -283,10 +351,8 @@ What the app shows for one community; not a schema.
     Highways could not be downloaded by script (Geoscience Australia file is 775 MB with no
     licence stated; NT Government roads host returns 403 to scripts, CC BY on the page) and
     wait for a browser download by Tarik (Task-23).
-14. **Does a phone hotspot let two clients talk to each other?** Tarik's test with
-    `reports/spike-webrtc-hotspot/` on the S24 as host: CONNECTED and messages after the
-    laptop server is killed means yes. If no on both phones as host, nearby chat ships with
-    "works on a shared Wi-Fi router" as its stated range and the hotspot line is removed.
+14. **Does a phone hotspot let two clients talk to each other?** — CLOSED 2026-09-16 as moot:
+    nearby chat removed (§4.2, third batch). The spike stays in `reports/spike-webrtc-hotspot/`.
 15. **iPhone camera receive route** — ANSWERED 2026-09-15 (Tarik): vendor jsQR 1.4.0
     (Apache-2.0, pure JavaScript, 256,885 bytes, 56,970 gzipped, last release 2021-04-24) behind
     one scan adapter that prefers the browser's own reader (Task-25). The one library exception
@@ -301,8 +367,9 @@ What the app shows for one community; not a schema.
 D1. **v1.1 — our own coverage model.** Terrain-aware propagation from ACMA site parameters
     (EIRP, azimuth, height, frequency) and open elevation data, added as a *modelled* publisher
     line. Started only after v1 passes its gate. Decide the model and its validation then.
-D2. **v1.1 — "report signal here".** A measurement recorded offline, synced later, shown as a
-    sixth line beside the published claims. Decide storage and consent then.
+D2. ~~**v1.1 — "report signal here".**~~ Pulled into v1 on 2026-09-16 as *Report here* (§4.2,
+    third batch): no measurement, the person's own word plus the browser's estimate, stored on
+    the phone, shared by choice as one text line. Storage is IndexedDB, consent is the tap.
 D3. **v1.1 — widen the universe** to NTG 2022's community rows and BushTel Town Camps.
 D4. **Road-note extraction with an LLM, human-verified**, replacing the regex seasonal flag.
     Declared in the appendix if done. Not in v1.
@@ -347,3 +414,9 @@ D5. **National scope** — only if the NT is finished early; the brief allows it
 | 2026-09-15 | jsQR 1.4.0 carries a wrong alignment table entry for QR version 23 (74 where ISO/IEC 18004 says 78), so it cannot read any version-23 code, which is exactly the size of every transfer frame. Found by the Task-25 worker, re-verified by the main loop over all 40 versions; the one entry is corrected in the vendored copy as a second recorded edit rather than shrinking frames around it | Eko |
 | 2026-09-15 | Map points cluster by zoom, the one tactic taken from the AI Challenge app's map (its MapLibre tiles are not, they need the internet): nearby points merge into a bubble with a count and a ring split by telehealth verdict, split apart as the user zooms in, and a tap zooms to the cluster. Computed in the browser from the live zoom; the selected community is never inside a cluster (Task-29) | Tarik |
 | 2026-09-15 | Transfer by camera: repair frames only after the first source pass, degree uniform 6..12; the loss bound is 1.75 x K (measured, 50 of 50 seeds at K 224) instead of the planned 1.5 x K, which no measured variant met. At 8 frames a second and K 224 that is about 49 seconds with 10 % of frames missed | Tarik |
+| 2026-09-16 | The v2 transfer stalls on a real phone: simulated with the shipped code path at K 233, 50 % loss reaches 129 of 233 blocks by frame 700, 60 % never completes. The uniform 6..12 degree was chosen against 10 % loss only. Robust soliton completes 8 of 8 at 70 % loss in about 2 minutes where uniform completes 3 of 8 in 16. Fix is measured on phones before it is built (Task-31: A, B, C, B+C; decision rule fixed in advance), then built as frame prefix `CZ` (Task-36) | Eko's simulation, Tarik |
+| 2026-09-16 | Nearby chat and the Wi-Fi join QR are removed; OQ14 closes as moot. In their place *Report here*, the deferred D2 with no network: the person's own word, the Android browser's estimate, coarse position, on the phone, shared as one 200-byte line by choice. Reason: the product's originality is "what works here, who disagrees, and the community's own evidence", not a room-range chat | Tarik, on Eko's proposal |
+| 2026-09-16 | Map and badge glyphs change to one shape in four fill states (`● ◐ ○ ◌`); DESIGN.md's `● ▲ ■ –` are departed from in `design/screens/README.md`. Coverage and region layers off by default; service selector; worst-first list under the map. Heat map rejected: 96 points do not make a surface | Tarik ("üçgen kare falan sevmedim"), Eko |
+| 2026-09-16 | Community screen fits one 360 × 780 screen before scrolling: four compact rows, folded sources, two actions (Report here, Share). Task-30's intro line and verdict legend are reversed by this | Tarik |
+| 2026-09-16 | A ping from the app is rejected: nothing in the community has an address to ping, the browser cannot send ICMP, and it would break zero runtime requests | Tarik, on Eko's advice |
+| 2026-09-16 | Codex quota is exhausted until 2026-09-19; every lane of the third batch is a Claude worker, the main loop (Fable) writes specs and runs the gate | Eko |

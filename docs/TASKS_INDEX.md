@@ -47,6 +47,12 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-28: Install as a real home-screen app, tactics from the Calisthenics app (added 2026-09-15)
 - [x] Task-29: Map points cluster by zoom, tactic from the AI Challenge app (added 2026-09-15)
 - [x] Task-30: A first-time user understands the app, clarity batch from Tarik's phone test (added 2026-09-16)
+- [ ] Task-31: Transfer v3 experiment: A, B, C and B+C measured on two phones (third batch, added 2026-09-16)
+- [ ] Task-32: Remove nearby chat and the Wi-Fi join QR (third batch, added 2026-09-16)
+- [ ] Task-34: Community screen, third pass: one screen before scrolling (third batch, added 2026-09-16)
+- [ ] Task-33: Map, third pass: one shape in four fill states, layers off, service selector, worst-first list (third batch, added 2026-09-16)
+- [ ] Task-35: Report here: the community's own evidence, on the phone, shared by choice (third batch, added 2026-09-16)
+- [ ] Task-36: Transfer v3 in the app from the Task-31 winner (third batch, added 2026-09-16; spec completed after Task-31)
 
 ## Execution routing
 
@@ -93,6 +99,18 @@ advisory only.
 | Task-27 | claude-worker | no | high | Task-25 | 21 |
 | Task-28 | claude-worker | no | medium | Task-26 | 19 (beside Task-24; disjoint files) |
 | Task-29 | claude-worker | no | high | Task-21 | 20 (beside the Task-25 fix; map files only) |
+
+| Task-31 | claude-worker (opus) | no | high | none | 22 |
+| Task-32 | claude-worker | no | medium | none | 22 (beside Task-31; disjoint files) |
+| Task-34 | claude-worker | no | high | Task-32 | 23 |
+| Task-33 | claude-worker | no | high | Task-34 | 24 |
+| Task-35 | claude-worker (opus) | no | high | Task-34 | 24 (beside Task-33: report.js, community sections; Task-33 owns the map sections) |
+| Task-36 | claude-worker (opus) | no | high | Task-31 (measured), Task-32 | 25 |
+
+Third batch (2026-09-16) execution note: Codex is at 100 % on both windows until 2026-09-19, so
+every lane is a Claude worker; the main loop (Fable) writes the specs, runs `verify-task` and the
+gate, and Tarik runs the phone measurements Task-31 needs. Waves 23 and 24 are serial on
+`app/app.js` except where the lanes own disjoint render functions, named in each Lane block.
 
 Second batch (2026-09-15) execution note: Codex quota is exhausted until 2026-09-19, so every
 lane is a Claude worker. Wave 14 is three disjoint lanes; 15 to 17 are serial because each
