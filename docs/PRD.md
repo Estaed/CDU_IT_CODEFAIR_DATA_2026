@@ -126,7 +126,9 @@ none makes a network request while running. Source of truth for each is this sec
 screen file exists; the existing three screens stay the reference for everything they already
 show.
 
-- *Transfer by camera* on Screen 3: "Show" plays the whole app (gzip, about 32 KB) as a loop of
+- *Transfer by camera* on Screen 3: "Show" plays the whole app (gzip, about 32 KB on
+  2026-09-15; 181 KB by 2026-09-16 with the map layers and jsQR, which is why the third batch
+  sends a 70 KB lite copy instead) as a loop of
   QR frames on this phone's screen; "Receive" on the other phone reads the frames with its
   camera, reassembles and decompresses them in the browser, opens the result and offers to
   save it. The existing URL QR stays as it is. Receiving uses the browser's own barcode reader
