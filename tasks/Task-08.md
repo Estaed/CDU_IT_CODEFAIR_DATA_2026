@@ -1,6 +1,6 @@
 # Task-08: Map screen in the app
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* reference markup `design/screens/map.html`, geometry already in the pack (Task-06); criteria are DOM counts and hash changes under Playwright.
 
 **Lane**

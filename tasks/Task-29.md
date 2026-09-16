@@ -1,6 +1,6 @@
 # Task-29: Map points cluster by zoom
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* a deterministic grouping of 96 points by the live zoom, with DOM-countable criteria (cluster counts add up, tapping zooms in, nothing selected is hidden).
 
 **Lane**

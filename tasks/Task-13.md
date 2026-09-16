@@ -1,6 +1,6 @@
 # Task-13: Send as SMS, copy statement and the freshness line
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* render-only work on Screen 1 with strings already in the pack; criteria are Playwright assertions on text and on the `sms:` href.
 
 **Lane**

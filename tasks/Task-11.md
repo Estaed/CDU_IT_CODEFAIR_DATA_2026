@@ -1,6 +1,6 @@
 # Task-11: Reproduction README, submission packaging, spike retirement
 
-> **Execution:** agent `claude-worker` · effort `medium` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* the organiser's file rules are transcribed in `docs/report-requirements.md`; the criterion is a zip whose listing and file names match them, checked by a test.
 
 **Lane**

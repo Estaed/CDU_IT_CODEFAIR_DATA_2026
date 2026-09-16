@@ -2,7 +2,7 @@
 
 Status: DONE (verify-task, 2026-09-13; gate GREEN on main at integration: ruff clean, 53 unit + 1 browser test; regression 96 rows x 7 columns, 0 differences; `nbn.load` 2.6 s; mutations: technology swap red, distance divisor red, attrs separator unobservable because the only in-footprint row has one attribute)
 
-> **Execution:** agent `claude-worker` · effort `medium` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* promotion of `spike/lane_nbn.py`; the criterion is a regression against the spike's `nbn.csv` for all 96 rows.
 
 **Lane**

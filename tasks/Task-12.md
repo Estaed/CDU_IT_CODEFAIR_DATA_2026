@@ -1,6 +1,6 @@
 # Task-12: Freshness, history and changes in the pack
 
-> **Execution:** agent `claude-worker` · effort `medium` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* pure pipeline work over the capability table; every criterion is a unit test on hand-built rows or the committed history files.
 
 **Lane**

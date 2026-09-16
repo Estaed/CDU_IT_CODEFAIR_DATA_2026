@@ -1,6 +1,6 @@
 # Task-18: Transfer by camera (QR frames)
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* the frame contract is fixed in Part 2 and the round trip is checkable without a camera; the camera path itself is Tarik's manual check (PRD §6).
 
 **Lane**

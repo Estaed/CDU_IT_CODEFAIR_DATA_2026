@@ -1,6 +1,6 @@
 # Task-09: Share screen, QR, save-as-file, and the host-only PWA files
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* reference markup `design/screens/share.html`; QR produced at build by `qrcode` (Part 2 spike); criteria are Playwright assertions including an `expect_download`.
 
 **Lane**

@@ -1,6 +1,6 @@
 # Task-24: Received pack updates the app in place
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* one storage seam and one startup branch; every criterion is a DOM or storage assertion in the existing browser fixture.
 
 **Lane**

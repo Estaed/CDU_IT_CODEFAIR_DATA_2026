@@ -1,6 +1,6 @@
 # Task-20: Map layers in the pipeline (towns, highways, regions, coverage)
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* geometry work with byte-count criteria; the tolerances and the cap come from `reports/2026-09-15-map-bytes.md` (OQ13). ⛔ Only if the highway source in that report has no licence line (OQ16): ship towns, regions and coverage, leave `highways` out, and say so in Status. Owner of OQ16: Eko, via `research`.
 
 **Lane**

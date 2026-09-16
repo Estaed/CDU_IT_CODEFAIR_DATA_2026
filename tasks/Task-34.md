@@ -1,6 +1,6 @@
 # Task-34: Community screen, third pass — one screen before scrolling
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* 2026-09-16. The layout is specified to the element; the gate checks the fold. The
 > eye review of the result in the emulator is the main loop's, after DONE. Codex is at 100 %.
 

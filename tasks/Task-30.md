@@ -1,6 +1,6 @@
 # Task-30: A first-time user understands the app (clarity batch)
 
-> **Execution:** agent `main-loop` · effort `high` · plan mode **no**
+> **Execution:** agent `main-loop` · effort `high`
 > *Why:* 2026-09-16, Tarik's phone feedback batch, decisions delegated ("soru sorma kendin karar
 > ver"). The criterion needs an eye on the phone (emulator), so the main loop implements; a
 > separate agent writes the browser tests from the contract below.

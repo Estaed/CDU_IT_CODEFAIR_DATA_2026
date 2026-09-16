@@ -1,6 +1,6 @@
 # Task-32: Remove nearby chat and the Wi-Fi join QR
 
-> **Execution:** agent `claude-worker` · effort `medium` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* 2026-09-16. Mechanical removal against a complete list; the gate is the criterion.
 > Sonnet-tier is enough. Codex is at 100 % until 2026-09-19.
 

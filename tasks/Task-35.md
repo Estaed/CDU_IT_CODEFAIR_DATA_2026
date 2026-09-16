@@ -1,6 +1,6 @@
 # Task-35: Report here — the community's own evidence, on the phone, shared by choice
 
-> **Execution:** agent `claude-worker` (opus) · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` (opus) · effort `high`
 > *Why:* 2026-09-16. A new file with a byte-exact line format, IndexedDB and a privacy
 > contract: a wrong output is expensive to notice, so Opus. The "how" is below. Codex is at
 > 100 %.

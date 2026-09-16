@@ -1,6 +1,6 @@
 # Task-25: QR reading on every browser (jsQR fallback for iPhone)
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* one vendored file behind one small adapter; the criterion decodes QR codes the app itself draws, in headless Chromium with `BarcodeDetector` forced absent, so no camera or iPhone is needed to gate it.
 
 **Lane**

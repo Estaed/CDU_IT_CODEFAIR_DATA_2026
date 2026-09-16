@@ -1,6 +1,6 @@
 # Task-17: QR encoder in the app
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* a pure algorithm with an exact oracle (Python `qrcode` at the pinned version); no eye needed.
 
 **Lane**

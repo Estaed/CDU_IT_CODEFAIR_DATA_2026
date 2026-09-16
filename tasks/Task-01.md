@@ -2,7 +2,7 @@
 
 Status: DONE (verify-task, 2026-09-13; gate GREEN: ruff clean, 37 unit + 1 browser test; regression 96 rows x 34 columns, 0 differences)
 
-> **Execution:** agent `claude-worker` · effort `medium` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* promotion of `spike/lane_bushtel.py` into a module with a fixed output contract; the criterion is a row-for-row regression against the spike's output.
 
 **Lane**

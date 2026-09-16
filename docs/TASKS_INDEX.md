@@ -61,25 +61,25 @@ spawned from the Claude main loop (Tarik, 2026-09-13: Claude workers, not Codex)
 task to `codex` is an edit to its Execution block, dated, not a runtime choice. The main loop
 writes nothing here itself except the review after DONE.
 
-| Task | Agent | Plan mode | Effort | Depends on | Parallel wave |
-|---|---|---|---|---|---|
-| Task-00 | claude-worker | no | high | none | 1 |
-| Task-01 | claude-worker | no | medium | Task-00 | 2 |
-| Task-02 | claude-worker | no | medium | Task-01 | 3 |
-| Task-03 | claude-worker | no | medium | Task-01 | 3 |
-| Task-04 | claude-worker | no | medium | Task-01 | 3 |
-| Task-05 | claude-worker | no | high | Task-02, Task-03, Task-04 | 4 |
-| Task-06 | claude-worker | no | high | Task-05 | 5 |
-| Task-07 | claude-worker | no | high | Task-06 | 6 |
-| Task-08 | claude-worker | no | high | Task-07 | 7 |
-| Task-09 | claude-worker | no | high | Task-08 | 8 |
-| Task-10 | claude-worker | no | medium | Task-06 | 6 (beside Task-07) |
-| Task-11 | claude-worker | no | medium | Task-09, Task-10 | 9 |
-| Task-12 | claude-worker | no | medium | Task-10 | 9 (beside Task-11) |
-| Task-13 | claude-worker | no | high | Task-12 | 10 |
-| Task-14 | claude-worker | no | medium | Task-12, Task-13 | 11 |
-| Task-15 | claude-worker | no | high | Task-14 | 12 |
-| Task-16 | claude-worker | no | medium | Task-15 | 13, after the stop marker is cleared |
+| Task | Agent | Effort | Depends on | Parallel wave |
+|---|---|---|---|---|
+| Task-00 | claude-worker | high | none | 1 |
+| Task-01 | claude-worker | medium | Task-00 | 2 |
+| Task-02 | claude-worker | medium | Task-01 | 3 |
+| Task-03 | claude-worker | medium | Task-01 | 3 |
+| Task-04 | claude-worker | medium | Task-01 | 3 |
+| Task-05 | claude-worker | high | Task-02, Task-03, Task-04 | 4 |
+| Task-06 | claude-worker | high | Task-05 | 5 |
+| Task-07 | claude-worker | high | Task-06 | 6 |
+| Task-08 | claude-worker | high | Task-07 | 7 |
+| Task-09 | claude-worker | high | Task-08 | 8 |
+| Task-10 | claude-worker | medium | Task-06 | 6 (beside Task-07) |
+| Task-11 | claude-worker | medium | Task-09, Task-10 | 9 |
+| Task-12 | claude-worker | medium | Task-10 | 9 (beside Task-11) |
+| Task-13 | claude-worker | high | Task-12 | 10 |
+| Task-14 | claude-worker | medium | Task-12, Task-13 | 11 |
+| Task-15 | claude-worker | high | Task-14 | 12 |
+| Task-16 | claude-worker | medium | Task-15 | 13, after the stop marker is cleared |
 
 Tasks 02, 03 and 04 own disjoint files and can run as one wave in separate worktrees; so can
 Task-07 and Task-10. Every other step is serial because it edits `app/app.js` or `pipeline/pack.py`.

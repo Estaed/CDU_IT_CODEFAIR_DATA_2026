@@ -1,6 +1,6 @@
 # Task-33: Map, third pass — one shape in four fill states, layers off, service selector, worst-first list
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* 2026-09-16. SVG geometry and a sort against a written contract; the gate checks
 > counts and classes, the main loop looks at it in the emulator after DONE. Codex is at 100 %.
 

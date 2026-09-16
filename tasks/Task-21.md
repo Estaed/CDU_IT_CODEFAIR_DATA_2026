@@ -1,6 +1,6 @@
 # Task-21: Map second pass in the app (layers, zoom, pan, labels)
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* rendering pack data with DOM-checkable criteria; whether the result "reads" is the advisory eye review after DONE (PRD §6), not a gate.
 
 **Lane**

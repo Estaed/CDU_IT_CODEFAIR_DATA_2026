@@ -2,7 +2,7 @@
 
 Status: DONE (verify-task, 2026-09-13; gate GREEN on main at integration: ruff clean, 59 unit + 1 browser test; regression 96 rows x 13 columns against the fixture, 0 differences, on the real KMLs; cold parse 3,531 s once, warm run 6.8 s; mutations: km-per-degree red, contains->touches red, REQUIRED emptied red, MOCN-as-fourth-carrier unobservable because TPG 4G is 0 for all 96)
 
-> **Execution:** agent `claude-worker` · effort `medium` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* promotion of `spike/lane_accc.py`; regression against the spike's `accc.csv`. The KMLs are large (GB range), so the spike's streaming approach is kept, not redesigned.
 
 **Lane**

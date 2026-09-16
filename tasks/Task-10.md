@@ -1,6 +1,6 @@
 # Task-10: Report-ready figures and tables
 
-> **Execution:** agent `claude-worker` · effort `medium` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* PRD §4.1 item 3 names the outputs; criteria are file existence, image dimensions and row counts fixed by the spike. The pictures are judged by the team, not by the gate.
 
 **Lane**

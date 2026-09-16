@@ -1,6 +1,6 @@
 # Task-31: Transfer v3 experiment — round two: the lite payload at 5 fps on two phones
 
-> **Execution:** agent `claude-worker` (opus) · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` (opus) · effort `high`
 > *Why:* 2026-09-16, rewritten after round one. The reader loop is copied from the shipped
 > app; the payload is measured, not guessed. Codex is at 100 % until 2026-09-19. Tarik runs the
 > phones; the main loop rules.

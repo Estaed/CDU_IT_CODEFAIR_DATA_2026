@@ -1,6 +1,6 @@
 # Task-14: Changes since the previous snapshot on the Share screen
 
-> **Execution:** agent `claude-worker` · effort `medium` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* one list rendered from `pack.changes`; criteria are DOM assertions.
 
 **Lane**

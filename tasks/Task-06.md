@@ -4,7 +4,7 @@ Status: DONE (2026-09-13, verify-task; gate green, 92 unit + 1 browser tests, fi
 
 > **Deviations recorded at DONE (2026-09-13, main loop):** the ABS boundary is the shapefile zip `data/raw/abs_ste_2021_shp.zip` (21,559,880 bytes), not a GeoPackage: the digital-boundary-files path serves no `.gpkg` (probed once, 404) and pyogrio reads the zip directly. The path grammar is `M x y L x y ... Z` with spaces, as this file writes it, not the mirror's unspaced form; `TOLERANCE_DEG = 0.0199` gives 7,977 bytes. The registry entry's glob is `abs_ste_20*` so `grep -c "abs_ste_2021"` counts one line, and it carries a literal `fetch_command` key because the fetch module is not a `pipeline.sources` module. `pipeline/outline.py` carries `RAW_NAME` and `FETCH_COMMAND` so the pack build never imports `pipeline.fetch` (Task-05 DoD: no `requests` reachable from `run_pipeline.py`); `tests/test_pack.py` now checks that. Task-00's `test_actions_empty` was removed: actions are populated by this task. The "who does what" table the Execution Guide cites does not exist in `reports/2026-09-12-spike-20.md`; the ten `ACTIONS_BY_PATTERN` sentences were authored by the main loop from PRD section 4.3 and are data, editable without code change.
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* geometry and pack additions with numeric criteria (byte budget, 96 points inside the view box, filter counts fixed by the spike); no eye needed.
 
 **Lane**

@@ -1,6 +1,6 @@
 # Task-19: Nearby chat over the phone's own Wi-Fi
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* the channel contract is fixed in Part 2 and proven by the 2026-09-15 spike; the loopback criterion runs headless. The hotspot case (OQ14) is Tarik's manual check, not gated.
 
 **Lane**

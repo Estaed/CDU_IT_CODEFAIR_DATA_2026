@@ -2,7 +2,7 @@
 
 Status: DONE (verify-task, 2026-09-13; gate GREEN: ruff clean, 32 unit + 1 browser test)
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* every file, function and criterion is named below and in CLAUDE.md Part 2; the criterion is the gate's exit code. Tarik's standing instruction (2026-09-13): Claude workers, not Codex.
 
 **Lane**

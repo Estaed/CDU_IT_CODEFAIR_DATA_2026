@@ -1,6 +1,6 @@
 # Task-15: Compare two communities
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* a fourth route built from the Task-07 render functions; criteria are DOM assertions.
 
 **Lane**

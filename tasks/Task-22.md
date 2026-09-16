@@ -1,6 +1,6 @@
 # Task-22: Mesh-size statement (200 bytes)
 
-> **Execution:** agent `claude-worker` · effort `medium` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* one string builder beside the two existing ones, with a byte-count criterion over all 96 communities.
 
 **Lane**

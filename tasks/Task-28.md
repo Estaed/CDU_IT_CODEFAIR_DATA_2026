@@ -1,6 +1,6 @@
 # Task-28: Install as a real home-screen app (tactics from the Calisthenics app)
 
-> **Execution:** agent `claude-worker` · effort `medium` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* head tags, a manifest and three generated icons; every criterion is a static check on `dist/` plus the existing smoke test. Whether a phone offers "Install" is Tarik's manual check.
 
 **Lane**

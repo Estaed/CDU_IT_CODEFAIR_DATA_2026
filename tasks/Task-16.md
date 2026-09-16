@@ -1,6 +1,6 @@
 # Task-16: Sunlight mode
 
-> **Execution:** agent `claude-worker` · effort `medium` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* a token-set swap and one toggle; criteria are computed-style assertions.
 
 ⛔ **Blocking question (Tarik, 2026-09-15):** the high-contrast token set must come from the

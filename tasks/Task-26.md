@@ -1,6 +1,6 @@
 # Task-26: Small fixes before outside testers, and the page that never updates
 
-> **Execution:** agent `claude-worker` · effort `medium` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* five render fixes already described in BACKLOG plus a service worker bug; each has a DOM or static criterion.
 
 **Lane**

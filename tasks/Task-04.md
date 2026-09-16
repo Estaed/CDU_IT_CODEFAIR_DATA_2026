@@ -2,7 +2,7 @@
 
 Status: DONE (verify-task, 2026-09-13; gate GREEN on main at integration: ruff clean, 53 unit + 1 browser test; rrl regression 96 x 19 and site table 576 rows byte-equal, ntg regression 96 x 18, 0 differences; `test_source_rrl.py` 22.8 s, `test_source_ntg.py` 1.4 s; mutations: 5 km threshold red, 700 MHz band dropped red, aliases ignored red; Hutchison exclusion and 2022 header offset unobservable in this data)
 
-> **Execution:** agent `claude-worker` · effort `medium` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* promotion of `spike/lane_rrl_ntg.py` into two modules; regression against the spike's `rrl.csv` and `ntg.csv`.
 
 **Lane**

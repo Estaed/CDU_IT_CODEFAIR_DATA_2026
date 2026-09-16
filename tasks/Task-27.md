@@ -1,6 +1,6 @@
 # Task-27: Transfer by camera, progress you can see and missed frames that do not cost a loop
 
-> **Execution:** agent `claude-worker` · effort `high` · plan mode **no**
+> **Execution:** agent `claude-worker` · effort `high`
 > *Why:* the frame code has an exact criterion (drop frames on purpose, still rebuild the same SHA-256); the progress UI is DOM-checkable.
 
 **Lane**
