@@ -51,7 +51,7 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-32: Remove nearby chat and the Wi-Fi join QR (third batch, added 2026-09-16)
 - [x] Task-34: Community screen, third pass: one screen before scrolling (third batch, added 2026-09-16)
 - [ ] Task-33: Map, third pass: one shape in four fill states, layers off, service selector, worst-first list (third batch, added 2026-09-16)
-- [ ] Task-35: Report here: the community's own evidence, on the phone, shared by choice (third batch, added 2026-09-16)
+- [x] Task-35: Report here: the community's own evidence, on the phone, shared by choice (third batch, added 2026-09-16)
 - [ ] Task-36: Transfer v3 in the app from the Task-31 winner (third batch, added 2026-09-16; spec completed after Task-31)
 
 ## Execution routing
