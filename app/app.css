@@ -117,8 +117,10 @@ a.button { text-decoration: none; }
    `hidden` attribute back: with the attribute set but no rule below, cov-telstra/optus/tpg and
    regions-sa3 still had a non-zero on-screen rect at first load. `.map__layer` is the only
    toggled group (towns is never hidden), so this rule cannot hide anything the contract wants
-   visible. */
-.map__layer[hidden] { display: none; }
+   visible. The same measurement on `.map__community[hidden]` (Task-29's clustered members,
+   hidden the same way, in `attachMapView`) found the identical gap: 52 of 96 points still had a
+   non-zero rect at zoom 1, drawn underneath their cluster bubble. */
+.map__layer[hidden], .map__community[hidden] { display: none; }
 
 .map__layer--area .map__layer-shape { stroke: none; fill-opacity: var(--layer-fill-opacity); }
 

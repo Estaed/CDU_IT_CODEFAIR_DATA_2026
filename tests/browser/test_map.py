@@ -375,6 +375,14 @@ def test_clusters_at_zoom1_sum_to_96(browser):
     visible_points = page.locator(".map__community:not([hidden])").count()
     assert total_clustered + visible_points == 96
 
+    # `to_be_hidden()`, not just the `[hidden]` attribute selector above: the same SVG-`<g>` gap
+    # `test_area_layers_start_hidden` catches for map layers applies here too -- a clustered
+    # member's `hidden` attribute was set correctly but still had a non-zero on-screen rect
+    # (drawn underneath its cluster bubble) before app.css's `.map__community[hidden]` rule.
+    hidden_members = page.locator(".map__community[hidden]")
+    assert hidden_members.count() == total_clustered
+    expect(hidden_members.first).to_be_hidden()
+
     assert errors == []
     assert blocked == []
     page.close()
