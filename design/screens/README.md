@@ -175,6 +175,15 @@ component key is given in the first column. Every class is defined once in `scre
   holds two items only -- `Report here` and a `Share` fold -- instead of DESIGN.md's action
   list. The result is that the four service answers and the two-action row sit inside the
   first 780 px at 360 wide with no scrolling.
+- **Map, Task-33 (2026-09-16, Tarik: "harita baya çirkin", "üçgen kare falan sevmedim").** The
+  four map point shapes are one circle in four fill states -- Works filled, Degraded an outlined
+  circle with its left half filled (a half-disc), Fails an outlined circle, No data an outlined
+  circle with a dash pattern -- replacing `map.html`'s literal circle/triangle/square/dash set,
+  the same departure Task-34 already made for the badge glyphs. Coverage and the SA3 region
+  layer now start hidden behind a `Layers` fold instead of shown by default. A service selector
+  above the filter tabs recolours the points, the cluster rings and the legend by any of the
+  four services, not telehealth video alone. A worst-first list (Fails, Degraded, No data,
+  Works, then by name) sits under the legend, one row per community the active filter shows.
 - **Map height at 768.** The mirror's map is `width: 100%; height: auto` on a 300 × 480 view box,
   so inside the 640px content column it would be 1024px tall and the selected label would scale
   with it. Decided 2026-09-13: `screens.css` caps the map at `--size-viewport-min-height` and

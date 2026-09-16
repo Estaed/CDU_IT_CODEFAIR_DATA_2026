@@ -53,7 +53,7 @@ def _legend_counts(page) -> list[str]:
 def test_all_filter_renders_96(browser):
     page, blocked, errors = _open_page(browser, "#/map")
 
-    expect(page.locator(".map__community")).to_have_count(96)
+    expect(page.locator(".map__pt-group")).to_have_count(96)
     expect(page.locator(".map__land path")).to_have_count(1)
     expect(page.locator(".filter-tabs .tab")).to_have_count(4)
     expect(page.locator(".filter-tabs .tab[aria-selected=true]")).to_have_text(re.compile("^All"))
@@ -85,9 +85,13 @@ def test_filter_routes(browser):
 def test_licensed_no_map_verdicts(browser):
     page, blocked, errors = _open_page(browser, "#/map?filter=licensed-no-map")
 
-    expect(page.locator(".map__community")).to_have_count(11)
-    expect(page.locator(".map__community .map__pt--fails")).to_have_count(6)
-    expect(page.locator(".map__community .map__pt--nodata")).to_have_count(5)
+    expect(page.locator(".map__pt-group")).to_have_count(11)
+    expect(page.locator(".map__pt-group .map__pt--fails")).to_have_count(6)
+    expect(page.locator(".map__pt-group .map__pt--nodata")).to_have_count(5)
+    # Task-33: both are circles now, coloured by stroke, not a triangle/square pair.
+    for verdict in ("fails", "nodata"):
+        tag = page.locator(f".map__pt--{verdict}").first.evaluate("el => el.tagName")
+        assert tag == "circle"
 
     assert errors == []
     assert blocked == []
@@ -181,8 +185,15 @@ def test_one_layer_group_per_pack_layer(browser):
     page.close()
 
 
+def _open_layers_fold(page):
+    """Task-33: the layer chips now live behind details.map-layers, closed by default; a chip
+    is not actionable (native `display: none` on the fold's content) until it is opened."""
+    page.locator(".map-layers summary").click()
+
+
 def test_area_chip_toggles_hidden_on_its_group(browser):
     page, blocked, errors = _open_page(browser, "#/map")
+    _open_layers_fold(page)
 
     layer_id = AREA_LAYER_IDS[0]
     label = next(layer["label"] for layer in PACK_LAYERS if layer["id"] == layer_id)
@@ -190,9 +201,42 @@ def test_area_chip_toggles_hidden_on_its_group(browser):
     chip = page.locator(".layer-chip").filter(has_text=label)
     expect(chip).to_have_count(1)
 
+    # Task-33: layers off by default (contract item 4), reversed from Task-21's all-on default.
+    expect(group).to_have_attribute("hidden", "")
+    chip.click()
     expect(group).not_to_have_attribute("hidden", "")
     chip.click()
     expect(group).to_have_attribute("hidden", "")
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_area_layers_start_hidden(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+
+    for layer_id in AREA_LAYER_IDS:
+        expect(page.locator(f'g[data-layer="{layer_id}"]')).to_have_attribute("hidden", "")
+    expect(page.locator('g[data-layer="regions-sa3"]')).to_have_attribute("hidden", "")
+    # Towns are never toggled: no chip, always visible.
+    expect(page.locator('g[data-layer="towns"]')).not_to_have_attribute("hidden", "")
+    expect(page.locator(".map__town")).to_have_count(5)
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_region_chip_shows_the_sa3_layer(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+    _open_layers_fold(page)
+
+    label = next(layer["label"] for layer in PACK_LAYERS if layer["id"] == "regions-sa3")
+    chip = page.locator(".layer-chip").filter(has_text=label)
+    expect(chip).to_have_count(1)
+    group = page.locator('g[data-layer="regions-sa3"]')
+
     chip.click()
     expect(group).not_to_have_attribute("hidden", "")
 
@@ -428,6 +472,77 @@ def test_cluster_function_is_pure_and_deterministic(browser):
     assert len(result["a"]["clusters"]) >= 1
     total = sum(c["count"] for c in result["a"]["clusters"]) + len(result["a"]["singles"])
     assert total == 96
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+# --- Task-33: map, third pass ------------------------------------------------------------------
+
+
+def _service_counts(service_id: str) -> dict[str, int]:
+    communities = json.loads(PACK.read_text(encoding="utf-8"))["communities"]
+    counts = {"works": 0, "degraded": 0, "fails": 0, "nodata": 0}
+    for community in communities:
+        verdict = next(s["verdict"] for s in community["services"] if s["service"] == service_id)
+        counts[verdict] += 1
+    return counts
+
+
+def test_service_selector_recolours_and_recounts(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+
+    select = page.locator("select.map-service")
+    expect(select).to_have_value("telehealth_video")
+
+    select.select_option("voice_sms")
+    expect(page).to_have_url(re.compile(r"#/map\?filter=all&service=voice_sms$"))
+
+    expected = _service_counts("voice_sms")
+    assert _legend_counts(page) == [
+        str(expected["works"]),
+        str(expected["degraded"]),
+        str(expected["fails"]),
+        str(expected["nodata"]),
+    ]
+    for verdict in VERDICT_NAMES:
+        expect(page.locator(f".map__pt--{verdict}")).to_have_count(expected[verdict])
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+MAP_LIST_WORDS = ("Fails", "Degraded", "No data", "Works")
+
+
+def test_map_list_sorted_worst_first(browser):
+    page, blocked, errors = _open_page(browser, "#/map?filter=clinic-no-terrestrial")
+
+    rows = page.locator(".map-list__row")
+    expect(rows).to_have_count(FILTER_COUNTS["clinic-no-terrestrial"])
+
+    def rank(text: str) -> int:
+        stripped = text.strip()
+        return next(i for i, word in enumerate(MAP_LIST_WORDS) if stripped.endswith(word))
+
+    ranks = [rank(text) for text in rows.all_text_contents()]
+    assert ranks == sorted(ranks)
+
+    rows.first.click()
+    expect(page).to_have_url(re.compile(r"#/community/\d+$"))
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_no_polygon_points(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+
+    expect(page.locator(".map polygon")).to_have_count(0)
+    expect(page.locator(".map__pt-group rect")).to_have_count(0)
 
     assert errors == []
     assert blocked == []

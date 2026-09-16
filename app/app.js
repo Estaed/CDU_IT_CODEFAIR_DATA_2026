@@ -774,8 +774,10 @@
 
   const f1 = (n) => n.toFixed(1);
 
-  const telehealthVerdict = (community) =>
-    community.services.find((service) => service.service === "telehealth_video").verdict;
+  // Task-33: generalised from the telehealth-only lookup so the map's service selector can
+  // recolour points, clusters and the legend by any of the pack's four services.
+  const serviceVerdict = (community, serviceId) =>
+    community.services.find((service) => service.service === serviceId).verdict;
 
   // Task-29: deterministic grouping of the points visible under the active filter into zoom
   // clusters. Pure (no DOM, no pack), so it is unit-testable from the browser test as
@@ -841,9 +843,21 @@
   // Exposed for the browser test, following the existing window.__statement pattern.
   window.__map = { cluster };
 
+  // Task-33: the default service, both for the hash (omitted when selected) and for renderMap's
+  // fallback when the query carries none.
+  const DEFAULT_SERVICE = "telehealth_video";
+
+  // renderMap rebuilds the whole panel, including details.map-layers, on every hash change (a
+  // filter, a selection, a layer toggle or a service change all go through the hash). Whether
+  // that fold is open is not part of the hash contract, so it would silently re-close after
+  // every chip click without this: the one piece of render state renderMap reads back in.
+  let layersFoldOpen = false;
+
   // ``layersRaw`` is the hash's own ``layers`` value (or null when absent): threaded through
   // unchanged so selecting a point or switching a filter never clobbers a carrier toggle state.
-  const mapHash = (filterId, selectedId, layersRaw) => {
+  // ``serviceId`` is threaded the same way (Task-33) so it too survives a filter or selection
+  // change; the default is omitted so a plain link still reproduces it.
+  const mapHash = (filterId, selectedId, layersRaw, serviceId) => {
     let hash = `#/map?filter=${filterId}`;
     if (selectedId !== null && selectedId !== undefined) {
       hash += `&selected=${selectedId}`;
@@ -851,45 +865,45 @@
     if (layersRaw !== null && layersRaw !== undefined) {
       hash += `&layers=${layersRaw}`;
     }
+    if (serviceId && serviceId !== DEFAULT_SERVICE) {
+      hash += `&service=${serviceId}`;
+    }
     return hash;
   };
 
-  // Point markup and geometry of design/screens/assets/build.mjs (s = 5, hit r = 16, ring r = 9).
-  const renderPoint = (community, isSelected, filterId, layersRaw) => {
+  // Task-33: one shape, four fill states (Tarik, 2026-09-16: "üçgen kare falan sevmedim"),
+  // departed from the triangle/square/dash set of design/screens/assets/build.mjs and recorded
+  // in design/screens/README.md. Radius stays that build's own figure (5, hit r = 16, ring r =
+  // 9); fill and stroke colours are the verdict text tokens through app.css, which overrides
+  // screens.css's now-stale .map__pt--* rules rather than editing them (layer rule 5).
+  const renderPoint = (community, isSelected, filterId, layersRaw, serviceId) => {
     const { x, y } = community;
     const size = 5;
-    const verdict = telehealthVerdict(community);
-    let shape;
-    if (verdict === "works") {
-      shape = s("circle", { class: "map__pt map__pt--works", cx: f1(x), cy: f1(y), r: size });
-    } else if (verdict === "degraded") {
-      const points = [
-        `${f1(x)},${f1(y - size - 1)}`,
-        `${f1(x + size + 1)},${f1(y + size)}`,
-        `${f1(x - size - 1)},${f1(y + size)}`,
-      ].join(" ");
-      shape = s("polygon", { class: "map__pt map__pt--degraded", points });
-    } else if (verdict === "fails") {
-      shape = s("rect", {
-        class: "map__pt map__pt--fails",
-        x: f1(x - size),
-        y: f1(y - size),
-        width: 2 * size,
-        height: 2 * size,
-      });
-    } else {
-      shape = s("rect", {
-        class: "map__pt map__pt--nodata",
-        x: f1(x - size),
-        y: f1(y - 1.5),
-        width: 2 * size,
-        height: 3,
-      });
+    const verdict = serviceVerdict(community, serviceId);
+    const shapes = [
+      s("circle", { class: `map__pt map__pt--${verdict}`, cx: f1(x), cy: f1(y), r: size }),
+    ];
+    if (verdict === "degraded") {
+      // The left half-disc: an arc from the top point to the bottom point, sweep 0, closed back
+      // to the start -- geometry derived from ``size``, not a token (layer rule 5's "SVG
+      // geometry inside the pack is data, not CSS" applies the same way to on-the-fly shapes).
+      shapes.push(
+        s("path", {
+          class: "map__pt-half",
+          d: `M${f1(x)},${f1(y - size)} A${size},${size} 0 0 0 ${f1(x)},${f1(y + size)} Z`,
+        }),
+      );
+    } else if (verdict === "nodata") {
+      shapes[0].setAttribute("stroke-dasharray", `${f1(size)} ${f1(size / 2)}`);
     }
+    // Wrapped in one group so the counter-scale transform (app.css) applies to the circle and
+    // the degraded half-path together, anchored at the circle's own bounding box -- the half
+    // path's own bbox is off-centre, but the union with the full circle it sits inside is not.
+    const shape = s("g", { class: "map__pt-shape" }, ...shapes);
     const group = s(
       "g",
       {
-        class: `map__community${isSelected ? " map__community--selected" : ""}`,
+        class: `map__pt-group map__community${isSelected ? " map__community--selected" : ""}`,
         tabindex: "0",
       },
       s("title", {}, `${community.name} · ${VERDICTS[verdict].word}`),
@@ -913,7 +927,7 @@
       );
     }
     const select = () => {
-      location.hash = mapHash(filterId, community.id, layersRaw);
+      location.hash = mapHash(filterId, community.id, layersRaw, serviceId);
     };
     group.addEventListener("click", select);
     group.addEventListener("keydown", (event) => {
@@ -994,7 +1008,7 @@
     return group;
   };
 
-  const renderFilterTabs = (active, selectedId, layersRaw) => {
+  const renderFilterTabs = (active, selectedId, layersRaw, serviceId) => {
     const bar = h("div", { class: "tabs filter-tabs", role: "tablist", "aria-label": "Filters" });
     for (const filter of pack.filters) {
       const isActive = filter.id === active.id;
@@ -1009,6 +1023,7 @@
           filter.id,
           filter.ids.includes(selectedId) ? selectedId : null,
           layersRaw,
+          serviceId,
         );
       });
       bar.appendChild(tab);
@@ -1016,7 +1031,38 @@
     return bar;
   };
 
-  const renderLegend = (shownCount) => {
+  // Task-33: one option per pack service, in the pack's own order (never a hardcoded list --
+  // Part 2 layer rule 4, the app renders what the pack gives it). Above the filter tabs;
+  // changing it recolours the points and clusters and recounts the legend, but leaves the
+  // active filter and the selected community alone.
+  const SERVICE_ORDER = pack.communities[0].services.map((service) => service.service);
+
+  const renderServiceSelector = (serviceId, filterId, selectedId, layersRaw) => {
+    const select = h(
+      "select",
+      { class: "map-service", "aria-label": "Service shown on the map" },
+      SERVICE_ORDER.map((id) => h("option", { value: id }, SERVICE_LABEL[id] || id)),
+    );
+    select.value = serviceId;
+    select.addEventListener("change", () => {
+      location.hash = mapHash(filterId, selectedId, layersRaw, select.value);
+    });
+    return select;
+  };
+
+  // Task-33: a tally over the verdicts the pack already carries for the chosen service, all 96
+  // communities regardless of the active filter (matching pipeline pack.legend's own scope for
+  // telehealth video) -- a count, not a verdict (layer rule 4, same precedent as the cluster
+  // ring's per-verdict tally above).
+  const legendCounts = (serviceId) => {
+    const counts = { works: 0, degraded: 0, fails: 0, nodata: 0 };
+    for (const community of pack.communities) {
+      counts[serviceVerdict(community, serviceId)] += 1;
+    }
+    return counts;
+  };
+
+  const renderLegend = (shownCount, serviceId) => {
     const all = h("span", { class: "fig fig--xs" }, String(pack.count));
     return h(
       "div",
@@ -1024,7 +1070,7 @@
       h(
         "div",
         { class: "map-legend__row" },
-        Object.entries(pack.legend).map(([verdict, count]) =>
+        Object.entries(legendCounts(serviceId)).map(([verdict, count]) =>
           h(
             "span",
             { class: "map-legend__item" },
@@ -1038,7 +1084,13 @@
           ),
         ),
       ),
-      h("div", { class: "map-legend__subject" }, "Telehealth video · all ", all, " communities"),
+      h(
+        "div",
+        { class: "map-legend__subject" },
+        `${SERVICE_LABEL[serviceId] || serviceId} · all `,
+        all,
+        " communities",
+      ),
       // pack.filters carries no definition text yet, so the line stops at the counts.
       h(
         "div",
@@ -1048,6 +1100,52 @@
         " of ",
         h("span", { class: "fig fig--xs" }, String(pack.count)),
       ),
+    );
+  };
+
+  // Task-33: worst-first list under the legend, Fails then Degraded then No data then Works,
+  // then by name -- a sort over verdicts the pack already carries, not a verdict itself (Part 2
+  // "Pushed down", the same allowance the zoom clusters already use).
+  const MAP_LIST_ORDER = ["fails", "degraded", "nodata", "works"];
+
+  const renderMapList = (shown, serviceId) => {
+    const rows = [...shown].sort((a, b) => {
+      const rank = (c) => MAP_LIST_ORDER.indexOf(serviceVerdict(c, serviceId));
+      return rank(a) - rank(b) || a.name.localeCompare(b.name);
+    });
+    return h(
+      "ol",
+      { class: "actions map-list" },
+      rows.map((community) => {
+        const verdict = serviceVerdict(community, serviceId);
+        const item = h(
+          "li",
+          { class: "service-row" },
+          h(
+            "button",
+            { type: "button", class: "service-row__button map-list__row" },
+            h(
+              "span",
+              { class: "service-row__top" },
+              h(
+                "span",
+                { class: "service-row__label" },
+                h(
+                  "span",
+                  { class: `service-row__glyph--${verdict}`, "aria-hidden": "true" },
+                  VERDICTS[verdict].glyph,
+                ),
+                community.name,
+              ),
+              h("span", {}, VERDICTS[verdict].word),
+            ),
+          ),
+        );
+        item.querySelector("button").addEventListener("click", () => {
+          location.hash = `#/community/${community.id}`;
+        });
+        return item;
+      }),
     );
   };
 
@@ -1074,16 +1172,16 @@
   // the Execution Guide's draw order -- so the app never hand-orders layer ids.
   const slugOf = (layer) => (layer.id.startsWith("cov-") ? layer.id.slice(4) : layer.id);
 
+  // Task-33: "Layers off by default" widens hiding from area layers only to every area or line
+  // (region-border) layer; town points stay visible always (contract item 4).
+  const isToggleLayer = (layer) => layer.kind === "area" || layer.kind === "line";
+
   const renderLayerGroup = (layer, visibleSlugs) => {
     const g = s("g", { class: `map__layer map__layer--${layer.kind}`, "data-layer": layer.id });
-    if (layer.kind === "area") {
-      if (!visibleSlugs.has(slugOf(layer))) {
-        g.setAttribute("hidden", "");
-      }
-      for (const d of layer.paths) {
-        g.appendChild(s("path", { class: "map__layer-shape", d }));
-      }
-    } else if (layer.kind === "line") {
+    if (isToggleLayer(layer) && !visibleSlugs.has(slugOf(layer))) {
+      g.setAttribute("hidden", "");
+    }
+    if (layer.kind === "area" || layer.kind === "line") {
       for (const d of layer.paths) {
         g.appendChild(s("path", { class: "map__layer-shape", d }));
       }
@@ -1106,11 +1204,14 @@
     return g;
   };
 
-  // One chip per area (coverage) layer; its slug (the layer id with any "cov-" prefix
-  // dropped) is what the hash's "layers" query carries, e.g. "&layers=telstra,optus".
-  const renderLayerChips = (areaLayers, visibleSlugs, filterId, selectedId, layersRaw) => {
+  // One chip per area (coverage) layer plus the SA3 region layer (Task-33 contract item 4); its
+  // slug (the layer id with any "cov-" prefix dropped) is what the hash's "layers" query
+  // carries, e.g. "&layers=telstra,optus". Every layer here starts hidden (renderMap's default
+  // visibleSlugs is empty), so the "all off" state -- not "all on" as before Task-33 -- is what
+  // the hash omits.
+  const renderLayerChips = (toggleLayers, visibleSlugs, filterId, selectedId, layersRaw, serviceId) => {
     const bar = h("div", { class: "chips layer-chips" });
-    for (const layer of areaLayers) {
+    for (const layer of toggleLayers) {
       const slug = slugOf(layer);
       const chip = h(
         "button",
@@ -1128,11 +1229,11 @@
         } else {
           next.add(slug);
         }
-        const allSlugs = areaLayers.map(slugOf);
-        const nextRaw = allSlugs.every((one) => next.has(one))
+        const allSlugs = toggleLayers.map(slugOf);
+        const nextRaw = next.size === 0
           ? null
           : allSlugs.filter((one) => next.has(one)).join(",");
-        location.hash = mapHash(filterId, selectedId, nextRaw);
+        location.hash = mapHash(filterId, selectedId, nextRaw, serviceId);
       });
       bar.appendChild(chip);
     }
@@ -1156,7 +1257,7 @@
   // geometry stays a constant screen size at any zoom through the CSS transform keyed on the
   // --map-zoom custom property this sets (app.css), rather than by rebuilding every point's own
   // radius on each zoom step.
-  const attachMapView = (svg, shownCommunities, selectedId, pointGroupsById) => {
+  const attachMapView = (svg, shownCommunities, selectedId, pointGroupsById, serviceId) => {
     const view = { ...BASE_VIEW };
     let zoom = ZOOM_MIN;
     const labelsGroup = s("g", { class: "map__zoom-labels" });
@@ -1175,7 +1276,7 @@
           id: community.id,
           x: community.x,
           y: community.y,
-          verdict: telehealthVerdict(community),
+          verdict: serviceVerdict(community, serviceId),
         }));
       const { clusters } = cluster(candidates, zoom);
       const clusteredIds = new Set();
@@ -1365,23 +1466,28 @@
     return { reset };
   };
 
-  const renderMap = (filterId, selectedId, layersRaw) => {
+  const renderMap = (filterId, selectedId, layersRaw, serviceId) => {
     const filter = pack.filters.find((f) => f.id === filterId) || pack.filters[0];
     const shown = pack.communities.filter((c) => filter.ids.includes(c.id));
     const selected = pack.communities.find((c) => c.id === selectedId) || null;
+    const service = SERVICE_ORDER.includes(serviceId) ? serviceId : DEFAULT_SERVICE;
     // The selected point is drawn last so its ring and label sit above its neighbours.
     const ordered = [
       ...shown.filter((c) => c !== selected),
       ...shown.filter((c) => c === selected),
     ];
-    const areaLayers = pack.layers.filter((layer) => layer.kind === "area");
+    // Task-33: area (coverage) and line (region-border) layers are both toggled through the
+    // same chip row and both start hidden; town points are never in this list (contract item 4).
+    const toggleLayers = pack.layers.filter(isToggleLayer);
     const visibleSlugs =
       layersRaw === null || layersRaw === undefined
-        ? new Set(areaLayers.map(slugOf))
+        ? new Set()
         : new Set(layersRaw.split(",").filter(Boolean));
     // Kept by id so attachMapView can hide and show them again as clusters form and split
     // (Task-29), without rebuilding the point markup on every zoom change.
-    const pointGroups = ordered.map((c) => renderPoint(c, c === selected, filter.id, layersRaw));
+    const pointGroups = ordered.map((c) =>
+      renderPoint(c, c === selected, filter.id, layersRaw, service),
+    );
     const pointGroupsById = new Map(ordered.map((c, i) => [c.id, pointGroups[i]]));
     const svg = s(
       "svg",
@@ -1400,13 +1506,30 @@
       ...pointGroups,
     );
     main.textContent = "";
-    const bar = renderFilterTabs(filter, selected ? selected.id : null, layersRaw);
-    main.appendChild(bar);
     main.appendChild(
-      renderLayerChips(areaLayers, visibleSlugs, filter.id, selected ? selected.id : null, layersRaw),
+      renderServiceSelector(service, filter.id, selected ? selected.id : null, layersRaw),
     );
+    const bar = renderFilterTabs(filter, selected ? selected.id : null, layersRaw, service);
+    main.appendChild(bar);
+    const layersDetails = h(
+      "details",
+      { class: "section map-layers", open: layersFoldOpen ? "" : null },
+      h("summary", {}, "Layers"),
+      renderLayerChips(
+        toggleLayers,
+        visibleSlugs,
+        filter.id,
+        selected ? selected.id : null,
+        layersRaw,
+        service,
+      ),
+    );
+    layersDetails.addEventListener("toggle", () => {
+      layersFoldOpen = layersDetails.open;
+    });
+    main.appendChild(layersDetails);
     main.appendChild(svg);
-    const mapView = attachMapView(svg, shown, selected ? selected.id : null, pointGroupsById);
+    const mapView = attachMapView(svg, shown, selected ? selected.id : null, pointGroupsById, service);
     const resetButton = h(
       "button",
       { type: "button", class: "button button--secondary map-controls__reset" },
@@ -1414,7 +1537,8 @@
     );
     resetButton.addEventListener("click", () => mapView.reset());
     main.appendChild(resetButton);
-    main.appendChild(renderLegend(shown.length));
+    main.appendChild(renderLegend(shown.length, service));
+    main.appendChild(renderMapList(shown, service));
     if (selected) {
       for (const node of renderMapPanel(selected)) {
         main.appendChild(node);
@@ -1609,6 +1733,7 @@
         query.get("filter") || "all",
         selectedParam ? Number(selectedParam) : null,
         layersParam,
+        query.get("service") || DEFAULT_SERVICE,
       );
     } else if (screen === "#/share") {
       renderShare();

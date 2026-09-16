@@ -140,7 +140,7 @@ a.button { text-decoration: none; }
    Task-29) the cluster fill/ring/count counter-scale against the viewBox zoom (--map-zoom, set
    by app.js) around their own centre, so they read at a constant screen size instead of growing
    as the map zooms in (Task-21 Execution Guide). */
-.map__pt, .map__ring, .map__label, .map__town-dot, .map__town-label,
+.map__pt-shape, .map__ring, .map__label, .map__town-dot, .map__town-label,
 .map__cluster-fill, .map__cluster-arc, .map__cluster-count {
   transform-box: fill-box;
   transform-origin: center;
@@ -172,6 +172,40 @@ a.button { text-decoration: none; }
 .map__cluster-arc--nodata { stroke: var(--verdict-nodata-text); }
 
 .map__cluster-count { font: var(--text-label); fill: var(--text-heading); }
+
+/* Task-33 map, third pass: one shape (a circle) in four fill states, overriding
+   screens.css's now-stale .map__pt--degraded/--fails/--nodata (triangle/square/dash) rules
+   rather than editing them (contract item 1, layer rule 5's "overridden there, not edited").
+   .map__pt--works keeps screens.css's own filled-circle rule unchanged. */
+.map__pt--degraded, .map__pt--fails, .map__pt--nodata {
+  fill: none;
+  stroke-width: var(--size-focus-ring);
+  vector-effect: non-scaling-stroke;
+}
+.map__pt--degraded { stroke: var(--verdict-degraded-text); }
+.map__pt--fails { stroke: var(--verdict-fails-text); }
+.map__pt--nodata { stroke: var(--verdict-nodata-text); }
+
+.map__pt-half { fill: var(--verdict-degraded-text); stroke: none; }
+
+/* The service selector, above the filter tabs. */
+.map-service {
+  display: block;
+  width: 100%;
+  min-height: var(--size-control);
+  margin: var(--space-sm) var(--space-md) 0;
+  padding: 0 var(--space-md);
+  font: var(--text-body-md);
+  color: var(--text-heading);
+  background: var(--surface-page);
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-md);
+}
+
+/* The worst-first list under the legend; .actions already resets list style, margin and
+   padding, and .service-row / .service-row__button / .service-row__top / .service-row__label /
+   .service-row__glyph--* are the community screen's own row styling, reused as-is. */
+.map-list { margin-top: var(--space-sm); }
 
 /* Task-24: the update chip beside the existing offline chip. New classes only, tokens only
    (layer rule 5); .chip is screens.css's own base (padding, radius, background), reused here
