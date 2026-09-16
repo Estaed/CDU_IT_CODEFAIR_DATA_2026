@@ -86,4 +86,53 @@ The real-phone `sms:` handoff and the QR read by a camera app (Tarik's checklist
 
 ## Status
 
-Status: TODO
+Status: IMPLEMENTED (2026-09-16, `claude-worker` opus) — awaiting `verify-task`.
+
+**What landed.** `app/report.js` (new, 465 lines): the `CR1` line's `format` and `parse`, the
+form, the saved line with Copy / SMS / static QR (`CrosscheckQR.encode(line, "M")`), the count
+line, the `Add reports` fold and `Copy evidence`. `app/store.js`: database version 1 → 2, a
+second object store `reports` keyed on the line, `saveReport` / `reportsFor` / `importReports`;
+`runTx` gained a store-name argument and the pack's own validation is untouched. `app/app.js`:
+`renderActionsRow` appends the form when the hash carries `?report`, a new `evidenceHeader`
+builds the pack half of the evidence block, and `renderCommunity` appends the reports block.
+`app/app.css`: the report rules, tokens only. `scripts/build_app.py`: `report.js` between
+`store.js` and `app.js`. `tests/browser/test_report.py`: the five named tests.
+`tests/test_build.py`: the order test and the layer-rule greps for `report.js`.
+
+**Numbers.** `ruff check --no-cache .` → `All checks passed!`. `pytest tests/test_build.py -q`
+→ 21 passed (19 before, +2). `python scripts/build_app.py` → `dist/index.html` 885,269 bytes
+(877,751 before; +7,518, limit 1,048,576). `pytest -m browser -q` → 88 passed (83 before, +5).
+Layer-rule greps print nothing: rule 5 over `app/app.css app/app.js app/qr.js app/transfer.js
+app/report.js`, rule 7 over the seven app files plus `app/report.js`, and
+`grep -n "verdict" app/report.js`. `grep -l getUserMedia app/*.js` → `app/transfer.js` only.
+The longest synthetic line measures 70 bytes against the 200-byte cap.
+
+**The full gate was not run here:** this worktree has no `data/raw/`, so 60 pipeline tests
+error on missing snapshots (`FileNotFoundError`, `pyogrio.errors.DataSourceError`) before this
+task's first line. Every failure is a missing input file, none names a file this task touched.
+
+**Deviations.**
+1. *Placement.* The contract puts `p.reports-line` "under the sources fold"; the reports block
+   sits **below the actions row**, not between the fold and the row. Above the row it pushed
+   `Report here` to y 782.75 at 360×780 and broke Task-34's own acceptance criterion
+   (`test_first_screen_holds_actions_at_360x780`). Below it, that test passes untouched and the
+   count line still reads under the sources fold.
+2. *A file outside the Lane.* `tests/browser/test_clarity.py::test_folds_in_order` asserts the
+   exact list of `main details > summary` texts, and contract item 5 adds a fifth (`Add
+   reports`). One line added to the expected list; nothing else in that file changed. The Lane
+   could not have foreseen this without reading Task-34's test.
+3. *Evidence citation.* Each service line cites its **first** source, as the contract's
+   `(<source>, <date>)` is written; a service with three sources therefore shows one. The other
+   citations stay on screen in the service row's own detail.
+4. *Where the evidence text is assembled.* `evidenceHeader` lives in `app.js`, not `report.js`,
+   because the pack's service words cannot be read in a file where `grep -n "verdict"` must
+   print nothing. `report.js` takes the lines already built and appends the stored reports and
+   the closing sentence.
+
+**Record shape.** `format` and `parse` are inverses over a canonical record: absent fields are
+`null` (never the string `-`), `rtt` an integer, `downlink` one decimal, `lat`/`lon` two
+decimals. `parse` also refuses a non-ASCII line and a line over 200 bytes.
+
+**Open.** The `sms:` handoff and the QR read by a camera app stay on Tarik's checklist (Out of
+the gate). `navigator.connection` is not published by every browser; on Safari the three
+connection fields are `-`, which the format already carries.
