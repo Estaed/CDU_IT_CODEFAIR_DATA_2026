@@ -79,4 +79,65 @@ Real-phone completion (Tarik, 5 of 5 on both phones, PRD §6).
 
 ## Status
 
-Status: TODO (spec complete 2026-09-16)
+Status: implemented by the lane 2026-09-16, commit `98d3920`; `verify-task` from the main loop
+still owns DONE. Nothing outside the Lane's OWNS list was touched.
+
+**What shipped.** `app/transfer.js` is v3: prefix `CZ`, block 750 bytes, the same header, repair
+degree from the robust soliton (`c = 0.1`, `delta = 0.5`) ported from `reports/spike-qr/spike.js`,
+send order one source pass then repair only, sender painting inside `requestAnimationFrame` and
+held for `HOLD_REFRESHES = 16`, receiver unchanged (main-thread `setTimeout` 100 ms through
+`CrosscheckScan`). `encoder()` now takes either page text (gzips it, which is what every test
+uses) or already-gzipped bytes (the lite constant, which must not be inflated only to be
+deflated again). The Show side reads `payloadBytes()`: the inlined constant on the full page,
+`gzip(pageHtml())` on a lite copy. `finish()` split into `finishHtml(html, full)` plus
+`finish(bytes)`; `Complete this copy` is built only when `data-lite="1"` and calls the same path.
+
+**Numbers.** `scripts/build_app.py`: `dist/index.html` **997,770 bytes**, `dist/lite.html`
+**459,843 bytes, gzipped 72,128, K 97** (the spike measured 451,623 / 69,554 / K 93 on a build
+without `report.js`'s screen). `ruff check --no-cache .` → `All checks passed!`.
+`pytest tests/test_build.py -q` → **25 passed**. `pytest -m browser -q` → **98 passed**
+(`tests/browser/test_transfer.py` alone: 14). Loss tests, seed 20260915, against
+`dist/index.html` at **K 341**: 10 % → 505 pushed (cap 546), 50 % → 498 (cap 955), 70 % → 420
+(cap 1,535); sources 0..19 never delivered completes inside 1.75 × K. Part 2 greps: rule 5 prints
+nothing; rule 7 prints exactly one line, `transfer.js:806`; rule 8 prints exactly `transfer.js`
+and `audio: true` prints nothing.
+
+**Deviations, and why.**
+
+1. **`app/index.html` was not given a placeholder.** The lite constant rides in the JS
+   concatenation as its own first part (`LITE_CONSTANT`, value `__LITE_B64__`), so the template
+   is untouched and the build stays a single pass over `JS_FILES`.
+2. **The lite copy is cut before the constant is filled in, and the constant is then cut out of
+   it too** (`strip_lite_constant`). Without that second cut the lite page would carry the dead
+   placeholder text; with it, "the lite page carries no constant" is literally true. Both cuts
+   raise if their marker is absent, as `build.py` did.
+3. **`window.CrosscheckLite` still appears in the lite page** — `transfer.js` reads the name and
+   is inlined in every build. The assignment is what is gone, and that is what the tests assert.
+   Same shape as the spike's deviation 2 about `jsQR`.
+4. **`Use full version now` is the same button relabelled**, not a second one: `finishHtml` takes
+   a `full` flag and sets the label, so camera receive still reads `Use received pack now` and
+   `tests/browser/test_update.py` stays green unmodified.
+5. **The lite `Receive` message.** `app/scan.js` is MUST NOT TOUCH, and its jsQR path would throw
+   silently forever on a lite copy with no `BarcodeDetector`. `transfer.js` checks
+   `isLite() && !window.jsQR` in the Receive handler and says so instead.
+6. **The rule-7 grep test was added, not edited.** `tests/test_build.py` had no app-wide
+   `fetch(` test — only per-file ones — so `test_exactly_one_fetch_in_the_app_and_it_is_guarded`
+   is new: it counts one occurrence across `app/**/*.js` (excluding `sw.js`, the host-only
+   exception Part 2 already names), pins it to `transfer.js`, and asserts the guard and the
+   click sit before it. `test_transfer.py`'s old no-network test kept every other token.
+7. **`tests/browser/conftest.py` gained a `blocking_page` fixture** rather than each lite test
+   rolling its own router; the existing `_open_page` helpers in the other files are untouched.
+8. **The loss tests run against `dist/index.html` (K 341), not the lite payload (K 97)**, because
+   the task pins round trip (d) to `dist/index.html`. The budgets are therefore loose, as the
+   Measurement section says; the shipped payload is a third of the size.
+
+**Open, for the main loop.** `dist/index.html` is now **997,770 of the 1,048,576-byte limit
+(95.2 %)** — the base64 lite constant costs about 96 KB. Any further growth in the pack or the
+map layers breaks the gate's size check. The obvious relief is to stop inlining the constant and
+have the full page build its lite payload in the browser, but that reintroduces the circularity
+this task resolved; worth a decision before the next pack refresh.
+
+**Out of the gate, unchanged:** real-phone completion (Tarik, 5 of 5 on both phones, PRD §6).
+The full gate cannot run here: `data/raw/` is gitignored and lives only in the main tree, so
+`pytest -m "not browser"` errors on the pipeline snapshots. The four steps this task can affect
+were run on their own and are green.
