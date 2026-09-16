@@ -138,4 +138,98 @@ available).
 
 ## Status
 
-Status: TODO
+Status: BUILT 2026-09-16, awaiting the phone runs and the main loop's verdict (`verify-task` is
+the gate; this section is the worker's report, not a DONE mark).
+
+### What was built
+
+`reports/spike-qr/`, five files, nothing under `app/`, `tests/`, `scripts/` or `pipeline/`
+touched:
+
+- `spike.js` (979 lines, one `window.Spike`): the `CZ` frame contract, the fountain encoder, the
+  peeling receiver copied from `transfer.js` (not imported), the robust soliton degree table
+  (`c = 0.1`, `delta = 0.5`, cumulative table per `K`, one uniform draw, binary search), the
+  in-page 174,725-byte payload, the four candidate geometries as one `SHAPE` table
+  (`cells × channels`: A 1×1, B 4×1, C 1×3, D 4×3), the drawing side, the reading side
+  (quadrant split, channel split with the 1 % stretch), the jsQR Blob worker, and both pages.
+- `spike.css`, `page.html`, `build.py`, `README.md` (protocol, empty results table, decision
+  rule, and the laptop numbers below).
+- `.github/workflows/pages.yml`: one step (`Build dist/spike/`, after `Build dist/index.html`)
+  and one trigger path (`reports/spike-qr/**`). Nothing else in the file changed.
+
+### Verification (from the worktree root, main tree's `.venv`, `PYTHONUTF8=1`)
+
+- `ruff check --no-cache .` → `All checks passed!`
+- `python scripts/build_app.py` → `dist\index.html: 877751 bytes`
+- `python reports/spike-qr/build.py` → `dist\spike\send.html: 318277 bytes`,
+  `dist\spike\receive.html: 318286 bytes`. Neither file contains a single `src="` or `href="`
+  (grep over both: zero matches) nor any `http://`, `https://`, `fetch(` or `XMLHttpRequest`.
+- `pytest -m browser -q` → **86 passed, exit code 0** (the app suite is untouched).
+- **`scripts/gate.py` was not run**: this worktree has no `data/raw/`, so the pipeline half of
+  the gate cannot run here. The three checks the gate would run that are affected by this change
+  (ruff, `build_app.py`, `pytest -m browser`) are green above.
+- `python -c "import yaml, ..."` → `ModuleNotFoundError: No module named 'yaml'` (PyYAML is not
+  in the environment), so `pages.yml` was checked by eye as the DoD allows: one list item added
+  to `on.push.paths` at the same indentation as its siblings, one step added to `jobs.build.steps`
+  in the same shape as the `Build dist/index.html` step above it. Line endings stay LF.
+
+### Loopback numbers (Definition of done), headless Chromium, `file://`, no camera
+
+Run with a throwaway Playwright script (not added to `tests/`), driving `dist/spike/receive.html`
+and calling the page's own `Spike` functions.
+
+| Check | Result |
+|---|---|
+| A, every frame pushed in order | complete at **233 pushed = exactly K**; payload hash `ab4eb170`, received hash `ab4eb170` |
+| A, every third frame pushed (67 % loss) | complete at **290 pushed** of **868 shown** (1.24 × K pushed, 3.73 × K shown); same hash both ends |
+| C, composite drawn then split back by the receiver's own channel code | **3 of 3** codes decoded, each byte-equal to the text encoded into that channel (version 23, 109 modules, 468 px picture, jsQR) |
+| B, through the Blob worker (extra, not required) | **4 of 4** quadrants decoded; reader kind `jsqr` |
+| Sender smoke, all four candidates, hold 6 (extra) | no page error, no request; frames a second: A 10.7, B 9.3, C 10.7, **D 5.7** |
+
+For contrast with v2: the shipped uniform 6..12 degree needed 1.75 × K pushed frames to survive
+**10 %** loss (Task-27 Status). The soliton degree here survives **67 %** loss at 1.24 × K
+pushed. That is one seed and one deterministic loss pattern, not a sweep — it is the DoD's
+check, not a verdict on the degree family.
+
+### Deviations from the spec, and why
+
+1. **`page.html` exists, and the folder has five files rather than four.** The task listed
+   `build.py`, `spike.js`, `spike.css` and `README.md`. Both pages need HTML around the inlined
+   blocks; putting that markup in Python strings inside `build.py` would hide it. One template
+   with a `__PAGE__` placeholder and a `data-page` attribute produces both pages, mirroring
+   `app/index.html` → `scripts/build_app.py`.
+2. **The Lane block says `build.py` "writes four files under `dist/spike/`"; it writes two.**
+   The "What is built" section and the Definition of done both name exactly two
+   (`send.html`, `receive.html`) and say "two pages, not eight", so two is what was built. The
+   count in the Lane block looks like a leftover. Flagging rather than inventing two more files.
+3. **Candidate C does not force mask 0.** `app/qr.js`'s `encode(text, level)` has no mask option
+   and the lane must not touch `app/`. The three channel codes are therefore rendered with
+   whatever mask the encoder picks for each. This is safe for the reason the task's own sentence
+   gives: the finder, timing and alignment patterns are fixed by the version, not by the mask, so
+   they are identical in all three codes and black in the composite, and every reader locates
+   them. Only the **format-information** modules differ per channel by mask choice — and each
+   channel's format bits are read from that channel's own picture after the split, never from the
+   composite. The data modules differ per channel by design in any case. Measured: 3 of 3 codes
+   decode from a real composite (table above). If the phone runs show C failing where this
+   suggests it should not, the mask option is the first thing to add — in Task-36, in `app/qr.js`,
+   by whoever owns that file.
+4. **The receive page's frame counter counts sampled frames, not every camera frame.** With
+   `requestVideoFrameCallback` the page only sees the frames it asks for, and it asks for the
+   next one after the last decode finishes ("one frame in flight, later frames dropped", as the
+   task specifies). So `frames_seen` in the log line is "frames looked at", and the drop is
+   visible as the gap between that and the camera's own rate rather than as a counter.
+5. **`build.py` refuses on a `</` in any inlined source instead of escaping it.** `spike.js`
+   reads the jsQR script element's `textContent` back to build the worker, and the usual `<\/`
+   escape would be a syntax error there. No inlined file contains the sequence (checked: zero
+   occurrences in all four).
+
+### Open questions for the main loop
+
+- Candidate D plays at **5.7 fps against a nominal 10** on a fast laptop because twelve
+  version-23 codes must be QR-encoded per frame. A phone will be slower. D may therefore be
+  measuring the encoder rather than the camera. Worth deciding before the runs whether to keep D
+  at hold 6 or give it its own hold.
+- The protocol says "the laptop's browser fullscreen ... at the same window size for every run".
+  The sender scales the codes to the largest square in the stage, so the same window gives A and
+  C twice the module size B and D get. That is the honest comparison (same screen, more codes)
+  but it should be stated in the report as the thing being traded.
