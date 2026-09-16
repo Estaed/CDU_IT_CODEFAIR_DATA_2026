@@ -38,9 +38,7 @@ jobs:
         run: python -m pip install uv
       - name: Sync runtime dependencies
         run: uv sync --frozen --no-dev
-      # Writes both pages: dist/index.html and the lite copy the camera carries, dist/lite.html,
-      # which `Complete this copy` on a received lite page fetches back from APP_URL (Task-36).
-      - name: Build dist/index.html and dist/lite.html
+      - name: Build dist/index.html
         env:
           PYTHONUTF8: "1"
         run: uv run python scripts/build_app.py
