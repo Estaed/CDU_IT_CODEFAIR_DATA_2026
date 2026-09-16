@@ -1,7 +1,8 @@
 <!doctype html>
-<!-- Task-31 spike template. One template, two pages: build.py fills __PAGE__ with "send" or
-     "receive" and spike.js builds that page's controls. Nothing is loaded from anywhere: the
-     CSS, jsQR, qr.js, scan.js and spike.js are all inlined by build.py. -->
+<!-- Task-31 spike template, round two. One template, two pages: build.py fills __PAGE__ with
+     "send" or "receive" and spike.js builds that page's controls. Nothing is loaded from
+     anywhere: the CSS, jsQR, qr.js, scan.js, the payload constant and spike.js are all inlined
+     by build.py. -->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -10,6 +11,10 @@
     <!-- CSS -->
   </head>
   <body data-page="__PAGE__">
+    <!-- The send page clones this for its frame. The SVG element is written here, in markup,
+         rather than built in spike.js: the namespace URL would be a literal and the closing
+         tags cannot appear inside the inlined script. -->
+    <template id="frame-proto"><svg class="spike-svg" viewBox="0 0 1 1" shape-rendering="crispEdges"><path fill="#000000"></path></svg></template>
     <main id="app"></main>
     <!-- JS -->
   </body>
