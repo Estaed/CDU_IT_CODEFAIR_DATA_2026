@@ -140,3 +140,5 @@ was left alone.
 (no phone here can test it). The full gate cannot run here: `data/raw/` is gitignored and lives
 only in the main tree, so `pytest -m "not browser"` errors on the pipeline snapshots. The four
 steps this task can affect were run on their own and are green.
+
+- Main loop, 2026-09-17: the first gate run on main was red only because a stale `dist/lite.html` from the Task-36 build was still on disk (dist/ is gitignored); removed, gate green (150 unit, 98 browser). The DONE tick and the push had already gone out before that rerun; recorded here rather than hidden.
