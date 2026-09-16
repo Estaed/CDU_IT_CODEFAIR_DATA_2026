@@ -14,7 +14,6 @@ on:
       - "data/out/data_pack.json"
       - "scripts/build_app.py"
       - "constants.md"
-      - "reports/spike-qr/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -39,16 +38,12 @@ jobs:
         run: python -m pip install uv
       - name: Sync runtime dependencies
         run: uv sync --frozen --no-dev
-      - name: Build dist/index.html
+      # Writes both pages: dist/index.html and the lite copy the camera carries, dist/lite.html,
+      # which `Complete this copy` on a received lite page fetches back from APP_URL (Task-36).
+      - name: Build dist/index.html and dist/lite.html
         env:
           PYTHONUTF8: "1"
         run: uv run python scripts/build_app.py
-      # Task-31: the transfer v3 experiment pages, published beside the app so the phones can
-      # open them from a secure origin. Deleted with reports/spike-qr/ when Task-36 lands.
-      - name: Build dist/spike/
-        env:
-          PYTHONUTF8: "1"
-        run: uv run python reports/spike-qr/build.py
       - uses: actions/configure-pages@v5
         with:
           enablement: true

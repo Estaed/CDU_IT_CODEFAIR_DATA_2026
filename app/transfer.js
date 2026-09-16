@@ -5,23 +5,37 @@
 // no network, no file (CLAUDE.md Part 2, "Entry points: Transfer by camera"). The camera is
 // touched only here (layer rule 8).
 //
-// v2 replaces the plain split-and-wait v1 (`CX` frames) with a fountain code: `K` source blocks
-// of 750 bytes plus an unbounded stream of repair blocks, each the XOR of a set of source blocks
-// a receiver can recompute from the frame's own index alone (uniform 6..12 degree, xorshift32
-// block choice -- revised 2026-09-15 from the first cut's robust soliton, see tasks/Task-27.md
-// Status). A missed frame is repaired by any later frame instead of waiting for its own turn in
-// the next loop. Old `CX` frames from a v1 sender are ignored (FRAME_RE only matches `CY`), so a
-// receiver on an old copy never mixes the two.
+// v3 (`CZ` frames, Task-36, 2026-09-16) is the measured winner of the Task-31 phone trial, and
+// it changes three things about v2 (`CY`):
+//
+//   * the payload is the **lite copy** of this build -- no vendored jsQR, no map layers -- so K
+//     falls from about 233 blocks to about 94 and the loop finishes in under half a minute;
+//   * the repair degree comes from the robust soliton distribution (c = 0.1, delta = 0.5)
+//     instead of v2's uniform 6..12, which was tuned against 10 % frame loss while a real phone
+//     loses half or more;
+//   * the sender changes the code inside requestAnimationFrame and holds it for 16 refreshes
+//     (3.75 frames a second at 60 Hz). Measured on a Samsung S24 against a laptop screen: hold
+//     12 finished in 36.1 s, hold 16 in 27.6 s -- slower is faster, because fewer captured
+//     frames straddle a change. The reader keeps v2's main-thread setTimeout loop, which round
+//     one proved faster on a phone than a worker or requestVideoFrameCallback.
+//
+// The fountain code itself is v2's: `K` source blocks of 750 bytes plus an unbounded stream of
+// repair blocks, each the XOR of a set of source blocks a receiver can recompute from the
+// frame's own index alone. A missed frame is repaired by any later frame instead of waiting for
+// its own turn in the next loop. `CX` (v1) and `CY` (v2) frames are ignored (FRAME_RE only
+// matches `CZ`), so a receiver never mixes two contracts.
 window.CrosscheckTransfer = (() => {
   // Bracket access: qr.js's own declaration is the only place the dotted global reference may
   // appear as text (tests/test_build.py counts it once to check qr.js is inlined only there).
   const crosscheckQR = window.CrosscheckQR;
 
-  const FRAME_PREFIX = "CY";
+  const FRAME_PREFIX = "CZ";
   const BLOCK_BYTES = 750;
   const BLOCK_B64_CHARS = 1000; // 750 bytes, divisible by 3, base64s with no padding
   const MAX_INDEX = 0xffff; // 4 hex digits
-  const SHOW_INTERVAL_MS = 125; // ~8 fps, setTimeout-driven so the rate is the same on every phone
+  // Display refreshes one code is held for: 16 at 60 Hz is 3.75 frames a second, the rate the
+  // Task-31 phone trial measured fastest end to end (see the header).
+  const HOLD_REFRESHES = 16;
   const SCAN_INTERVAL_MS = 100; // ~10 fps
   const FRAME_RE = new RegExp(
     `^${FRAME_PREFIX}([0-9a-f]{4})([0-9a-f]{4})([0-9a-f]{6})([A-Za-z0-9+/]{${BLOCK_B64_CHARS}})$`,
@@ -77,9 +91,7 @@ window.CrosscheckTransfer = (() => {
   const hex6 = (n) => n.toString(16).padStart(6, "0");
 
   // --- Repair block selection: xorshift32 seeded from the frame index alone, so both ends -----
-  // derive the same block set from the index with no side channel (Execution Guide, revised
-  // 2026-09-15 after the pinned robust-soliton parameters could not clear the loss-recovery DoD
-  // at the app's real K -- see tasks/Task-27.md Status for the swept alternatives).
+  // derive the same block set from the index with no side channel.
 
   const xorshift32 = (seed) => {
     let x = seed >>> 0;
@@ -95,14 +107,61 @@ window.CrosscheckTransfer = (() => {
 
   const nextFloat = (rand) => rand() / 4294967296; // uint32 -> [0, 1)
 
-  // Degree: a uniform integer in 6..12, clamped to k, drawn from the same generator the index
-  // seeds. Replaces the robust soliton distribution (measured too few low-degree draws to clear
-  // a 10% loss within budget at the app's real K; the sweep is in tasks/Task-27.md Status).
-  const MIN_DEGREE = 6;
-  const MAX_DEGREE = 12;
+  // Degree: the robust soliton distribution, c = 0.1, delta = 0.5 -- rho (the ideal soliton)
+  // plus tau (the extra weight that keeps the decoder's ripple alive), normalised and kept as a
+  // cumulative table so one uniform draw and a binary search give the degree. One table per K,
+  // built once. v2's uniform 6..12 draw was tuned against 10 % frame loss; a real phone reading
+  // a screen loses half or more, and the soliton's low-degree frames are what restart a stalled
+  // peel (Task-31, measured on the S24: v2 stalled near block 110, v3 completed in 27.6 s).
+  const SOLITON_C = 0.1;
+  const SOLITON_DELTA = 0.5;
+  const solitonCache = new Map();
+  const solitonCumulative = (k) => {
+    const cached = solitonCache.get(k);
+    if (cached) {
+      return cached;
+    }
+    const r = SOLITON_C * Math.log(k / SOLITON_DELTA) * Math.sqrt(k);
+    const weight = new Float64Array(k + 1);
+    for (let i = 1; i <= k; i++) {
+      weight[i] = i === 1 ? 1 / k : 1 / (i * (i - 1));
+    }
+    const spike = Math.max(1, Math.floor(k / r));
+    for (let i = 1; i < spike; i++) {
+      weight[i] += r / (i * k);
+    }
+    if (spike <= k) {
+      weight[spike] += (r * Math.log(r / SOLITON_DELTA)) / k;
+    }
+    let total = 0;
+    for (let i = 1; i <= k; i++) {
+      total += weight[i];
+    }
+    const cumulative = new Float64Array(k + 1);
+    let running = 0;
+    for (let i = 1; i <= k; i++) {
+      running += weight[i] / total;
+      cumulative[i] = running;
+    }
+    cumulative[k] = 1;
+    solitonCache.set(k, cumulative);
+    return cumulative;
+  };
+
   const drawDegree = (rand, k) => {
-    const degree = MIN_DEGREE + Math.floor(nextFloat(rand) * (MAX_DEGREE - MIN_DEGREE + 1));
-    return Math.max(1, Math.min(k, degree));
+    const cumulative = solitonCumulative(k);
+    const u = nextFloat(rand);
+    let low = 1;
+    let high = k;
+    while (low < high) {
+      const mid = (low + high) >> 1;
+      if (cumulative[mid] >= u) {
+        high = mid;
+      } else {
+        low = mid + 1;
+      }
+    }
+    return Math.max(1, Math.min(k, low));
   };
 
   // Fisher-Yates partial shuffle drawn from the same generator: `degree` distinct ids in
@@ -132,13 +191,14 @@ window.CrosscheckTransfer = (() => {
 
   // --- Encoder: this build's own bytes -> K source blocks, any frame on demand ------------------
 
-  // Payload -> encoder: gzip the page's own bytes, split into K blocks of 750 bytes (the last
-  // zero-padded), then hand back frameAt(index) which builds a source frame (index < k) or a
-  // repair frame (index >= k) on demand, so the sender can play an unbounded repair stream
-  // without precomputing it.
-  const encoder = async (html) => {
-    const bytes = new TextEncoder().encode(html);
-    const payload = await gzip(bytes);
+  // Payload -> encoder: a string is page text and is gzipped here; a Uint8Array is already the
+  // gzipped payload (the inlined lite constant, which must not be inflated only to be deflated
+  // again). Either way the payload is split into K blocks of 750 bytes (the last zero-padded),
+  // and frameAt(index) then builds a source frame (index < k) or a repair frame (index >= k) on
+  // demand, so the sender can play an unbounded repair stream without precomputing it.
+  const encoder = async (source) => {
+    const payload =
+      typeof source === "string" ? await gzip(new TextEncoder().encode(source)) : source;
     const length = payload.length;
     const k = Math.max(1, Math.ceil(length / BLOCK_BYTES));
     const sourceBlocks = [];
@@ -339,6 +399,31 @@ window.CrosscheckTransfer = (() => {
     return node;
   };
 
+  // --- What the camera carries -----------------------------------------------------------------
+
+  // A lite copy marks itself on <html> (scripts/build_app.py). Also the guard on the one
+  // request the app ever makes (layer rule 7's single exception, Task-36).
+  const isLite = () => document.documentElement.dataset.lite === "1";
+
+  // The bytes the camera carries: always the **lite copy** of this build -- the page without the
+  // vendored jsQR and without the pack's map layers, about a third of the blocks (Task-31).
+  // The full page carries it as a base64 gzip constant written by the build after the lite file
+  // exists; a lite copy carries no constant and plays its own bytes, which are already lite. So
+  // both ends send the same thing, and the build stays non-circular.
+  const payloadBytes = async (getPageHtml) => {
+    if (isLite()) {
+      return gzip(new TextEncoder().encode(getPageHtml()));
+    }
+    return base64ToBytes(window.CrosscheckLite);
+  };
+
+  // The pack header's own app_url, read from the inlined pack rather than retyped; the one
+  // address `Complete this copy` fetches.
+  const appUrl = () => {
+    const packEl = document.getElementById("pack");
+    return packEl ? JSON.parse(packEl.textContent).app_url : null;
+  };
+
   // The whole running app, looped as QR frames. Encoded once per Show click, then the loop only
   // swaps a path string, which keeps it cheap on every repeat. Every index (source or repair) is
   // sent exactly once per lap of the send order, so there is nothing worth caching between
@@ -361,7 +446,8 @@ window.CrosscheckTransfer = (() => {
 
     let built = null;
     let sequence = null;
-    let timer = null;
+    let rafId = null;
+    let refreshes = 0;
     let playing = false;
     let frameCount = 0;
     // Task-30: the showing phone must not dim mid-transfer; best effort where Wake Lock exists.
@@ -380,20 +466,33 @@ window.CrosscheckTransfer = (() => {
       }
     };
 
-    const step = () => {
+    const paint = () => {
       const { index, pass } = sequence.next();
       frameCount += 1;
       const result = crosscheckQR.encode(built.frameAt(index), "L");
       svgEl.setAttribute("viewBox", `0 0 ${result.size} ${result.size}`);
       path.setAttribute("d", crosscheckQR.toSvgPath(result));
       counter.textContent = `frame ${frameCount}, pass ${pass}`;
-      timer = setTimeout(step, SHOW_INTERVAL_MS);
+    };
+
+    // The code changes inside requestAnimationFrame and is held for HOLD_REFRESHES refreshes, so
+    // a change never lands mid-repaint and the reading phone gets several whole camera frames of
+    // each code. A setTimeout at the same nominal rate was measured slower on the S24 (Task-31).
+    const loop = () => {
+      if (!playing) {
+        return;
+      }
+      if (refreshes === 0) {
+        paint();
+      }
+      refreshes = (refreshes + 1) % HOLD_REFRESHES;
+      rafId = requestAnimationFrame(loop);
     };
 
     const stop = () => {
-      if (timer !== null) {
-        clearTimeout(timer);
-        timer = null;
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
       }
       playing = false;
       releaseScreen();
@@ -408,14 +507,15 @@ window.CrosscheckTransfer = (() => {
       playing = true;
       button.textContent = "Stop";
       holdScreen();
-      built = await encoder(getPageHtml());
+      built = await encoder(await payloadBytes(getPageHtml));
       if (!playing) {
         return; // Stopped again while the page was being encoded.
       }
       sequence = createSequence(built.k);
       frameCount = 0;
+      refreshes = 0;
       stage.hidden = false;
-      step();
+      loop();
     });
 
     return {
@@ -426,7 +526,7 @@ window.CrosscheckTransfer = (() => {
         el(
           "p",
           { class: "transfer__note" },
-          "No internet needed. The other phone taps Receive and points its camera at the moving code.",
+          "No internet needed. The other phone taps Receive and points its camera at the moving code. It arrives as a lite copy: every screen, without the map overlays.",
         ),
         button,
         stage,
@@ -523,9 +623,12 @@ window.CrosscheckTransfer = (() => {
       button.textContent = "Receive";
     };
 
-    const finish = async (bytes) => {
+    // One received page in, validated, offered and stored. Shared by camera receive (which
+    // inflates first) and by `Complete this copy`, which already has the text (Task-36).
+    // `full` only changes what the store button is called: a page fetched from APP_URL is the
+    // full version, a page read off a camera is another lite copy.
+    const finishHtml = async (html, full) => {
       stop();
-      const html = await inflate(bytes);
       // Parsed, not a substring search: this file's own source text must not contain the
       // literal markup it is checking for (tests/test_build.py counts that markup once).
       const parsed = new DOMParser().parseFromString(html, "text/html");
@@ -553,12 +656,15 @@ window.CrosscheckTransfer = (() => {
       if (packEl && window.CrosscheckStore) {
         try {
           const result = await window.CrosscheckStore.save(packEl.textContent);
+          useReceivedButton.textContent = full ? "Use full version now" : "Use received pack now";
           useReceivedButton.hidden = !result || !result.built;
         } catch (error) {
           // Storage is optional; Open and Download still work without it.
         }
       }
     };
+
+    const finish = async (bytes) => finishHtml(await inflate(bytes), false);
 
     // One frame text in, progress UI updated, finish() called once every block is known. Shared
     // by the real scan loop below and by testPushFrame (no camera in the browser test).
@@ -620,6 +726,14 @@ window.CrosscheckTransfer = (() => {
         note.textContent = "This browser cannot use the camera.";
         return;
       }
+      // A lite copy carries no vendored jsQR, so it can only read with the browser's own
+      // detector. Say so instead of scanning forever on a phone that has none.
+      if (isLite() && !window.jsQR) {
+        note.hidden = false;
+        note.textContent =
+          "This lite copy can only receive on a browser with a built-in QR reader. Tap Complete this copy first.";
+        return;
+      }
       note.hidden = true;
       start().catch((error) => {
         stop();
@@ -663,8 +777,59 @@ window.CrosscheckTransfer = (() => {
       ),
       stop,
       finish,
+      finishHtml,
       pushFrame: (text) => pushFrame(text),
     };
+  };
+
+  // --- Complete this copy: the lite copy's one way back to the full page ------------------------
+
+  // Layer rule 7's single exception (CLAUDE.md Part 2, 2026-09-16). Only built on a lite copy,
+  // only fires on a tap, and fetches exactly one address: the pack header's own app_url. The
+  // bytes then go through the same validate-and-store path camera receive uses.
+  const buildComplete = (finishHtml) => {
+    const button = el("button", { type: "button", class: "transfer__button" }, "Complete this copy");
+    const status = el("p", { class: "transfer__status", hidden: "" });
+
+    button.addEventListener("click", async () => {
+      if (!isLite()) {
+        return;
+      }
+      const url = appUrl();
+      if (!url) {
+        return;
+      }
+      button.disabled = true;
+      status.hidden = false;
+      status.textContent = "Fetching the full version...";
+      try {
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("not ok");
+        }
+        const html = await response.text();
+        status.textContent = "";
+        status.hidden = true;
+        await finishHtml(html, true);
+      } catch (error) {
+        status.hidden = false;
+        status.textContent = "No network yet, try again when this phone is online";
+      }
+      button.disabled = false;
+    });
+
+    return el(
+      "div",
+      { class: "transfer__section" },
+      el("h2", { class: "transfer__title" }, "Complete this copy"),
+      el(
+        "p",
+        { class: "transfer__note" },
+        "This is a lite copy: every screen, without the map overlays. Next time this phone is online, tap below to fetch the full version once.",
+      ),
+      button,
+      status,
+    );
   };
 
   let currentStop = null;
@@ -673,8 +838,10 @@ window.CrosscheckTransfer = (() => {
   let mountedReceivePush = null;
 
   // Builds the Show and Receive controls into container, replacing any previous ones and
-  // stopping their timers and camera track first. getPageHtml is app.js's own pageHtml, the
-  // same bytes Save file writes, so Show always plays the running app.
+  // stopping their timers and camera track first. getPageHtml is app.js's own pageHtml, the same
+  // bytes Save file writes; on a lite copy that is what Show plays, and on the full page the
+  // inlined lite constant is (payloadBytes above). Complete this copy is built on a lite copy
+  // only.
   const mount = (container, getPageHtml) => {
     if (currentStop) {
       currentStop();
@@ -687,6 +854,9 @@ window.CrosscheckTransfer = (() => {
     container.textContent = "";
     container.appendChild(show.el);
     container.appendChild(receive.el);
+    if (isLite()) {
+      container.appendChild(buildComplete(receive.finishHtml));
+    }
     currentStop = () => {
       show.stop();
       receive.stop();
