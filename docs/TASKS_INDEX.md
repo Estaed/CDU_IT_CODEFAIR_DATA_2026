@@ -47,7 +47,7 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-28: Install as a real home-screen app, tactics from the Calisthenics app (added 2026-09-15)
 - [x] Task-29: Map points cluster by zoom, tactic from the AI Challenge app (added 2026-09-15)
 - [x] Task-30: A first-time user understands the app, clarity batch from Tarik's phone test (added 2026-09-16)
-- [ ] Task-31: Transfer v3 experiment: A, B, C and B+C measured on two phones (third batch, added 2026-09-16)
+- [x] Task-31: Transfer v3 experiment: A, B, C and B+C measured on two phones (third batch, added 2026-09-16)
 - [x] Task-32: Remove nearby chat and the Wi-Fi join QR (third batch, added 2026-09-16)
 - [x] Task-34: Community screen, third pass: one screen before scrolling (third batch, added 2026-09-16)
 - [x] Task-33: Map, third pass: one shape in four fill states, layers off, service selector, worst-first list (third batch, added 2026-09-16)

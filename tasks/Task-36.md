@@ -24,11 +24,10 @@ PRD §11 (2026-09-16). This task builds the measured winner into the app and rem
    (6 hex) as today; `CY` frames are ignored by the receiver (`FRAME_RE` matches `CZ` only).
 2. Repair degree from the robust soliton distribution, `c = 0.1`, `delta = 0.5`, drawn from the
    index-seeded xorshift32 as Task-31 specifies; send order one source pass then repair only.
-3. Sender frames change inside `requestAnimationFrame`, held for a fixed number of refreshes
-   (the hold Task-31 measured best); receiver reads with `requestVideoFrameCallback` where it
-   exists, else `requestAnimationFrame`, with no fixed wait; jsQR runs in a Worker built from
-   a `Blob` of its own source text (no file, no request; `test_build.py`'s grep still prints
-   nothing).
+3. Sender frames change inside `requestAnimationFrame`, held for 16 refreshes (measured, see
+   below); the receiver keeps the v2 main-thread loop (`setTimeout` 100 ms,
+   `CrosscheckScan.reader().detect(video)`), which round one proved faster on a phone than a
+   worker or `requestVideoFrameCallback` path.
 4. Progress UI as today (`known of K`, vibration, Received, Open, Download, Use received pack).
 5. `tests/browser/test_transfer.py`: the round trip (d) against `dist/index.html`; the loss
    tests become three, at 10 %, 50 % and 70 % of the send order dropped by seed, each asserting
@@ -55,15 +54,19 @@ PRD §11 (2026-09-16). This task builds the measured winner into the app and rem
    7's one exception; the browser test asserts the full page makes no request at all, the lite
    page makes none before the tap, and after the tap exactly one request to `APP_URL`
    (aborted by the fixture, the message shown).
-10. **Sender rate.** 5 frames a second held on `requestAnimationFrame` (12 refreshes at 60 Hz);
-    the reader loop stays the v2 main-thread loop.
+10. **Sender rate.** 3.75 frames a second held on `requestAnimationFrame` (16 refreshes at
+    60 Hz, measured 2026-09-16); the reader loop stays the v2 main-thread loop.
 
 ## The measurement (filled by the main loop after Task-31 round two)
 
-⛔ Not yet written. Median seconds S24 / Mi 6 at hold 12: — / — . Worst: — . Loss budgets:
-10 % — × K, 50 % — × K, 70 % — × K. If round two fails the decision rule, this task shrinks to
-items 8 and 9 (lite copy by share sheet plus `Complete this copy`) and the Show/Receive
-controls are removed with a dated Part 2 line.
+Measured 2026-09-16 on the S24 (the Mi 6 is dropped as a reference device): hold 12 → 36.1 s,
+179 frames read, 125 codes decoded; hold 16 → 27.6 s, 189 read, 141 decoded; K 94. **Ship hold
+16 (3.75 frames a second)**; item 10 above is corrected to 16 refreshes. Loss budgets for
+`test_transfer.py`, from the main loop's soliton simulation at K 233 (the real K is 94, so
+these are loose): 10 % → 1.6 × K, 50 % → 2.8 × K, 70 % → 4.5 × K pushed frames; the
+sources-0..19 test keeps 1.75 × K. `reports/spike-qr/spike.js` is the reference
+implementation to port: its `build.py` lite-copy cut (marker + vendored text, raise if absent)
+moves into `scripts/build_app.py` as `dist/lite.html`.
 
 ## Out of the gate
 
@@ -71,4 +74,4 @@ Real-phone completion (Tarik, 5 of 5 on both phones, PRD §6).
 
 ## Status
 
-Status: TODO (blocked until "The winner" is filled)
+Status: TODO (spec complete 2026-09-16)

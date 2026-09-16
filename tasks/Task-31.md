@@ -89,8 +89,13 @@ a lite copy that travelled by Quick Share.
 
 ## Status
 
-Status: round two built and measured on the laptop; the phone runs are Tarik's and are not part
-of this task's gate. `reports/spike-qr/` rewritten in place (`build.py`, `page.html`,
+Status: DONE (verify-task, main loop, 2026-09-16). Phone result, Tarik, S24 against the laptop
+fullscreen: `12,phone,native,36.1,179,125` and `16,phone,native,27.6,189,141` (hold, phone,
+reader, seconds, frames read, codes decoded). Both completed; hold 16 (3.75 fps) was faster
+because fewer captured frames straddle a change. The Mi 6 (2017) cannot read the frames at all
+and is dropped as a reference device by Tarik's decision ("o kadar eski telefonla
+yapmayacağız"); the target is an S24-class phone. `Open lite copy` opened the received page,
+online and offline. Verdict: Task-36 builds it at hold 16. Worker notes follow. `reports/spike-qr/` rewritten in place (`build.py`, `page.html`,
 `spike.css`, `spike.js`, `README.md`); nothing outside that folder and this file was touched.
 
 **The payload.** `build.py` prints `lite copy: 451,623 bytes, gzipped 69,554 bytes, K 93`
