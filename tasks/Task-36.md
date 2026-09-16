@@ -5,13 +5,18 @@
 > criterion; Opus. The "how" is fixed by Task-31's measured verdict, filled into "The winner"
 > below by the main loop before this task starts. Codex is at 100 % until 2026-09-19.
 
-> **Lane:** OWNS `app/transfer.js`, `app/scan.js` (only if the winner needs channel or
-> quadrant reading), `app/app.css` (transfer rules), `tests/browser/test_transfer.py`,
-> `tests/browser/test_scan.py` (only if `scan.js` changes), `reports/spike-qr/` (delete) and
-> `.github/workflows/pages.yml` (remove the spike step and path), `CLAUDE.md` Part 2 (only the
-> transfer contract paragraph, dated), this file · MUST NOT TOUCH `app/app.js`, `app/qr.js`,
-> `app/store.js`, `app/report.js`, `pipeline/`, `design/` · GATE `PYTHONUTF8=1
-> .venv/Scripts/python scripts/gate.py` · DEPENDS ON Task-31 (measured), Task-32
+> **Lane:** OWNS `app/transfer.js`, `app/app.css` (transfer rules), `scripts/build_app.py`
+> (`dist/lite.html` and the inlined lite constant), `tests/test_build.py` (lite checks),
+> `tests/browser/test_transfer.py`, `reports/spike-qr/` (delete) and
+> `.github/workflows/pages.yml` (remove the spike step and path), this file · MUST NOT TOUCH
+> `app/app.js`, `app/qr.js`, `app/scan.js`, `app/store.js`, `app/report.js`, `pipeline/`,
+> `design/`, `CLAUDE.md` (the main loop rewrites the transfer paragraph after DONE) · GATE
+> `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` · DEPENDS ON Task-31 (measured), Task-32
+
+Circularity, resolved: the full page carries the lite copy's gzipped bytes as an inlined
+base64 constant (`window.CrosscheckLite`, written by the build after the lite file exists);
+the lite page carries no constant and its Show plays its own bytes (`pageHtml()`), which are
+already lite. Both therefore send the same thing.
 
 ## Why
 
