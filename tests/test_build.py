@@ -144,14 +144,7 @@ def test_qr_js_inlined_once_before_app_js():
     assert qr_index < app_index
 
 
-def test_nearby_js_no_stun_turn_and_empty_ice_servers():
-    source = (ROOT / "app" / "nearby.js").read_text(encoding="utf-8")
-    assert "iceServers: []" in source
-    assert "stun:" not in source
-    assert "turn:" not in source
-
-
-def test_get_user_media_only_in_transfer_and_nearby():
+def test_get_user_media_only_in_transfer():
     # The Python equivalent of `grep -l getUserMedia app/*.js` (CLAUDE.md Part 2, layer rule 8);
     # no shelling out, Windows has no `grep` on PATH by default.
     files = sorted(
@@ -159,11 +152,18 @@ def test_get_user_media_only_in_transfer_and_nearby():
         for path in (ROOT / "app").glob("*.js")
         if "getUserMedia" in path.read_text(encoding="utf-8")
     )
-    assert files == ["nearby.js", "transfer.js"]
+    assert files == ["transfer.js"]
+
+
+def test_no_rtc_peer_connection_in_app():
+    # CLAUDE.md Part 2, layer rule 7 (2026-09-16, Task-32): no file under app/ may construct
+    # a WebRTC peer connection.
+    for path in (ROOT / "app").rglob("*.js"):
+        assert "RTCPeerConnection" not in path.read_text(encoding="utf-8")
 
 
 def test_store_js_inlined_once_before_app_js():
-    # Task-24: store.js sits between nearby.js and app.js (build_app.JS_FILES); app.js reads
+    # Task-24: store.js sits between transfer.js and app.js (build_app.JS_FILES); app.js reads
     # window.CrosscheckStore at startup, so it must already be defined by then.
     build_app.main()
     html = (ROOT / "dist" / "index.html").read_text(encoding="utf-8")

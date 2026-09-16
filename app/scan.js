@@ -2,10 +2,10 @@
 
 // One QR reader adapter (Task-25, OQ15): Safari on iPhone has never shipped BarcodeDetector
 // (broken since iOS 18), so this is the only place in the app that decides which reader runs.
-// transfer.js and nearby.js call CrosscheckScan.reader().detect(video) and never touch
+// transfer.js calls CrosscheckScan.reader().detect(video) and never touches
 // BarcodeDetector or the vendored app/vendor/jsQR.js directly (the build test checks this).
-// This file never opens the camera (layer rule 8): transfer.js and nearby.js open the stream
-// with constraints() and hand it to tune(), which only adjusts focus and zoom on that stream
+// This file never opens the camera (layer rule 8): transfer.js opens the stream
+// with constraints() and hands it to tune(), which only adjusts focus and zoom on that stream
 // (Task-30), and detect() receives a <video> already playing it.
 window.CrosscheckScan = (() => {
   // A plain number, not CSS: the longest side of the square handed to jsQR.

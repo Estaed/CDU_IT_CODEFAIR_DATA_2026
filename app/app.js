@@ -1422,14 +1422,8 @@
     const kb = (bytes) => `${Math.floor(Number(bytes) / 1024)} KB`;
     const shareButton = h("button", { type: "button", class: "button button--primary" }, "Share this app");
     const saveButton = h("button", { type: "button", class: "button button--secondary" }, "Save file");
-    // Not .button--secondary: test_share.py counts .button and .button--secondary strictly
-    // (Task-09), and this button belongs to Task-19's own class set (app.css: .nearby__button).
-    const nearbyButton = h("button", { type: "button", class: "nearby__button" }, "Nearby chat");
     shareButton.addEventListener("click", shareApp);
     saveButton.addEventListener("click", saveFile);
-    nearbyButton.addEventListener("click", () => {
-      location.hash = "#/nearby";
-    });
     main.textContent = "";
     const changes = renderChanges(pack);
     const transfer = h("div", { class: "transfer" });
@@ -1460,7 +1454,7 @@
               h("span", { class: "fig fig--xs" }, pack.built),
             ),
           ),
-          h("div", { class: "share-card__buttons" }, shareButton, saveButton, nearbyButton),
+          h("div", { class: "share-card__buttons" }, shareButton, saveButton),
           h(
             "p",
             { class: "share-card__statement" },
@@ -1514,180 +1508,6 @@
     return section;
   };
 
-  const NEARBY_STATUS_LINE = "Works while both phones are on this Wi-Fi";
-
-  // The two-input Wi-Fi join code: WIFI:T:WPA;S:<ssid>;P:<password>;; with the format's own
-  // special characters escaped (Task-19 Execution Guide).
-  const escapeWifiField = (value) => String(value).replace(/([\\;,:"])/g, "\\$1");
-  const wifiText = (ssid, password) => `WIFI:T:WPA;S:${escapeWifiField(ssid)};P:${escapeWifiField(password)};;`;
-
-  // One SVG path per QR (Task-17's encoder and markup); level L, the same as transfer.js's frames.
-  const renderQr = (text) => {
-    const result = window.CrosscheckQR.encode(text, "L");
-    return s(
-      "svg",
-      { class: "nearby__qr", viewBox: `0 0 ${result.size} ${result.size}` },
-      s("path", { class: "nearby__qr-path", d: window.CrosscheckQR.toSvgPath(result) }),
-    );
-  };
-
-  const nearbyCard = (...children) => h("div", { class: "nearby__card" }, ...children);
-
-  // The #/nearby screen (Task-19): two QR scans set up a WebRTC data channel over the phone's
-  // own Wi-Fi, no server. All connection logic lives in nearby.js (layer rule 4); this screen
-  // only builds the DOM and reacts to window.CrosscheckNearby's events.
-  const renderNearby = () => {
-    main.textContent = "";
-    // Exposed for the browser test, which reads the same event stream this screen renders from.
-    window.__nearby = { events: [] };
-
-    const stateEl = h("span", { class: "nearby__state" }, "idle");
-    const statusLine = h("p", { class: "nearby__status" }, `${NEARBY_STATUS_LINE} `, stateEl);
-    const setState = (text) => {
-      stateEl.textContent = text;
-    };
-
-    const hostStartButton = h("button", { type: "button", class: "nearby__button" }, "Start");
-    const hostQrWrap = h("div", { class: "nearby__qr-wrap", hidden: "" });
-    const hostScanSlot = h("div", { class: "nearby__scan-slot" });
-    const hostCard = nearbyCard(
-      h("h2", { class: "section__title" }, "Host"),
-      hostStartButton,
-      hostQrWrap,
-      hostScanSlot,
-    );
-    hostStartButton.addEventListener("click", async () => {
-      hostStartButton.disabled = true;
-      setState("creating offer...");
-      const offerText = await window.CrosscheckNearby.start();
-      setState("scan the offer on the other phone, then scan their answer");
-      hostQrWrap.hidden = false;
-      hostQrWrap.textContent = "";
-      hostQrWrap.setAttribute("data-text", offerText);
-      hostQrWrap.appendChild(renderQr(offerText));
-      hostScanSlot.textContent = "";
-      const scanner = window.CrosscheckNearby.buildScanButton(
-        "Scan their answer",
-        async (answerText) => {
-          setState("connecting...");
-          await window.CrosscheckNearby.finish(answerText);
-        },
-      );
-      hostScanSlot.appendChild(scanner.el);
-    });
-
-    const joinAnswerQrWrap = h("div", { class: "nearby__qr-wrap", hidden: "" });
-    const joinScanSlot = h("div", { class: "nearby__scan-slot" });
-    const joinCard = nearbyCard(
-      h("h2", { class: "section__title" }, "Join"),
-      joinScanSlot,
-      joinAnswerQrWrap,
-    );
-    const joinScanner = window.CrosscheckNearby.buildScanButton(
-      "Scan their code",
-      async (offerText) => {
-        setState("creating answer...");
-        const answerText = await window.CrosscheckNearby.accept(offerText);
-        setState("show this answer to the host");
-        joinAnswerQrWrap.hidden = false;
-        joinAnswerQrWrap.textContent = "";
-        joinAnswerQrWrap.setAttribute("data-text", answerText);
-        joinAnswerQrWrap.appendChild(renderQr(answerText));
-      },
-    );
-    joinScanSlot.appendChild(joinScanner.el);
-
-    const messages = h("div", { class: "nearby__messages" });
-    const textInput = h("input", { type: "text", class: "nearby__input", disabled: "" });
-    const sendButton = h("button", { type: "button", class: "nearby__button", disabled: "" }, "Send");
-    const sendPackButton = h(
-      "button",
-      { type: "button", class: "nearby__button", disabled: "" },
-      "Send data pack",
-    );
-    const doSend = () => {
-      const text = textInput.value.trim();
-      if (!text) {
-        return;
-      }
-      window.CrosscheckNearby.send(text);
-      textInput.value = "";
-    };
-    sendButton.addEventListener("click", doSend);
-    textInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        doSend();
-      }
-    });
-    sendPackButton.addEventListener("click", () => window.CrosscheckNearby.requestPack());
-    const chatCard = nearbyCard(
-      h("h2", { class: "section__title" }, "Messages"),
-      messages,
-      h("div", { class: "nearby__send-row" }, textInput, sendButton),
-      sendPackButton,
-    );
-
-    const ssidInput = h("input", { type: "text", class: "nearby__input", placeholder: "Network name" });
-    const passwordInput = h("input", { type: "text", class: "nearby__input", placeholder: "Password" });
-    const wifiQrWrap = h("div", { class: "nearby__qr-wrap nearby__wifi-qr" });
-    const updateWifiQr = () => {
-      const text = wifiText(ssidInput.value, passwordInput.value);
-      wifiQrWrap.textContent = "";
-      wifiQrWrap.setAttribute("data-text", text);
-      if (ssidInput.value) {
-        wifiQrWrap.appendChild(renderQr(text));
-      }
-    };
-    ssidInput.addEventListener("input", updateWifiQr);
-    passwordInput.addEventListener("input", updateWifiQr);
-    updateWifiQr();
-    const wifiCard = nearbyCard(
-      h("h2", { class: "section__title" }, "Wi-Fi join code"),
-      ssidInput,
-      passwordInput,
-      wifiQrWrap,
-    );
-
-    window.CrosscheckNearby.onEvent((event) => {
-      window.__nearby.events.push(event);
-      if (event.type === "state") {
-        setState(event.state);
-        const open = event.state === "open";
-        textInput.disabled = !open;
-        sendButton.disabled = !open;
-        sendPackButton.disabled = !open;
-      } else if (event.type === "msg") {
-        messages.appendChild(h("div", { class: `nearby__msg nearby__msg--${event.who}` }, event.text));
-        messages.scrollTop = messages.scrollHeight;
-      } else if (event.type === "pack") {
-        // nearby.js already saved this pack (Task-24) before it emitted the event; tapping the
-        // message just reloads to pick it up through the normal startup path.
-        let received;
-        try {
-          received = JSON.parse(event.json);
-        } catch (error) {
-          received = null;
-        }
-        const useButton = h(
-          "button",
-          { type: "button", class: "nearby__msg nearby__msg--peer nearby__use-pack" },
-          received ? `Pack ${received.built} received, tap to use` : "Pack received, tap to use",
-        );
-        useButton.addEventListener("click", () => location.reload());
-        messages.appendChild(useButton);
-        messages.scrollTop = messages.scrollHeight;
-      } else if (event.type === "error") {
-        setState("error");
-      }
-    });
-
-    main.appendChild(statusLine);
-    main.appendChild(hostCard);
-    main.appendChild(joinCard);
-    main.appendChild(chatCard);
-    main.appendChild(wifiCard);
-  };
-
   // Host-only install support: never touched over file://, so the single file stands alone.
   const registerHost = () => {
     if (location.protocol !== "https:") {
@@ -1700,10 +1520,7 @@
     }
   };
 
-  // #/nearby is reached from a button on the share screen, not a fourth tab (Task-19 Execution
-  // Guide), so it highlights the same tab as #/share.
-  const screenOf = (hash) =>
-    hash.startsWith("#/nearby") ? "#/share" : SCREENS.find((screen) => hash.startsWith(screen)) || SCREENS[0];
+  const screenOf = (hash) => SCREENS.find((screen) => hash.startsWith(screen)) || SCREENS[0];
 
   let lastPath = null;
 
@@ -1740,8 +1557,6 @@
         selectedParam ? Number(selectedParam) : null,
         layersParam,
       );
-    } else if (hash.startsWith("#/nearby")) {
-      renderNearby();
     } else if (screen === "#/share") {
       renderShare();
     } else if (hash.startsWith("#/compare")) {

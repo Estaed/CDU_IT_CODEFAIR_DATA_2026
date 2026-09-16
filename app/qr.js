@@ -1,8 +1,8 @@
 "use strict";
 
-// A runtime QR encoder, byte mode only, levels L and M: the transfer frames (Task-18) and
-// the nearby handshake and Wi-Fi join code (Task-19) need to encode bytes the phone only
-// knows at runtime, which the build-time Python QR (scripts/build_app.py: qr_svg) cannot do.
+// A runtime QR encoder, byte mode only, levels L and M: the transfer frames (Task-18) need
+// to encode bytes the phone only knows at runtime, which the build-time Python QR
+// (scripts/build_app.py: qr_svg) cannot do.
 // Ported from the Python `qrcode` package (main.py: best_fit, best_mask_pattern, makeImpl;
 // util.py: lost_point, mask functions, create_data, create_bytes; base.py: RS_BLOCK_TABLE,
 // rs_blocks) so the two encoders agree module for module (CLAUDE.md Part 2, layer rule 7).

@@ -106,89 +106,6 @@ a.button { text-decoration: none; }
 
 .transfer__note { margin: 0; font: var(--text-body-sm); color: var(--text-secondary); }
 
-/* Task-19 nearby chat: the #/nearby screen reached from a button on the share screen. New
-   classes only, tokens only (layer rule 5); the same card/button shape as the transfer block
-   above, reused rather than invented (Task-19 Execution Guide). */
-
-.nearby__status { margin: 0; font: var(--text-body-sm); color: var(--text-secondary); }
-
-.nearby__card {
-  display: grid;
-  gap: var(--space-sm);
-  padding: var(--space-lg);
-  margin-top: var(--space-md);
-  background: var(--surface-page);
-  border: var(--size-hairline) solid var(--border-hairline);
-  border-radius: var(--radius-lg);
-}
-
-.nearby__button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: var(--size-control);
-  min-width: var(--size-touch);
-  padding: 0 calc(var(--space-md) + var(--space-xxs));
-  border: var(--size-hairline) solid var(--border-hairline);
-  border-radius: var(--radius-md);
-  font: var(--text-button);
-  color: var(--text-heading);
-  background: var(--surface-page);
-  cursor: pointer;
-}
-
-.nearby__button:active { background: var(--surface-block); }
-
-.nearby__button:disabled { color: var(--text-secondary); }
-
-.nearby__qr-wrap { display: flex; justify-content: center; }
-
-.nearby__qr { width: var(--size-qr); height: var(--size-qr); }
-
-.nearby__scanner { display: grid; gap: var(--space-xs); }
-
-.nearby__video { width: 100%; border-radius: var(--radius-md); background: var(--surface-block); }
-
-.nearby__messages {
-  display: grid;
-  gap: var(--space-xs);
-  max-height: calc(var(--size-control) * 4);
-  overflow-y: auto;
-}
-
-.nearby__msg {
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--radius-md);
-  font: var(--text-body-sm);
-  max-width: 80%;
-}
-
-.nearby__msg--me { background: var(--surface-block); justify-self: end; }
-
-.nearby__msg--peer {
-  background: var(--surface-page);
-  border: var(--size-hairline) solid var(--border-hairline);
-  justify-self: start;
-}
-
-.nearby__send-row { display: grid; grid-template-columns: 1fr auto; gap: var(--space-xs); }
-
-.nearby__input {
-  display: block;
-  width: 100%;
-  height: var(--size-control);
-  padding: 0 var(--space-sm);
-  font: var(--text-body-md);
-  color: var(--text-heading);
-  background: var(--surface-page);
-  border: var(--size-hairline) solid var(--border-hairline);
-  border-radius: var(--radius-md);
-  appearance: none;
-}
-
-.nearby__input::placeholder { color: var(--text-secondary); }
-
 /* Task-21 map second pass: layer groups, the carrier coverage toggle chips, and the zoom/pan
    controls. New classes only, tokens only (layer rule 5); the map/community/label styling
    screens.css already owns is untouched -- these rules only add what it does not carry. */
@@ -230,7 +147,7 @@ a.button { text-decoration: none; }
   transform: scale(calc(1 / var(--map-zoom, 1)));
 }
 
-/* Task-29 map clustering: nearby points merge into one bubble at CLUSTER_RADIUS / zoom
+/* Task-29 map clustering: close points merge into one bubble at CLUSTER_RADIUS / zoom
    (app.js), so overlapping markers in the Top End read at every zoom. New classes only, tokens
    only (layer rule 5); .map__hit above already gives the cluster its tap target. */
 
@@ -278,11 +195,6 @@ a.button { text-decoration: none; }
   background: var(--surface-page);
   cursor: pointer;
 }
-
-/* The nearby "tap to use" message is a button styled as a peer chat bubble (.nearby__msg--peer
-   already sets its background, border and font); only the two UA button defaults it does not
-   cover need a rule here. */
-.nearby__use-pack { cursor: pointer; text-align: left; }
 
 /* Task-26: the Share screen's Changes row. screens.css's .link-row is a plain flex row with no
    wrap, which overflows a 360 px screen and left a trailing "." before app.js stopped joining
@@ -388,7 +300,7 @@ a.button { text-decoration: none; }
 .footer__source { display: block; margin-top: var(--space-xs); }
 
 /* The QR a camera has to read fills the content width instead of the 200 icon-sized box. */
-.transfer__svg, .nearby__qr { width: 100%; height: auto; max-width: var(--size-viewport-min-height); aspect-ratio: 1; }
+.transfer__svg { width: 100%; height: auto; max-width: var(--size-viewport-min-height); aspect-ratio: 1; }
 
 .transfer__title { margin: 0; font: var(--text-title-md); color: var(--text-heading); }
 
@@ -396,4 +308,4 @@ a.button { text-decoration: none; }
 .scan-zoom { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: var(--space-sm); font: var(--text-body-sm); color: var(--text-body); }
 /* A tall portrait stream otherwise fills the whole screen and pushes the hint out of sight; the
    square preview is the centred square the jsQR path reads (scan.js cropRect). */
-.transfer__video, .nearby__video { cursor: pointer; aspect-ratio: 1; object-fit: cover; }
+.transfer__video { cursor: pointer; aspect-ratio: 1; object-fit: cover; }

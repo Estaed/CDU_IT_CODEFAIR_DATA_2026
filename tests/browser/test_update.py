@@ -1,4 +1,4 @@
-"""Browser tests for Task-24: a pack received by light or nearby chat that is newer than the
+"""Browser tests for Task-24: a pack received by light that is newer than the
 built-in one is kept in the browser's own storage (store.js, IndexedDB) and used on every later
 start, with an update chip and a way back to the built-in pack (CLAUDE.md Part 2, "Pack header"
 seam; Tarik's decision 2026-09-15: "update atsin"). A fresh browser context per test keeps
@@ -127,49 +127,6 @@ def test_save_rejects_wrong_version_or_community_count(context):
     assert errors == []
     assert blocked == []
     page.close()
-
-
-def test_nearby_pack_request_stores_in_guest(context):
-    page_a, blocked_a, errors_a = _open_page(context, "#/nearby")
-    page_b, blocked_b, errors_b = _open_page(context, "#/nearby")
-
-    offer_text = page_a.evaluate("() => window.CrosscheckNearby.start()")
-    answer_text = page_b.evaluate("(offer) => window.CrosscheckNearby.accept(offer)", offer_text)
-    page_a.evaluate("(answer) => window.CrosscheckNearby.finish(answer)", answer_text)
-
-    expect(page_a.locator(".nearby__state")).to_have_text("open", timeout=10_000)
-    expect(page_b.locator(".nearby__state")).to_have_text("open", timeout=10_000)
-
-    host_built = page_a.evaluate(
-        "() => JSON.parse(document.getElementById('pack').textContent).built"
-    )
-
-    page_b.evaluate("() => window.CrosscheckNearby.requestPack()")
-
-    stored_built = page_b.evaluate(
-        """
-        async () => {
-            const start = Date.now();
-            while (Date.now() - start < 5000) {
-                const stored = await window.CrosscheckStore.load();
-                if (stored) return stored.built;
-                await new Promise((resolve) => setTimeout(resolve, 50));
-            }
-            return null;
-        }
-        """
-    )
-    assert stored_built == host_built
-
-    page_a.evaluate("() => window.CrosscheckNearby.close()")
-    page_b.evaluate("() => window.CrosscheckNearby.close()")
-
-    assert errors_a == []
-    assert errors_b == []
-    assert blocked_a == []
-    assert blocked_b == []
-    page_a.close()
-    page_b.close()
 
 
 def test_transfer_receive_completion_stores_pack(context):

@@ -89,7 +89,7 @@ def _open_page(context, hash_route: str = ""):
     return page, blocked, errors
 
 
-def test_jsqr_path_decodes_frames_offer_and_wifi_text(browser):
+def test_jsqr_path_decodes_transfer_frames(browser):
     context = browser.new_context()
     # Force the jsQR path even where headless Chromium does support BarcodeDetector.
     context.add_init_script("delete window.BarcodeDetector;")
@@ -120,16 +120,11 @@ def test_jsqr_path_decodes_frames_offer_and_wifi_text(browser):
     sample_indices = sorted({0, n - 1, *range(0, n, 16)})
     sample_frames = [frame_texts[i] for i in sample_indices]
 
-    offer_text = page.evaluate("() => window.CrosscheckNearby.start()")
-    wifi_text = "WIFI:T:WPA;S:Crosscheck;P:pass\\;word;;"
-
-    texts = [*sample_frames, offer_text, wifi_text]
+    texts = sample_frames
     results = page.evaluate(DRAW_AND_DECODE, [texts, "L"])
 
     for text, result in zip(texts, results, strict=True):
         assert result["decoded"] == text, (text, result)
-
-    page.evaluate("() => window.CrosscheckNearby.close()")
 
     assert errors == []
     assert blocked == []

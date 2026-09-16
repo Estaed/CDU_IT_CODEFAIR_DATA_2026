@@ -1,7 +1,7 @@
 "use strict";
 
-// Received-pack storage (Task-24): a pack that arrives by light (transfer.js) or nearby chat
-// (nearby.js) is kept here, so the installed app uses it on every later start with no network
+// Received-pack storage (Task-24): a pack that arrives by light (transfer.js) is kept here,
+// so the installed app uses it on every later start with no network
 // (CLAUDE.md Part 2, "Pack header" seam; Tarik's decision 2026-09-15: "update atsın"). IndexedDB
 // only; no network word appears in this file (layer rule 7).
 window.CrosscheckStore = (() => {

@@ -21,16 +21,15 @@ ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = ROOT / "app/index.html"
 OUT = ROOT / "dist/index.html"
 PACK = ROOT / "data/out/data_pack.json"
-# Order fixed by CLAUDE.md Part 2: vendor/jsQR.js, qr.js, scan.js, transfer.js, nearby.js,
-# store.js, app.js; later tasks append. store.js sits before app.js because app.js reads
-# window.CrosscheckStore at startup; scan.js sits before transfer.js and nearby.js because both
-# call window.CrosscheckScan (Task-25).
+# Order fixed by CLAUDE.md Part 2: vendor/jsQR.js, qr.js, scan.js, transfer.js, store.js,
+# app.js; later tasks append. store.js sits before app.js because app.js reads
+# window.CrosscheckStore at startup; scan.js sits before transfer.js because it
+# calls window.CrosscheckScan (Task-25).
 JS_FILES = (
     ROOT / "app/vendor/jsQR.js",
     ROOT / "app/qr.js",
     ROOT / "app/scan.js",
     ROOT / "app/transfer.js",
-    ROOT / "app/nearby.js",
     ROOT / "app/store.js",
     ROOT / "app/app.js",
 )

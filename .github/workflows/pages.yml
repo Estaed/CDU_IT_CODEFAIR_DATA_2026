@@ -1,5 +1,5 @@
 # Builds dist/ from the committed pack and publishes it to GitHub Pages.
-# Why: the camera features (transfer by camera, nearby chat) need a secure origin; Chrome on
+# Why: transfer by camera needs a secure origin; Chrome on
 # Android answers NotAllowedError to getUserMedia on a file:// page (measured on a Samsung S24,
 # 2026-09-15). The Pages address is APP_URL in constants.md and is what the URL QR encodes.
 # No data/raw/ is needed: build_app.py reads data/out/data_pack.json, which is committed.
