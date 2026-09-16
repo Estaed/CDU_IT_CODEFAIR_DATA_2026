@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import base64
-import gzip
 import hashlib
 import json
 import re
@@ -311,8 +309,9 @@ def test_vendored_jsqr_sha256_matches_license_file():
     assert digest == match.group(1)
 
 
-def test_exactly_one_fetch_in_the_app_and_it_is_guarded():
-    # CLAUDE.md Part 2, layer rule 7 and its single exception (2026-09-16, Task-36). The Python
+def test_no_fetch_anywhere_in_the_app():
+    # CLAUDE.md Part 2, layer rule 7, whole again (2026-09-16 evening, Task-37): Task-36's
+    # one-tap exception for a lite copy is withdrawn, so the count is zero. The Python
     # equivalent of `grep -c "fetch(" app/**/*.js`; Windows has no `grep` on PATH by default.
     # sw.js is the host-only exception the rule already names and is never needed for first
     # render, so it is not in the count.
@@ -321,67 +320,28 @@ def test_exactly_one_fetch_in_the_app_and_it_is_guarded():
         for path in sorted((ROOT / "app").rglob("*.js"))
         if path.name != "sw.js"
     }
-    assert sum(counts.values()) == 1, counts
-    assert counts["transfer.js"] == 1
-
-    # The exception is only legal guarded: a lite copy, and a tap. Both are in the source.
-    transfer = (ROOT / "app" / "transfer.js").read_text(encoding="utf-8")
-    assert 'document.documentElement.dataset.lite === "1"' in transfer
-    guard_index = transfer.index("const isLite = ")
-    fetch_index = transfer.index("fetch(")
-    click_index = transfer.rindex('addEventListener("click"', 0, fetch_index)
-    assert guard_index < click_index < fetch_index
+    assert sum(counts.values()) == 0, counts
 
 
-def test_lite_page_is_built_and_is_lite():
-    # Task-36: dist/lite.html is what the camera carries -- the same build with the vendored
-    # jsQR cut, the pack's layers emptied and data-lite="1" on <html>. The gate's size check
-    # stays on dist/index.html; the limit is asserted here for the second page.
-    build_app.main()
-    lite_path = ROOT / "dist" / "lite.html"
-    lite = lite_path.read_text(encoding="utf-8")
-
-    assert '<html data-lite="1"' in lite
-    assert build_app.JSQR_LICENSE_HEADER not in lite
-    assert "function jsQR(" not in lite
-    # The name survives: transfer.js reads it, and transfer.js is inlined in every build. What
-    # must be gone is the assignment -- a lite copy carries no payload of its own.
-    assert "window.CrosscheckLite = " not in lite
-
-    pack = json.loads(
-        re.search(r'<script type="application/json" id="pack">(.*?)</script>', lite, re.S).group(1)
-    )
-    assert pack["layers"] == []
-    assert len(pack["communities"]) == 96
-    assert pack["app_url"] == read_constant("APP_URL")
-    assert len(lite.encode("utf-8")) <= 1_048_576
-    # The whole point of the cut: far fewer frames to read off a screen (Task-31).
-    assert len(lite.encode("utf-8")) < len((ROOT / "dist" / "index.html").read_bytes())
-
-
-def test_lite_constant_is_the_lite_page_gzipped():
-    # The circularity resolved: the constant in the full page inflates to exactly the bytes
-    # dist/lite.html holds, and nothing in the lite page is the constant itself.
+def test_no_lite_page_and_no_lite_constant():
+    # Task-37: dist/lite.html and window.CrosscheckLite are gone. The build writes one page,
+    # and the camera carries the pack the browser gzips at Show time instead.
     build_app.main()
     html = (ROOT / "dist" / "index.html").read_text(encoding="utf-8")
-    lite_bytes = (ROOT / "dist" / "lite.html").read_bytes()
 
-    match = re.search(r'window\.CrosscheckLite = "([A-Za-z0-9+/=]+)";', html)
-    assert match, "no lite payload constant in dist/index.html"
-    assert gzip.decompress(base64.b64decode(match.group(1))) == lite_bytes
-    assert build_app.LITE_PLACEHOLDER not in html
+    assert not (ROOT / "dist" / "lite.html").exists()
+    assert "CrosscheckLite" not in html
+    assert "__LITE_B64__" not in html
+    assert 'data-lite="1"' not in html
+    assert not hasattr(build_app, "build_lite")
+    assert not hasattr(build_app, "LITE_CONSTANT")
 
-
-def test_lite_cut_raises_when_its_markers_are_missing():
-    # A silent no-op here would ship a "lite" copy that is not lite; both cuts refuse instead.
-    with pytest.raises(ValueError, match="jsQR"):
-        build_app.strip_jsqr("<html></html>")
-    with pytest.raises(ValueError, match="lite payload constant"):
-        build_app.strip_lite_constant("<html></html>")
-    with pytest.raises(ValueError, match="pack"):
-        build_app.empty_layers("<html></html>")
-    with pytest.raises(ValueError, match="<html>"):
-        build_app.mark_lite("<body></body>")
+    pack = json.loads(
+        re.search(r'<script type="application/json" id="pack">(.*?)</script>', html, re.S).group(1)
+    )
+    assert pack["app_url"] == read_constant("APP_URL")
+    assert len(pack["communities"]) == 96
+    assert len(html.encode("utf-8")) <= 1_048_576
 
 
 def test_barcode_detector_only_in_scan_js():

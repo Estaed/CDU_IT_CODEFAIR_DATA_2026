@@ -130,8 +130,7 @@ def test_save_rejects_wrong_version_or_community_count(context):
 
 
 def test_transfer_receive_completion_stores_pack(context):
-    dist_bytes = DIST.read_bytes()
-    html_text = dist_bytes.decode("utf-8")
+    html_text = DIST.read_text(encoding="utf-8")
     pack_match = re.search(
         r'<script type="application/json" id="pack">(.*?)</script>', html_text, re.S
     )
@@ -141,8 +140,9 @@ def test_transfer_receive_completion_stores_pack(context):
 
     result = page.evaluate(
         """
-        async (html) => {
-            const built = await window.CrosscheckTransfer.encoder(html);
+        async () => {
+            const text = await window.CrosscheckTransfer.testPayloadText();
+            const built = await window.CrosscheckTransfer.encoder(text);
             const rx = window.CrosscheckTransfer.receiver();
             let status;
             for (let i = 0; i < built.k; i++) {
@@ -155,14 +155,56 @@ def test_transfer_receive_completion_stores_pack(context):
             const stored = await window.CrosscheckStore.load();
             return { complete: true, storedBuilt: stored ? stored.built : null };
         }
-        """,
-        html_text,
+        """
     )
     assert result["complete"]
     assert result["storedBuilt"] == expected_built
 
-    use_received = page.locator(".transfer__button", has_text="Use received pack now")
+    use_received = page.locator(".transfer__button", has_text="Use received data now")
     expect(use_received).to_be_visible()
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_received_pack_with_another_version_is_refused_and_says_so(context):
+    # Task-37: the one refusal a person can act on. A pack whose pack_version this build does
+    # not know cannot be rendered by it, so the screen sends them to the address once rather
+    # than storing something the app would then have to refuse at every start.
+    page, blocked, errors = _open_page(context, "#/share")
+
+    result = page.evaluate(
+        """
+        async () => {
+            const pack = JSON.parse(document.getElementById("pack").textContent);
+            pack.pack_version = pack.pack_version + 1;
+            pack.layers = [];
+            const text = JSON.stringify(pack);
+            const built = await window.CrosscheckTransfer.encoder(text);
+            const rx = window.CrosscheckTransfer.receiver();
+            let status;
+            for (let i = 0; i < built.k; i++) {
+                status = rx.push(built.frameAt(i));
+            }
+            if (!status.complete) {
+                return { complete: false };
+            }
+            await window.CrosscheckTransfer.testReceiveComplete(rx.bytes());
+            const stored = await window.CrosscheckStore.load();
+            return { complete: true, stored };
+        }
+        """
+    )
+    assert result["complete"]
+    assert result["stored"] is None
+
+    expect(page.locator(".transfer__status")).to_have_text(
+        "This copy is too old for that data; open the address once with the internet"
+    )
+    expect(
+        page.locator(".transfer__button", has_text="Use received data now")
+    ).to_be_hidden()
 
     assert errors == []
     assert blocked == []

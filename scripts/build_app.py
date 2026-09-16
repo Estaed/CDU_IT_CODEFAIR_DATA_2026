@@ -5,20 +5,14 @@ It also renders the share screen's QR code, records the pack and app sizes in a 
 writes the host-only PWA files next to the page: sw.js, the templated manifest and the three
 home-screen icons drawn from the colour tokens (Task-28).
 
-Since Task-36 (2026-09-16) it writes a second page, ``dist/lite.html``: the same build with the
-vendored jsQR cut, the pack's ``layers`` emptied and ``data-lite="1"`` on ``<html>``. That copy
-is the only thing transfer by camera carries - about a third of the blocks, which is what made
-the transfer finish on a real phone (Task-31). The full page carries the lite copy's gzipped
-bytes as one base64 constant (``window.CrosscheckLite``), written in after the lite page exists,
-so nothing is circular: the lite page is cut from the build *without* the constant and therefore
-carries none of its own.
+One page out, no second cut-down copy: Task-36's reduced page and its inlined payload constant
+were withdrawn by Task-37 the same evening, because transfer by camera carries the data pack,
+gzipped in the browser at Show time. CLAUDE.md Part 2 keeps that history.
 Run from the project root: ``PYTHONUTF8=1 .venv/Scripts/python scripts/build_app.py``.
 """
 
 from __future__ import annotations
 
-import base64
-import gzip
 import hashlib
 import json
 import re
@@ -30,7 +24,6 @@ from PIL import Image, ImageDraw
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = ROOT / "app/index.html"
 OUT = ROOT / "dist/index.html"
-LITE_OUT = ROOT / "dist/lite.html"
 PACK = ROOT / "data/out/data_pack.json"
 # Order fixed by CLAUDE.md Part 2: vendor/jsQR.js, qr.js, scan.js, transfer.js, store.js,
 # report.js, app.js; later tasks append. store.js sits before app.js because app.js reads
@@ -59,13 +52,6 @@ SW_SRC = ROOT / "app/sw.js"
 MANIFEST_SRC = ROOT / "app/manifest.webmanifest"
 TOKENS_CSS = ROOT / "design/ds/design/tokens/colors.css"
 SIZES_PLACEHOLDER = "<!-- SIZES -->"
-# Task-36: the lite copy's gzipped bytes, base64, inlined into the full page only. The literal
-# below is what the build cuts back out when it derives the lite page, so a lite copy never
-# carries a payload constant - its own bytes are already the payload.
-LITE_PLACEHOLDER = "__LITE_B64__"
-LITE_CONSTANT = f'window.CrosscheckLite = "{LITE_PLACEHOLDER}";'
-PACK_RE = re.compile(r'(<script type="application/json" id="pack">)(.*?)(</script>)', re.S)
-HTML_TAG_RE = re.compile(r"<html\b")
 BUILD_PLACEHOLDER = b"__BUILD__"
 THEME_PLACEHOLDER = "__THEME_COLOR__"
 TOKEN_RE = re.compile(r"--([a-z0-9-]+):(#[0-9a-fA-F]{3,8});")
@@ -98,65 +84,6 @@ def inline(template: str, css_parts: list[str], js: str, pack_json: str) -> str:
             raise ValueError(f"the template has no {placeholder} placeholder")
         template = template.replace(placeholder, block)
     return template
-
-
-def strip_jsqr(page: str) -> str:
-    """Cut the vendored jsQR out of the built page's one inlined script.
-
-    Every JS file is concatenated into a single <script>, so there is no element to drop: the
-    cut is the licence marker plus the vendored file's own text, both read from the tree. It
-    raises rather than tolerating a miss - a silent no-op here would ship a lite copy that is
-    not lite.
-    """
-    block = f"{JSQR_LICENSE_HEADER}\n{JSQR_SRC.read_text(encoding='utf-8')}\n"
-    if block not in page:
-        raise ValueError("the built page does not contain the marked jsQR block")
-    return page.replace(block, "", 1)
-
-
-def strip_lite_constant(page: str) -> str:
-    """Cut the lite payload constant, so the lite copy carries no copy of itself."""
-    block = f"{LITE_CONSTANT}\n"
-    if block not in page:
-        raise ValueError("the built page does not contain the lite payload constant")
-    return page.replace(block, "", 1)
-
-
-def empty_layers(page: str) -> tuple[str, int]:
-    """Empty the inlined pack's `layers` list, keeping every other key; return the page and
-    the byte length of the rewritten pack.
-
-    Read through json rather than patched by regex: the layer paths are full of brackets. `</`
-    is escaped on the way back in exactly as inline() escapes it.
-    """
-    match = PACK_RE.search(page)
-    if match is None:
-        raise ValueError("the built page has no inlined pack script")
-    pack = json.loads(match.group(2))
-    if "layers" not in pack:
-        raise ValueError("the inlined pack has no layers key")
-    pack["layers"] = []
-    lite = json.dumps(pack, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
-    return page[: match.start(2)] + lite + page[match.end(2) :], len(lite.encode("utf-8"))
-
-
-def mark_lite(page: str) -> str:
-    """Put data-lite="1" on <html>: the flag transfer.js reads to know what it is running as."""
-    page, count = HTML_TAG_RE.subn('<html data-lite="1"', page, count=1)
-    if count != 1:
-        raise ValueError("the built page has no <html> tag")
-    return page
-
-
-def build_lite(page: str) -> tuple[str, bytes]:
-    """The lite copy of page, and its gzipped bytes.
-
-    mtime=0 so the payload is the same bytes on every build of the same input; two phones
-    comparing a transfer are then comparing the same thing.
-    """
-    lite, pack_bytes = empty_layers(strip_jsqr(strip_lite_constant(page)))
-    lite = with_sizes(mark_lite(lite), pack_bytes)
-    return lite, gzip.compress(lite.encode("utf-8"), compresslevel=6, mtime=0)
 
 
 def qr_svg(text: str) -> str:
@@ -265,9 +192,7 @@ def main() -> str:
     # APP_URL comes from constants.md through the pack, so the QR and the share button agree.
     qr = qr_svg(json.loads(pack_text)["app_url"])
     tokens = read_tokens(("color-canvas", "color-ink", "color-on-primary"))
-    # The lite payload constant leads the script: the value is a placeholder for now, filled in
-    # below once the lite page it holds has been built and cut from this very page.
-    js_parts = [LITE_CONSTANT]
+    js_parts = []
     for path in JS_FILES:
         text = path.read_text(encoding="utf-8")
         if path.name == "jsQR.js":
@@ -283,13 +208,8 @@ def main() -> str:
         raise ValueError(f"the template has no {THEME_PLACEHOLDER} placeholder")
     page = page.replace(THEME_PLACEHOLDER, tokens["color-canvas"])
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    # The lite copy is cut from this page while the payload constant is still a placeholder, so
-    # it carries no payload of its own; then its gzipped bytes become that constant's value.
-    lite, lite_gzipped = build_lite(page)
-    LITE_OUT.write_text(lite, encoding="utf-8", newline="\n")
-    page = page.replace(LITE_PLACEHOLDER, base64.b64encode(lite_gzipped).decode("ascii"), 1)
-    # Sizes are computed after the theme colour and the payload are filled in, so the meta
-    # reflects the byte count of what is actually written to disk.
+    # Sizes are computed after the theme colour is filled in, so the meta reflects the byte
+    # count of what is actually written to disk.
     page = with_sizes(page, PACK.stat().st_size)
     dist_index_bytes = page.encode("utf-8")
     OUT.write_bytes(dist_index_bytes)
@@ -297,11 +217,6 @@ def main() -> str:
     # forever, so sw.js is written by write_host_files, not copied plain.
     write_host_files(OUT.parent, dist_index_bytes, tokens)
     print(f"{OUT.relative_to(ROOT)}: {OUT.stat().st_size} bytes")
-    blocks = -(-len(lite_gzipped) // 750)  # the frame contract's block size; K of the transfer
-    print(
-        f"{LITE_OUT.relative_to(ROOT)}: {LITE_OUT.stat().st_size} bytes, "
-        f"gzipped {len(lite_gzipped)} bytes, K {blocks}"
-    )
     return page
 
 

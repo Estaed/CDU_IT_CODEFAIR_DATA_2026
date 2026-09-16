@@ -1,35 +1,38 @@
 "use strict";
 
-// Transfer by camera (Task-18, v2 frame contract from Task-27, 2026-09-15): plays this build's
-// own bytes as a loop of QR frames on one phone and reads them back with the camera on another,
-// no network, no file (CLAUDE.md Part 2, "Entry points: Transfer by camera"). The camera is
+// Transfer by camera (Task-18; frame contract v4, Task-37, 2026-09-16 evening): plays the data
+// pack as a loop of QR frames on one phone and reads it back with the camera on another, no
+// network, no pairing (CLAUDE.md Part 2, "Entry points: Transfer by camera"). The camera is
 // touched only here (layer rule 8).
 //
-// v3 (`CZ` frames, Task-36, 2026-09-16) is the measured winner of the Task-31 phone trial, and
-// it changes three things about v2 (`CY`):
+// What travels is the **data pack, not the app**. The receiving phone must already have
+// Crosscheck -- a phone with only its camera app cannot reassemble frames -- so the camera was
+// never an install path; what it is, is the one pairing-free channel between an Android and an
+// iPhone with no network. The payload is therefore the inlined pack with `layers` replaced by
+// `[]` (the map layers are static geography and the receiver keeps its own), about 18 KB
+// gzipped instead of 72, and the loop finishes in seconds.
 //
-//   * the payload is the **lite copy** of this build -- no vendored jsQR, no map layers -- so K
-//     falls from about 233 blocks to about 94 and the loop finishes in under half a minute;
+// The rest of the contract is v3's, measured on the S24 in Task-31:
+//
 //   * the repair degree comes from the robust soliton distribution (c = 0.1, delta = 0.5)
 //     instead of v2's uniform 6..12, which was tuned against 10 % frame loss while a real phone
 //     loses half or more;
 //   * the sender changes the code inside requestAnimationFrame and holds it for 16 refreshes
-//     (3.75 frames a second at 60 Hz). Measured on a Samsung S24 against a laptop screen: hold
-//     12 finished in 36.1 s, hold 16 in 27.6 s -- slower is faster, because fewer captured
-//     frames straddle a change. The reader keeps v2's main-thread setTimeout loop, which round
-//     one proved faster on a phone than a worker or requestVideoFrameCallback.
+//     (3.75 frames a second at 60 Hz) -- slower is faster, because fewer captured frames
+//     straddle a change. The reader keeps the main-thread setTimeout loop, which round one
+//     proved faster on a phone than a worker or requestVideoFrameCallback.
 //
-// The fountain code itself is v2's: `K` source blocks of 750 bytes plus an unbounded stream of
-// repair blocks, each the XOR of a set of source blocks a receiver can recompute from the
-// frame's own index alone. A missed frame is repaired by any later frame instead of waiting for
-// its own turn in the next loop. `CX` (v1) and `CY` (v2) frames are ignored (FRAME_RE only
-// matches `CZ`), so a receiver never mixes two contracts.
+// The fountain code: `K` source blocks of 750 bytes plus an unbounded stream of repair blocks,
+// each the XOR of a set of source blocks a receiver can recompute from the frame's own index
+// alone. A missed frame is repaired by any later frame instead of waiting for its own turn in
+// the next loop. `CX` (v1), `CY` (v2) and `CZ` (v3) frames are ignored (FRAME_RE only matches
+// `CP`), so a receiver never mixes two contracts.
 window.CrosscheckTransfer = (() => {
   // Bracket access: qr.js's own declaration is the only place the dotted global reference may
   // appear as text (tests/test_build.py counts it once to check qr.js is inlined only there).
   const crosscheckQR = window.CrosscheckQR;
 
-  const FRAME_PREFIX = "CZ";
+  const FRAME_PREFIX = "CP";
   const BLOCK_BYTES = 750;
   const BLOCK_B64_CHARS = 1000; // 750 bytes, divisible by 3, base64s with no padding
   const MAX_INDEX = 0xffff; // 4 hex digits
@@ -189,13 +192,13 @@ window.CrosscheckTransfer = (() => {
     return drawDistinctIds(rand, k, degree);
   };
 
-  // --- Encoder: this build's own bytes -> K source blocks, any frame on demand ------------------
+  // --- Encoder: the payload -> K source blocks, any frame on demand ----------------------------
 
-  // Payload -> encoder: a string is page text and is gzipped here; a Uint8Array is already the
-  // gzipped payload (the inlined lite constant, which must not be inflated only to be deflated
-  // again). Either way the payload is split into K blocks of 750 bytes (the last zero-padded),
-  // and frameAt(index) then builds a source frame (index < k) or a repair frame (index >= k) on
-  // demand, so the sender can play an unbounded repair stream without precomputing it.
+  // Payload -> encoder: a string is text and is gzipped here (the pack JSON, and what every
+  // test passes); a Uint8Array is already the gzipped payload. Either way the payload is split
+  // into K blocks of 750 bytes (the last zero-padded), and frameAt(index) then builds a source
+  // frame (index < k) or a repair frame (index >= k) on demand, so the sender can play an
+  // unbounded repair stream without precomputing it.
   const encoder = async (source) => {
     const payload =
       typeof source === "string" ? await gzip(new TextEncoder().encode(source)) : source;
@@ -401,34 +404,22 @@ window.CrosscheckTransfer = (() => {
 
   // --- What the camera carries -----------------------------------------------------------------
 
-  // A lite copy marks itself on <html> (scripts/build_app.py). Also the guard on the one
-  // request the app ever makes (layer rule 7's single exception, Task-36).
-  const isLite = () => document.documentElement.dataset.lite === "1";
-
-  // The bytes the camera carries: always the **lite copy** of this build -- the page without the
-  // vendored jsQR and without the pack's map layers, about a third of the blocks (Task-31).
-  // The full page carries it as a base64 gzip constant written by the build after the lite file
-  // exists; a lite copy carries no constant and plays its own bytes, which are already lite. So
-  // both ends send the same thing, and the build stays non-circular.
-  const payloadBytes = async (getPageHtml) => {
-    if (isLite()) {
-      return gzip(new TextEncoder().encode(getPageHtml()));
-    }
-    return base64ToBytes(window.CrosscheckLite);
+  // The text the camera carries: the pack this copy is currently running with -- the stored one
+  // if a received pack replaced the inline one, the inline one otherwise (store.js keeps that
+  // one definition) -- with `layers` emptied. Read at Show time, not at load: the pack a phone
+  // holds may be newer than the build it is running, and that newer pack is exactly what the
+  // next phone wants.
+  const packText = async () => {
+    const inline = JSON.parse(document.getElementById("pack").textContent);
+    const current = window.CrosscheckStore ? await window.CrosscheckStore.effective() : inline;
+    return JSON.stringify({ ...current, layers: [] });
   };
 
-  // The pack header's own app_url, read from the inlined pack rather than retyped; the one
-  // address `Complete this copy` fetches.
-  const appUrl = () => {
-    const packEl = document.getElementById("pack");
-    return packEl ? JSON.parse(packEl.textContent).app_url : null;
-  };
-
-  // The whole running app, looped as QR frames. Encoded once per Show click, then the loop only
-  // swaps a path string, which keeps it cheap on every repeat. Every index (source or repair) is
-  // sent exactly once per lap of the send order, so there is nothing worth caching between
-  // steps -- each frame is QR-encoded fresh.
-  const buildShow = (getPageHtml) => {
+  // The pack, looped as QR frames. Encoded once per Show click, then the loop only swaps a path
+  // string, which keeps it cheap on every repeat. Every index (source or repair) is sent exactly
+  // once per lap of the send order, so there is nothing worth caching between steps -- each
+  // frame is QR-encoded fresh.
+  const buildShow = () => {
     const button = el("button", { type: "button", class: "transfer__button" }, "Show");
     const stage = el("div", { class: "transfer__stage", hidden: "" });
     const path = svg("path", {});
@@ -507,7 +498,7 @@ window.CrosscheckTransfer = (() => {
       playing = true;
       button.textContent = "Stop";
       holdScreen();
-      built = await encoder(await payloadBytes(getPageHtml));
+      built = await encoder(await packText());
       if (!playing) {
         return; // Stopped again while the page was being encoded.
       }
@@ -522,11 +513,11 @@ window.CrosscheckTransfer = (() => {
       el: el(
         "div",
         { class: "transfer__section" },
-        el("h2", { class: "transfer__title" }, "Send this app by camera"),
+        el("h2", { class: "transfer__title" }, "Send the latest data by camera"),
         el(
           "p",
           { class: "transfer__note" },
-          "No internet needed. The other phone taps Receive and points its camera at the moving code. It arrives as a lite copy: every screen, without the map overlays.",
+          "No internet, no pairing. The other phone needs Crosscheck installed; it taps Receive and points its camera at the moving code.",
         ),
         button,
         stage,
@@ -554,22 +545,13 @@ window.CrosscheckTransfer = (() => {
     });
     const progress = el("progress", { class: "transfer__progress", hidden: "" });
     const counter = el("div", { class: "transfer__status", hidden: "" });
-    const openButton = el(
-      "button",
-      { type: "button", class: "transfer__button", hidden: "" },
-      "Open received app",
-    );
-    // Task-24: kept in the browser's own storage (store.js) so the installed app updates in
-    // place on the next start; the download button stays for the phone-to-phone file handoff.
+    // Task-24: the received pack is kept in the browser's own storage (store.js) and used on
+    // every later start. Since Task-37 there is no page to open and no file to download: what
+    // arrived is data for the copy already running here.
     const useReceivedButton = el(
       "button",
       { type: "button", class: "transfer__button", hidden: "" },
-      "Use received pack now",
-    );
-    const downloadLink = el(
-      "a",
-      { class: "transfer__button", download: "crosscheck.html", hidden: "" },
-      "Download crosscheck.html",
+      "Use received data now",
     );
 
     let stream = null;
@@ -577,14 +559,6 @@ window.CrosscheckTransfer = (() => {
     let scanTimer = null;
     let scanning = false;
     let currentReceiver = null;
-    let receivedUrl = null;
-
-    const revokeReceivedUrl = () => {
-      if (receivedUrl) {
-        URL.revokeObjectURL(receivedUrl);
-        receivedUrl = null;
-      }
-    };
 
     const resetReceived = () => {
       currentReceiver = receiver();
@@ -593,10 +567,7 @@ window.CrosscheckTransfer = (() => {
       progress.removeAttribute("max");
       counter.hidden = true;
       counter.textContent = "";
-      openButton.hidden = true;
       useReceivedButton.hidden = true;
-      downloadLink.hidden = true;
-      revokeReceivedUrl();
     };
 
     const stopStream = () => {
@@ -623,48 +594,39 @@ window.CrosscheckTransfer = (() => {
       button.textContent = "Receive";
     };
 
-    // One received page in, validated, offered and stored. Shared by camera receive (which
-    // inflates first) and by `Complete this copy`, which already has the text (Task-36).
-    // `full` only changes what the store button is called: a page fetched from APP_URL is the
-    // full version, a page read off a camera is another lite copy.
-    const finishHtml = async (html, full) => {
+    // Every block known: inflate, check it parses, and hand it to store.js, which owns what a
+    // pack must be (pack_version, 96 communities) and carries this copy's map layers over the
+    // incoming empty ones. Three outcomes, three sentences: stored, too old, or not a pack.
+    const finish = async (bytes) => {
       stop();
-      // Parsed, not a substring search: this file's own source text must not contain the
-      // literal markup it is checking for (tests/test_build.py counts that markup once).
-      const parsed = new DOMParser().parseFromString(html, "text/html");
-      const looksLikeCrosscheck =
-        parsed.documentElement.tagName === "HTML" && parsed.getElementById("pack") !== null;
-      if (!looksLikeCrosscheck) {
+      const text = await inflate(bytes);
+      try {
+        JSON.parse(text);
+      } catch (error) {
         counter.hidden = false;
-        counter.textContent = "That did not look like Crosscheck; try again.";
+        counter.textContent = "That did not look like Crosscheck data; try again";
         return;
       }
-      const blob = new Blob([html], { type: "text/html" });
-      revokeReceivedUrl();
-      receivedUrl = URL.createObjectURL(blob);
-      openButton.hidden = false;
-      downloadLink.hidden = false;
-      downloadLink.setAttribute("href", receivedUrl);
+      let result = null;
+      try {
+        result = window.CrosscheckStore ? await window.CrosscheckStore.save(text) : null;
+      } catch (error) {
+        result = null; // Storage is optional; the refusal below is what the screen says.
+      }
       counter.hidden = false;
-      counter.textContent = "Received. Tap Open.";
-      if (navigator.vibrate) {
-        navigator.vibrate(200);
-      }
-      // Task-24: the received page's own pack, kept for next start if it validates (store.js
-      // rejects anything with a different pack_version or community count on its own).
-      const packEl = parsed.getElementById("pack");
-      if (packEl && window.CrosscheckStore) {
-        try {
-          const result = await window.CrosscheckStore.save(packEl.textContent);
-          useReceivedButton.textContent = full ? "Use full version now" : "Use received pack now";
-          useReceivedButton.hidden = !result || !result.built;
-        } catch (error) {
-          // Storage is optional; Open and Download still work without it.
+      if (result && result.built) {
+        counter.textContent = "Received. Tap to use the new data.";
+        useReceivedButton.hidden = false;
+        if (navigator.vibrate) {
+          navigator.vibrate(200);
         }
+        return;
       }
+      counter.textContent =
+        result && result.reason === "pack_version"
+          ? "This copy is too old for that data; open the address once with the internet"
+          : "That did not look like Crosscheck data; try again";
     };
-
-    const finish = async (bytes) => finishHtml(await inflate(bytes), false);
 
     // One frame text in, progress UI updated, finish() called once every block is known. Shared
     // by the real scan loop below and by testPushFrame (no camera in the browser test).
@@ -726,14 +688,6 @@ window.CrosscheckTransfer = (() => {
         note.textContent = "This browser cannot use the camera.";
         return;
       }
-      // A lite copy carries no vendored jsQR, so it can only read with the browser's own
-      // detector. Say so instead of scanning forever on a phone that has none.
-      if (isLite() && !window.jsQR) {
-        note.hidden = false;
-        note.textContent =
-          "This lite copy can only receive on a browser with a built-in QR reader. Tap Complete this copy first.";
-        return;
-      }
       note.hidden = true;
       start().catch((error) => {
         stop();
@@ -741,12 +695,6 @@ window.CrosscheckTransfer = (() => {
         const why = error && error.name ? ` (${error.name}, ${location.protocol})` : "";
         counter.textContent = `Could not access the camera${why}.`;
       });
-    });
-
-    openButton.addEventListener("click", () => {
-      if (receivedUrl) {
-        window.open(receivedUrl);
-      }
     });
 
     useReceivedButton.addEventListener("click", () => {
@@ -759,11 +707,11 @@ window.CrosscheckTransfer = (() => {
       el: el(
         "div",
         { class: "transfer__section" },
-        el("h2", { class: "transfer__title" }, "Receive the app by camera"),
+        el("h2", { class: "transfer__title" }, "Receive new data by camera"),
         el(
           "p",
           { class: "transfer__note" },
-          "Point this camera at the other phone's moving code. The app arrives in pieces; missed pieces are repaired.",
+          "Point this camera at the other phone's moving code. Your copy keeps working while it arrives.",
         ),
         button,
         readerKind,
@@ -771,65 +719,12 @@ window.CrosscheckTransfer = (() => {
         video,
         progress,
         counter,
-        openButton,
         useReceivedButton,
-        downloadLink,
       ),
       stop,
       finish,
-      finishHtml,
       pushFrame: (text) => pushFrame(text),
     };
-  };
-
-  // --- Complete this copy: the lite copy's one way back to the full page ------------------------
-
-  // Layer rule 7's single exception (CLAUDE.md Part 2, 2026-09-16). Only built on a lite copy,
-  // only fires on a tap, and fetches exactly one address: the pack header's own app_url. The
-  // bytes then go through the same validate-and-store path camera receive uses.
-  const buildComplete = (finishHtml) => {
-    const button = el("button", { type: "button", class: "transfer__button" }, "Complete this copy");
-    const status = el("p", { class: "transfer__status", hidden: "" });
-
-    button.addEventListener("click", async () => {
-      if (!isLite()) {
-        return;
-      }
-      const url = appUrl();
-      if (!url) {
-        return;
-      }
-      button.disabled = true;
-      status.hidden = false;
-      status.textContent = "Fetching the full version...";
-      try {
-        const response = await fetch(url, { cache: "no-store" });
-        if (!response.ok) {
-          throw new Error("not ok");
-        }
-        const html = await response.text();
-        status.textContent = "";
-        status.hidden = true;
-        await finishHtml(html, true);
-      } catch (error) {
-        status.hidden = false;
-        status.textContent = "No network yet, try again when this phone is online";
-      }
-      button.disabled = false;
-    });
-
-    return el(
-      "div",
-      { class: "transfer__section" },
-      el("h2", { class: "transfer__title" }, "Complete this copy"),
-      el(
-        "p",
-        { class: "transfer__note" },
-        "This is a lite copy: every screen, without the map overlays. Next time this phone is online, tap below to fetch the full version once.",
-      ),
-      button,
-      status,
-    );
   };
 
   let currentStop = null;
@@ -838,25 +733,21 @@ window.CrosscheckTransfer = (() => {
   let mountedReceivePush = null;
 
   // Builds the Show and Receive controls into container, replacing any previous ones and
-  // stopping their timers and camera track first. getPageHtml is app.js's own pageHtml, the same
-  // bytes Save file writes; on a lite copy that is what Show plays, and on the full page the
-  // inlined lite constant is (payloadBytes above). Complete this copy is built on a lite copy
-  // only.
-  const mount = (container, getPageHtml) => {
+  // stopping their timers and camera track first. app.js still passes its own pageHtml as the
+  // second argument (that file is not this task's to change); since Task-37 what Show plays is
+  // the pack, not the page, so the argument is ignored.
+  const mount = (container) => {
     if (currentStop) {
       currentStop();
       currentStop = null;
     }
-    const show = buildShow(getPageHtml);
+    const show = buildShow();
     const receive = buildReceive();
     mountedReceiveFinish = receive.finish;
     mountedReceivePush = receive.pushFrame;
     container.textContent = "";
     container.appendChild(show.el);
     container.appendChild(receive.el);
-    if (isLite()) {
-      container.appendChild(buildComplete(receive.finishHtml));
-    }
     currentStop = () => {
       show.stop();
       receive.stop();
@@ -880,5 +771,18 @@ window.CrosscheckTransfer = (() => {
   // and its progress UI, exactly as the scan loop would (Task-27 DoD).
   const testPushFrame = (text) => mountedReceivePush(text);
 
-  return { encoder, receiver, createSequence, inflate, mount, testReceiveComplete, testPushFrame };
+  // Exposed for the browser test: the exact text Show would encode, so the round trip is run
+  // against the payload the sender really plays rather than one the test rebuilds (Task-37).
+  const testPayloadText = () => packText();
+
+  return {
+    encoder,
+    receiver,
+    createSequence,
+    inflate,
+    mount,
+    testReceiveComplete,
+    testPushFrame,
+    testPayloadText,
+  };
 })();

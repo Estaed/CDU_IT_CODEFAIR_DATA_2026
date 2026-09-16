@@ -80,9 +80,33 @@ window.CrosscheckStore = (() => {
         }),
     );
 
+  // The pack this copy is actually running with: the stored one when it is newer than the
+  // built-in one (the same test app.js applies at startup), the built-in one otherwise. One
+  // definition, read by save() below for the layers carry-over and by transfer.js for what the
+  // camera plays (Task-37).
+  const effective = async () => {
+    let stored = null;
+    try {
+      stored = await load();
+    } catch (error) {
+      stored = null;
+    }
+    const builtIn = builtInPack();
+    if (stored && typeof stored.built === "string" && stored.built > builtIn.built) {
+      return stored;
+    }
+    return builtIn;
+  };
+
   // Rejects a pack whose pack_version differs from the built-in one or whose community count
   // is not 96; never stores anything else. Never throws: a refusal (bad shape, bad IndexedDB)
-  // resolves with {built: null} rather than an error on screen.
+  // resolves with {built: null} rather than an error on screen. A refusal on pack_version says
+  // so in `reason`, because that is the one case the receiving screen explains (Task-37).
+  //
+  // Carry-over (Task-37): the camera carries the pack with `layers` emptied -- the map layers
+  // are static geography, about 24 times the size of everything else, and the receiving phone
+  // already has them. An incoming empty `layers` therefore means "keep yours", not "I have
+  // none", so the effective pack's layers are written into the stored record.
   const save = async (packJson) => {
     let candidate;
     try {
@@ -91,15 +115,27 @@ window.CrosscheckStore = (() => {
       return { built: null };
     }
     const communityCount = Array.isArray(candidate.communities) ? candidate.communities.length : -1;
-    if (
-      candidate.pack_version !== builtInPack().pack_version ||
-      communityCount !== REQUIRED_COMMUNITY_COUNT
-    ) {
+    if (candidate.pack_version !== builtInPack().pack_version) {
+      return { built: null, reason: "pack_version" };
+    }
+    if (communityCount !== REQUIRED_COMMUNITY_COUNT) {
       return { built: null };
+    }
+    let json = packJson;
+    if (Array.isArray(candidate.layers) && candidate.layers.length === 0) {
+      const current = await effective();
+      if (
+        current.pack_version === candidate.pack_version &&
+        Array.isArray(current.layers) &&
+        current.layers.length > 0
+      ) {
+        candidate.layers = current.layers;
+        json = JSON.stringify(candidate);
+      }
     }
     try {
       await runTx(STORE_NAME, "readwrite", (store) =>
-        store.put({ json: packJson, built: candidate.built }, RECORD_KEY),
+        store.put({ json, built: candidate.built }, RECORD_KEY),
       );
     } catch (error) {
       warnOnce(error);
@@ -200,5 +236,5 @@ window.CrosscheckStore = (() => {
     return kept.length;
   };
 
-  return { save, load, clear, saveReport, reportsFor, importReports };
+  return { save, load, effective, clear, saveReport, reportsFor, importReports };
 })();

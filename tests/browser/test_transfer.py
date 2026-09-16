@@ -1,20 +1,20 @@
-"""Browser tests for transfer by camera v3 (Task-36): the `CZ` frame contract, the peeling
-receiver's lossless and lossy-drop round trips, the lite copy the camera actually carries, and
-the progress UI on both ends. Headless Chromium may lack BarcodeDetector and a camera (Part 2),
-so every round trip below pushes frame texts straight into CrosscheckTransfer.receiver() (or the
-mounted receive UI's testPushFrame hook) instead of scanning.
+"""Browser tests for transfer by camera v4 (Task-37): the `CP` frame contract, the peeling
+receiver's lossless and lossy-drop round trips, and the progress UI on both ends.
 
-The loss budgets come from the main loop's soliton simulation at K 233 (Task-36's Measurement
-section): 10% loss completes within 1.6 * K pushed frames, 50% within 2.8 * K, 70% within
-4.5 * K. They are budgets for the *shipped* code path, and they are loose on purpose -- the real
-payload is the lite copy at K about 97, where the peel has far fewer blocks to resolve, while
-these tests run against dist/index.html at K about 233. The sources-0..19 scenario keeps v2's
-1.75 * K. v2's uniform 6..12 degree, tuned against 10% loss, is gone: it stalled near block 110
-on a real phone, which is what Task-31 measured and Task-36 fixed."""
+What travels is the **data pack, not the app**: the payload is the pack this copy is running
+with, `layers` replaced by `[]`, gzipped at Show time. The receiver stores it through
+store.js, which carries this copy's own map layers over the incoming empty ones. Headless
+Chromium may lack BarcodeDetector and a camera (Part 2), so every round trip below pushes
+frame texts straight into CrosscheckTransfer.receiver() (or the mounted receive UI's
+testPushFrame hook) instead of scanning.
+
+The loss budgets are Part 2's: 10 % loss completes within 1.6 * K pushed frames, 50 % within
+2.8 * K, 70 % within 4.5 * K, and the sources-0..19 scenario within 1.75 * K. They are the
+budgets Task-36 measured at K 233 and are kept unchanged at v4's much smaller K, where the
+same overhead buys far fewer frames -- so they are a real check, not a loose one."""
 
 from __future__ import annotations
 
-import hashlib
 import json
 import math
 import re
@@ -27,10 +27,9 @@ pytestmark = pytest.mark.browser
 
 ROOT = Path(__file__).resolve().parents[2]
 DIST = ROOT / "dist" / "index.html"
-LITE = ROOT / "dist" / "lite.html"
 DIST_INDEX = DIST.resolve().as_uri()
 
-FRAME_RE = re.compile(r"^CZ[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{6}[A-Za-z0-9+/]{1000}$")
+FRAME_RE = re.compile(r"^CP[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{6}[A-Za-z0-9+/]{1000}$")
 
 # A small seeded PRNG (mulberry32), reused by the drop test below so the drop pattern is fixed
 # run to run without pulling in a dependency for one test.
@@ -75,25 +74,26 @@ def _open_page(context, hash_route: str = ""):
     return page, blocked, errors
 
 
-def _dist_html_text() -> str:
-    return DIST.read_bytes().decode("utf-8")
+def _built_pack() -> dict:
+    html = DIST.read_text(encoding="utf-8")
+    match = re.search(r'<script type="application/json" id="pack">(.*?)</script>', html, re.S)
+    return json.loads(match.group(1))
 
 
 def test_frame_regex_matches_source_and_repair_frames(context):
-    html_text = _dist_html_text()
     page, blocked, errors = _open_page(context, "#/share")
 
     result = page.evaluate(
         """
-        async (html) => {
-            const built = await window.CrosscheckTransfer.encoder(html);
+        async () => {
+            const text = await window.CrosscheckTransfer.testPayloadText();
+            const built = await window.CrosscheckTransfer.encoder(text);
             const texts = [];
             for (let i = 0; i < built.k; i++) texts.push(built.frameAt(i));
             for (let i = built.k; i < built.k + 20; i++) texts.push(built.frameAt(i));
             return { k: built.k, texts };
         }
-        """,
-        html_text,
+        """
     )
     assert result["k"] >= 1
     for text in result["texts"]:
@@ -104,42 +104,64 @@ def test_frame_regex_matches_source_and_repair_frames(context):
     page.close()
 
 
-def test_lossless_completion_at_exactly_k_frames(context):
-    dist_bytes = DIST.read_bytes()
-    html_text = dist_bytes.decode("utf-8")
-    page, blocked, errors = _open_page(context, "#/share")
-
-    result = page.evaluate(
+def test_round_trip_between_two_pages_is_the_pack_and_layers_are_carried_over(context):
+    # The whole contract in one test: what one page's Show plays is the pack with `layers`
+    # emptied; a second page reassembles it byte for byte, and after store.js accepts it the
+    # stored pack holds this copy's own layers again -- the map is static geography and never
+    # needs to cross the camera (Task-37).
+    expected = _built_pack()
+    sender, sender_blocked, sender_errors = _open_page(context, "#/share")
+    frames = sender.evaluate(
         """
-        async (html) => {
-            const built = await window.CrosscheckTransfer.encoder(html);
+        async () => {
+            const text = await window.CrosscheckTransfer.testPayloadText();
+            const built = await window.CrosscheckTransfer.encoder(text);
+            const texts = [];
+            for (let i = 0; i < built.k; i++) texts.push(built.frameAt(i));
+            return { k: built.k, texts };
+        }
+        """
+    )
+    sender.close()
+
+    receiver, blocked, errors = _open_page(context, "#/share")
+    result = receiver.evaluate(
+        """
+        async (texts) => {
             const rx = window.CrosscheckTransfer.receiver();
             let status;
-            for (let i = 0; i < built.k; i++) {
-                status = rx.push(built.frameAt(i));
+            for (const text of texts) {
+                status = rx.push(text);
             }
             if (!status.complete) {
                 return { complete: false };
             }
-            const inflatedText = await window.CrosscheckTransfer.inflate(rx.bytes());
-            const encoded = new TextEncoder().encode(inflatedText);
-            const digest = await crypto.subtle.digest("SHA-256", encoded);
-            const hex = Array.from(new Uint8Array(digest))
-                .map((b) => b.toString(16).padStart(2, "0"))
-                .join("");
-            return { complete: true, known: status.known, total: status.total, sha256: hex };
+            const text = await window.CrosscheckTransfer.inflate(rx.bytes());
+            await window.CrosscheckTransfer.testReceiveComplete(rx.bytes());
+            const stored = await window.CrosscheckStore.load();
+            return { complete: true, received: JSON.parse(text), stored };
         }
         """,
-        html_text,
+        frames["texts"],
     )
 
     assert result["complete"], result
-    assert result["known"] == result["total"]
-    assert result["sha256"] == hashlib.sha256(dist_bytes).hexdigest()
+    assert result["received"] == {**expected, "layers": []}
+    assert result["stored"]["layers"] == expected["layers"]
+    assert result["stored"]["built"] == expected["built"]
+    assert len(result["stored"]["communities"]) == 96
 
+    status_el = receiver.locator(".transfer__status")
+    expect(status_el).to_have_text("Received. Tap to use the new data.")
+    expect(
+        receiver.locator(".transfer__button", has_text="Use received data now")
+    ).to_be_visible()
+
+    assert sender_errors == []
+    assert sender_blocked == []
     assert errors == []
     assert blocked == []
-    page.close()
+    receiver.close()
 
 
 @pytest.mark.parametrize(
@@ -148,18 +170,16 @@ def test_lossless_completion_at_exactly_k_frames(context):
     ids=["loss10", "loss50", "loss70"],
 )
 def test_seeded_drop_completes_within_budget(context, loss, budget):
-    # Task-36: three losses, not one. A phone reading a screen loses half the frames or more,
-    # which is what v2's uniform 6..12 degree was never tuned for; the robust soliton is. The
-    # budgets are the main loop's simulation at K 233 (module docstring). Same seed the test has
-    # always used (20260915), not chosen to make this pass.
-    dist_bytes = DIST.read_bytes()
-    html_text = dist_bytes.decode("utf-8")
+    # Three losses, not one: a phone reading a screen loses half the frames or more, which is
+    # what v2's uniform 6..12 degree was never tuned for and the robust soliton is. Same seed
+    # the test has always used (20260915), not chosen to make this pass.
     page, blocked, errors = _open_page(context, "#/share")
 
     result = page.evaluate(
         f"""
-        async (html) => {{
-            const built = await window.CrosscheckTransfer.encoder(html);
+        async () => {{
+            const text = await window.CrosscheckTransfer.testPayloadText();
+            const built = await window.CrosscheckTransfer.encoder(text);
             const seq = window.CrosscheckTransfer.createSequence(built.k);
             const mulberry32 = {MULBERRY32_JS};
             const rand = mulberry32(20260915);
@@ -183,21 +203,15 @@ def test_seeded_drop_completes_within_budget(context, loss, budget):
             if (!status.complete) {{
                 return {{ complete: false, pushed, offered, k: built.k }};
             }}
-            const inflatedText = await window.CrosscheckTransfer.inflate(rx.bytes());
-            const encoded = new TextEncoder().encode(inflatedText);
-            const digest = await crypto.subtle.digest("SHA-256", encoded);
-            const hex = Array.from(new Uint8Array(digest))
-                .map((b) => b.toString(16).padStart(2, "0"))
-                .join("");
-            return {{ complete: true, pushed, offered, k: built.k, sha256: hex }};
+            const out = await window.CrosscheckTransfer.inflate(rx.bytes());
+            return {{ complete: true, pushed, offered, k: built.k, same: out === text }};
         }}
-        """,
-        html_text,
+        """
     )
 
     assert result["complete"], result
     assert result["pushed"] <= math.ceil(result["k"] * budget), result
-    assert result["sha256"] == hashlib.sha256(dist_bytes).hexdigest()
+    assert result["same"]
 
     assert errors == []
     assert blocked == []
@@ -205,19 +219,17 @@ def test_seeded_drop_completes_within_budget(context, loss, budget):
 
 
 def test_sources_0_to_19_never_delivered_still_completes(context):
-    # Same 1.75 * K budget as the drop test above (Tarik's decision, 2026-09-15). This scenario
-    # has no randomness beyond the fixed omission, so it is deterministic: at K = 224 it
-    # completes at 302 pushed frames, well inside the budget.
-    dist_bytes = DIST.read_bytes()
-    html_text = dist_bytes.decode("utf-8")
+    # 1.75 * K (Tarik's decision, 2026-09-15). No randomness beyond the fixed omission, so it
+    # is deterministic: twenty source blocks that never arrive must be rebuilt from repairs.
     page, blocked, errors = _open_page(context, "#/share")
 
     result = page.evaluate(
         """
-        async (html) => {
-            const built = await window.CrosscheckTransfer.encoder(html);
+        async () => {
+            const text = await window.CrosscheckTransfer.testPayloadText();
+            const built = await window.CrosscheckTransfer.encoder(text);
             if (built.k <= 20) {
-                return { skip: true };
+                return { skip: true, k: built.k };
             }
             const seq = window.CrosscheckTransfer.createSequence(built.k);
             const rx = window.CrosscheckTransfer.receiver();
@@ -238,43 +250,39 @@ def test_sources_0_to_19_never_delivered_still_completes(context):
             if (!status.complete) {
                 return { complete: false, pushed, k: built.k };
             }
-            const inflatedText = await window.CrosscheckTransfer.inflate(rx.bytes());
-            const encoded = new TextEncoder().encode(inflatedText);
-            const digest = await crypto.subtle.digest("SHA-256", encoded);
-            const hex = Array.from(new Uint8Array(digest))
-                .map((b) => b.toString(16).padStart(2, "0"))
-                .join("");
-            return { complete: true, pushed, k: built.k, sha256: hex };
+            const out = await window.CrosscheckTransfer.inflate(rx.bytes());
+            return { complete: true, pushed, k: built.k, same: out === text };
         }
-        """,
-        html_text,
+        """
     )
 
-    assert not result.get("skip"), "dist/index.html is too small for this test (k <= 20)"
+    assert not result.get("skip"), f"the payload is too small for this test (k {result['k']})"
     assert result["complete"], result
     assert result["pushed"] <= math.ceil(result["k"] * 1.75)
-    assert result["sha256"] == hashlib.sha256(dist_bytes).hexdigest()
+    assert result["same"]
 
     assert errors == []
     assert blocked == []
     page.close()
 
 
-def test_cy_frame_is_ignored(context):
-    # Task-36: a v2 sender's frame is well-formed in every way except its prefix, and a v3
-    # receiver must not mix the two contracts -- the degree distribution behind a `CY` repair
-    # index is a different one, so peeling them together would decode to nothing. `known` stays
-    # at 0. (A v1 `CX` frame is not even the right shape and never matched.)
+@pytest.mark.parametrize("prefix", ["CY", "CZ"], ids=["v2", "v3"])
+def test_older_contract_frames_are_ignored(context, prefix):
+    # A v2 or v3 sender's frame is well-formed in every way except its prefix, and a v4
+    # receiver must not mix contracts -- what a repair index means is not the same across
+    # them, so peeling them together would decode to nothing. `known` stays at 0. (A v1 `CX`
+    # frame is not even the right shape and never matched.)
     page, blocked, errors = _open_page(context, "#/share")
 
     status = page.evaluate(
         """
-        () => {
+        (prefix) => {
             const rx = window.CrosscheckTransfer.receiver();
-            const header = `CY${"0".repeat(4)}${"0061"}${"0002ee"}`;
+            const header = `${prefix}${"0".repeat(4)}${"0061"}${"0002ee"}`;
             return rx.push(`${header}${"A".repeat(1000)}`);
         }
-        """
+        """,
+        prefix,
     )
     assert status == {"complete": False, "known": 0, "total": 0}
 
@@ -283,21 +291,47 @@ def test_cy_frame_is_ignored(context):
     page.close()
 
 
+def test_transfer_texts_and_no_open_or_download_buttons(context):
+    # Task-37's texts, and the two buttons that went with the withdrawn "the app travels"
+    # story: there is no page to open and no file to download on this screen any more.
+    page, blocked, errors = _open_page(context, "#/share")
+
+    transfer = page.locator(".transfer")
+    titles = transfer.locator(".transfer__title")
+    expect(titles).to_have_text(["Send the latest data by camera", "Receive new data by camera"])
+
+    sections = transfer.locator(".transfer__section")
+    expect(sections.nth(0).locator(".transfer__note").first).to_have_text(
+        "No internet, no pairing. The other phone needs Crosscheck installed; it taps Receive "
+        "and points its camera at the moving code."
+    )
+    expect(sections.nth(1).locator(".transfer__note").first).to_have_text(
+        "Point this camera at the other phone's moving code. Your copy keeps working while it "
+        "arrives."
+    )
+
+    labels = page.locator(".transfer__button").all_text_contents()
+    assert [label for label in labels if "Open" in label or "Download" in label] == []
+    assert "Complete this copy" not in labels
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
 def test_receive_controls_and_show_stage_hidden_before_use(context):
-    # Task-26: buildReceive() already set the `hidden` attribute on these three elements, but
+    # Task-26: buildReceive() already set the `hidden` attribute on these elements, but
     # .transfer__button and .transfer__stage each set their own `display` as normal-author CSS,
     # which outranks the UA stylesheet's [hidden]{display:none} in the cascade regardless of
     # specificity -- so `hidden` had no visual effect until app.css added [hidden] overrides.
     page, blocked, errors = _open_page(context, "#/share")
 
     stage = page.locator(".transfer__stage")
-    open_button = page.locator("button.transfer__button", has_text="Open received app")
-    download_link = page.locator("a.transfer__button", has_text="Download crosscheck.html")
+    use_received = page.locator("button.transfer__button", has_text="Use received data now")
     progress = page.locator(".transfer__progress")
 
     expect(stage).to_be_hidden()
-    expect(open_button).to_be_hidden()
-    expect(download_link).to_be_hidden()
+    expect(use_received).to_be_hidden()
     expect(progress).to_be_hidden()
 
     show_button = page.locator(".transfer").get_by_role("button", name="Show", exact=True)
@@ -342,21 +376,20 @@ def test_show_and_stop_controls_report_frame_and_pass(context):
 
 
 def test_receiving_screen_progress_and_received_message(context):
-    html_text = _dist_html_text()
     page, blocked, errors = _open_page(context, "#/share")
 
     push_result = page.evaluate(
         """
-        async (html) => {
-            const built = await window.CrosscheckTransfer.encoder(html);
+        async () => {
+            const text = await window.CrosscheckTransfer.testPayloadText();
+            const built = await window.CrosscheckTransfer.encoder(text);
             let status;
             for (let i = 0; i < built.k; i++) {
                 status = await window.CrosscheckTransfer.testPushFrame(built.frameAt(i));
             }
             return { k: built.k, status };
         }
-        """,
-        html_text,
+        """
     )
     assert push_result["status"]["complete"]
 
@@ -367,77 +400,17 @@ def test_receiving_screen_progress_and_received_message(context):
     assert progress_value == progress_max == push_result["k"]
 
     status_el = page.locator(".transfer__status")
-    expect(status_el).to_have_text("Received. Tap Open.")
-
-    open_button = page.locator("button.transfer__button", has_text="Open received app")
-    expect(open_button).to_be_visible()
+    expect(status_el).to_have_text("Received. Tap to use the new data.")
 
     assert errors == []
     assert blocked == []
     page.close()
 
 
-def test_transfer_module_has_no_network_literals_beyond_the_one_exception():
-    # Task-36: transfer.js now holds layer rule 7's single exception, `Complete this copy`. The
-    # count and the guard are asserted in tests/test_build.py (the app-wide grep); here only the
-    # rest of the rule still holds -- no address is written down, and no other transport.
+def test_transfer_module_has_no_network_literals():
+    # CLAUDE.md Part 2, layer rule 7: this file writes down no address and no transport. The
+    # request count itself is asserted app-wide in tests/test_build.py, which is the one place
+    # the token appears, so the grep behind the rule reads clean everywhere else.
     source = (ROOT / "app" / "transfer.js").read_text(encoding="utf-8")
     for token in ("XMLHttpRequest", "WebSocket", "EventSource", "http://", "https://"):
         assert token not in source
-
-
-def test_full_page_has_lite_constant_and_lite_page_does_not():
-    # The circularity resolved (Task-36): the full page carries the lite copy's gzipped bytes,
-    # the lite copy carries none of its own and plays its own already-lite bytes.
-    full = DIST.read_text(encoding="utf-8")
-    lite = LITE.read_text(encoding="utf-8")
-
-    assert full.count("window.CrosscheckLite = ") == 1
-    assert "__LITE_B64__" not in full
-    assert "window.CrosscheckLite = " not in lite
-
-
-def test_lite_page_shows_complete_this_copy_and_requests_only_on_the_tap(blocking_page):
-    # Layer rule 7's one exception, proved from both sides: the full page never requests
-    # anything, the lite page requests nothing until the tap, and the tap makes exactly one
-    # request, to the pack's own app_url. The fixture aborts it, so the failure message is what
-    # an offline phone sees.
-    full_page, full_blocked, full_errors = blocking_page(f"{DIST_INDEX}#/share")
-    complete = full_page.locator("button.transfer__button", has_text="Complete this copy")
-    expect(complete).to_have_count(0)
-    assert full_blocked == []
-    assert full_errors == []
-
-    app_url = full_page.evaluate(
-        "() => JSON.parse(document.getElementById('pack').textContent).app_url"
-    )
-    full_page.close()
-
-    page, blocked, errors = blocking_page(f"{LITE.resolve().as_uri()}#/share")
-    assert page.evaluate("() => document.documentElement.dataset.lite") == "1"
-    button = page.locator("button.transfer__button", has_text="Complete this copy")
-    expect(button).to_be_visible()
-    assert blocked == []
-
-    button.click()
-    status = page.locator(".transfer__section", has=button).locator(".transfer__status")
-    expect(status).to_have_text("No network yet, try again when this phone is online")
-    assert blocked == [app_url]
-    page.close()
-
-
-def test_lite_page_carries_no_vendored_jsqr_and_no_map_layers():
-    # "No jsQR" is checked as "no vendored jsQR": app/scan.js names window.jsQR as its fallback
-    # reader and is inlined in every build, so the literal string survives by design. What must
-    # be gone is the library itself -- its licence marker and its own definition.
-    lite = LITE.read_text(encoding="utf-8")
-    assert "function jsQR(" not in lite
-    assert "jsQR 1.4.0, Apache-2.0" not in lite
-    pack = json.loads(
-        re.search(
-            r'<script type="application/json" id="pack">(.*?)</script>', lite, re.S
-        ).group(1)
-    )
-    assert pack["layers"] == []
-    assert len(pack["communities"]) == 96
-    assert len(LITE.read_bytes()) <= 1_048_576
