@@ -286,15 +286,15 @@ a.button { text-decoration: none; }
 .services button:last-of-type { border-bottom: 0; }
 
 /* A folded section's own title-sized summary line, replacing the banned `.section__title` on
-   this screen (item 6); `.section` still gives it the top hairline and vertical rhythm. */
+   this screen (item 6); `.section` still gives it the top hairline and vertical rhythm. The
+   disclosure marker is left as the browser default (no `list-style`/marker override), the same
+   as the footer's own `.footer__summary` fold, so a fold reads as tappable. */
 .section > summary {
   padding: var(--space-xs) var(--space-md);
   font: var(--text-title-md);
   color: var(--text-heading);
   cursor: pointer;
-  list-style: none;
 }
-.section > summary::-webkit-details-marker { display: none; }
 
 /* The glyph beside the service name, coloured like its badge (item 3). */
 .service-row__label { display: flex; align-items: center; gap: var(--space-xs); }
@@ -308,12 +308,16 @@ a.button { text-decoration: none; }
 .service-row__detail { padding-bottom: var(--space-sm); }
 .service-row__reason { padding: 0 var(--space-md); }
 
-/* The two-action row: Report here, then the Share fold (item 5). */
+/* The two-action row: Report here, then the Share fold (item 5). `width: 100%` is of `.actions`
+   (edge to edge, unlike `.services`, which insets itself with margin), so the button's own
+   horizontal margin has to be subtracted back out of its width -- otherwise the margin pushes
+   the button's right edge past the card's above it, `width: 100%` plus margin being wider than
+   the container. */
 .report-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: calc(100% - 2 * var(--space-md));
   height: var(--size-control);
   min-width: var(--size-touch);
   margin: var(--space-sm) var(--space-md) 0;
