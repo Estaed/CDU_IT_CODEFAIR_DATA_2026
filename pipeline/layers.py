@@ -1,6 +1,6 @@
 """The pack's map layers: five towns, ABS SA3 regions and three carrier coverage areas.
 
-PRD OQ13/OQ16, Part 2 "Map layer" seam. Geometry via geopandas/shapely, the same tools
+PRD OQ13/OQ16, Blueprint "Map layer" seam. Geometry via geopandas/shapely, the same tools
 ``pipeline.outline`` uses; every vertex is projected with ``outline.project`` (the mirror's
 300x480 view box) and rounded to one decimal by that function. Highways are deferred to
 Task-23 (both candidate sources failed a scripted download, ``reports/2026-09-15-map-bytes.md``

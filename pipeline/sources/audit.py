@@ -30,7 +30,9 @@ import csv
 from pathlib import Path
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
+import shapely
 from shapely import wkt
 from shapely.geometry import Point
 
@@ -126,6 +128,31 @@ def load(csv_path: Path, communities: pd.DataFrame) -> pd.DataFrame:
         rows.append(_row(community, distances, tile_frame))
     rows.sort(key=lambda r: r["bushtel_id"])
     return pd.DataFrame(rows, columns=COLUMNS)
+
+
+def audited_within(
+    communities: pd.DataFrame, road_points: np.ndarray, points_epsg: int
+) -> set[int]:
+    """The ids with an audited road sample within ``NEAR_M`` -- the ``audit5 = "0"`` case.
+
+    This module cannot answer it alone: the published CSV lists non-alignments, never the
+    roads the Audit drove, so the samples come from ``pipeline.reliability`` (Task-39), which
+    places them along the audited road layers and passes them in already projected. The 5 km
+    radius stays here with the rest of the Audit's distance rules.
+    """
+    if not len(road_points):
+        return set()
+    points = gpd.GeoSeries(
+        [Point(float(c["lon"]), float(c["lat"])) for c in communities.to_dict("records")],
+        crs=f"EPSG:{EPSG_WGS84}",
+    ).to_crs(epsg=points_epsg)
+    road_xy = np.column_stack([shapely.get_x(road_points), shapely.get_y(road_points)])
+    near = set()
+    for community, point in zip(communities.to_dict("records"), points, strict=True):
+        distances = np.hypot(road_xy[:, 0] - point.x, road_xy[:, 1] - point.y)
+        if distances.min() <= NEAR_M:
+            near.add(int(community["bushtel_id"]))
+    return near
 
 
 def write_table(frame: pd.DataFrame, communities: pd.DataFrame, path: Path) -> Path:

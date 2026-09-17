@@ -3,7 +3,7 @@
 Reads ``data/out/capability_table.csv`` (already carries the merged verdicts and the
 mobile disagreement pattern, both written by ``merge.py``) and writes two static NT maps
 as PNG to ``data/out/figures/`` plus three CSV tables to ``data/out/tables/``. Colours and
-glyphs are read from ``design/ds/design/tokens.json``, never retyped (CLAUDE.md Part 2,
+glyphs are read from ``design/ds/design/tokens.json``, never retyped (CLAUDE.md Blueprint,
 layer rule 5). Run from the project root:
 ``PYTHONUTF8=1 .venv/Scripts/python -m pipeline.figures``.
 """

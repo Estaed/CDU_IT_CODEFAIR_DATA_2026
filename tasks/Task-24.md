@@ -17,7 +17,7 @@ Today a pack that arrives by light (Task-18) opens as a separate downloaded copy
 arrives over Wi-Fi (Task-19) is only logged. Tarik's decision 2026-09-15: "update atsın". After
 this task, a received pack that is newer than the built-in one is kept in the browser's storage
 and used on every later start, so the installed app updates in place with no network. PRD §4.2
-second batch (transfer by camera, nearby chat); Part 2 "Pack header" seam.
+second batch (transfer by camera, nearby chat); Blueprint "Pack header" seam.
 
 ## Execution Guide
 
@@ -96,7 +96,7 @@ Files changed:
   (tokens only), and `.nearby__use-pack` (two UA-button-default overrides the existing
   `.nearby__msg--peer` background/border/font rules do not cover).
 - `scripts/build_app.py`: `JS_FILES` now inlines `app/store.js` between `nearby.js` and
-  `app.js`, matching the order CLAUDE.md Part 2 already names.
+  `app.js`, matching the order CLAUDE.md Blueprint already names.
 - `tests/browser/test_update.py` (new, 6 tests): no-chip-when-empty, save+reload+chip+revert,
   version/count rejection, nearby-guest-store, transfer-receive-store, and a static
   no-network-literal check on `store.js`.

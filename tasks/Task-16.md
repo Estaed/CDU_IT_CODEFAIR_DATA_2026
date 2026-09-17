@@ -5,7 +5,7 @@
 
 ⛔ **Blocking question (Tarik, 2026-09-15):** the high-contrast token set must come from the
 claude.ai design project as `design/ds/design/tokens/sunlight.css` (a byte-exact mirror, like
-the other three). Part 2 forbids writing a colour under `app/`, and `design/ds/` is never edited
+the other three). Blueprint forbids writing a colour under `app/`, and `design/ds/` is never edited
 here. Export it there first, re-mirror, then remove this marker. Until then this task is not a
 lane.
 

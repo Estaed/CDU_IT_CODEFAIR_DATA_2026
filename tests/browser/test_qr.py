@@ -1,5 +1,5 @@
 """Browser test for the runtime QR encoder (Task-17): app/qr.js checked module for module
-against the Python qrcode package, the oracle CLAUDE.md Part 2 names for the QR encoder."""
+against the Python qrcode package, the oracle CLAUDE.md Blueprint names for the QR encoder."""
 
 from __future__ import annotations
 

@@ -1,6 +1,6 @@
 """Browser tests for Task-24: a pack received by light that is newer than the
 built-in one is kept in the browser's own storage (store.js, IndexedDB) and used on every later
-start, with an update chip and a way back to the built-in pack (CLAUDE.md Part 2, "Pack header"
+start, with an update chip and a way back to the built-in pack (CLAUDE.md Blueprint, "Pack header"
 seam; Tarik's decision 2026-09-15: "update atsin"). A fresh browser context per test keeps
 IndexedDB from leaking between tests, since the file:// origin is shared."""
 

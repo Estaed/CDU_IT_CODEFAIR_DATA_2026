@@ -7,7 +7,7 @@ home-screen icons drawn from the colour tokens (Task-28).
 
 One page out, no second cut-down copy: Task-36's reduced page and its inlined payload constant
 were withdrawn by Task-37 the same evening, because transfer by camera carries the data pack,
-gzipped in the browser at Show time. CLAUDE.md Part 2 keeps that history.
+gzipped in the browser at Show time. CLAUDE.md Blueprint keeps that history.
 Run from the project root: ``PYTHONUTF8=1 .venv/Scripts/python scripts/build_app.py``.
 """
 
@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = ROOT / "app/index.html"
 OUT = ROOT / "dist/index.html"
 PACK = ROOT / "data/out/data_pack.json"
-# Order fixed by CLAUDE.md Part 2: vendor/jsQR.js, qr.js, scan.js, transfer.js, store.js,
+# Order fixed by CLAUDE.md Blueprint: vendor/jsQR.js, qr.js, scan.js, transfer.js, store.js,
 # report.js, app.js; later tasks append. store.js sits before app.js because app.js reads
 # window.CrosscheckStore at startup; scan.js sits before transfer.js because it
 # calls window.CrosscheckScan (Task-25); report.js sits after store.js and before app.js
@@ -40,7 +40,7 @@ JS_FILES = (
     ROOT / "app/report.js",
     ROOT / "app/app.js",
 )
-# jsQR 1.4.0, Apache-2.0 (Task-25, OQ15): the one library exception CLAUDE.md Part 2 allows.
+# jsQR 1.4.0, Apache-2.0 (Task-25, OQ15): the one library exception CLAUDE.md Blueprint allows.
 # Prefixed only onto the vendored file's own text, never onto the rest of JS_FILES; the full
 # notice and the three recorded SHA-256 values are in app/vendor/jsQR.LICENSE.
 JSQR_LICENSE_HEADER = (
@@ -56,7 +56,7 @@ BUILD_PLACEHOLDER = b"__BUILD__"
 THEME_PLACEHOLDER = "__THEME_COLOR__"
 TOKEN_RE = re.compile(r"--([a-z0-9-]+):(#[0-9a-fA-F]{3,8});")
 
-# Order fixed by CLAUDE.md Part 2: tokens, base, the reference screens, then the app.
+# Order fixed by CLAUDE.md Blueprint: tokens, base, the reference screens, then the app.
 CSS_FILES = (
     ROOT / "design/ds/design/tokens/colors.css",
     ROOT / "design/ds/design/tokens/typography.css",

@@ -145,7 +145,7 @@ def test_qr_js_inlined_once_before_app_js():
 
 
 def test_get_user_media_only_in_transfer():
-    # The Python equivalent of `grep -l getUserMedia app/*.js` (CLAUDE.md Part 2, layer rule 8);
+    # The Python equivalent of `grep -l getUserMedia app/*.js` (CLAUDE.md Blueprint, layer rule 8);
     # no shelling out, Windows has no `grep` on PATH by default.
     files = sorted(
         path.name
@@ -156,7 +156,7 @@ def test_get_user_media_only_in_transfer():
 
 
 def test_no_rtc_peer_connection_in_app():
-    # CLAUDE.md Part 2, layer rule 7 (2026-09-16, Task-32): no file under app/ may construct
+    # CLAUDE.md Blueprint, layer rule 7 (2026-09-16, Task-32): no file under app/ may construct
     # a WebRTC peer connection.
     for path in (ROOT / "app").rglob("*.js"):
         assert "RTCPeerConnection" not in path.read_text(encoding="utf-8")
@@ -176,7 +176,7 @@ def test_store_js_inlined_once_before_app_js():
 
 def test_store_js_has_no_network_words():
     # The Python equivalent of `grep -nE "fetch\\(|XMLHttpRequest|WebSocket|EventSource|https?://"
-    # app/store.js` (CLAUDE.md Part 2, layer rule 7); no shelling out, Windows has no `grep` on
+    # app/store.js` (CLAUDE.md Blueprint, layer rule 7); no shelling out, Windows has no `grep` on
     # PATH by default.
     source = (ROOT / "app" / "store.js").read_text(encoding="utf-8")
     for token in ("fetch(", "XMLHttpRequest", "WebSocket", "EventSource", "http://", "https://"):
@@ -197,7 +197,7 @@ def test_report_js_inlined_once_between_store_js_and_app_js():
 
 
 def test_report_js_makes_no_request_and_holds_no_verdict():
-    # Task-35, CLAUDE.md Part 2 layer rules 4 and 7: report.js requests nothing, and a report
+    # Task-35, CLAUDE.md Blueprint layer rules 4 and 7: report.js requests nothing, and a report
     # never touches a badge -- `grep -n "verdict" app/report.js` prints nothing. The Python
     # equivalent of the greps; Windows has no `grep` on PATH by default.
     source = (ROOT / "app" / "report.js").read_text(encoding="utf-8")
@@ -310,7 +310,7 @@ def test_vendored_jsqr_sha256_matches_license_file():
 
 
 def test_no_fetch_anywhere_in_the_app():
-    # CLAUDE.md Part 2, layer rule 7, whole again (2026-09-16 evening, Task-37): Task-36's
+    # CLAUDE.md Blueprint, layer rule 7, whole again (2026-09-16 evening, Task-37): Task-36's
     # one-tap exception for a lite copy is withdrawn, so the count is zero. The Python
     # equivalent of `grep -c "fetch(" app/**/*.js`; Windows has no `grep` on PATH by default.
     # sw.js is the host-only exception the rule already names and is never needed for first

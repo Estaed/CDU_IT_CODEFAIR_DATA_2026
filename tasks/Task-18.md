@@ -3,7 +3,7 @@
 **Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
 
 > **Execution:** agent `claude-worker` · effort `high`
-> *Why:* the frame contract is fixed in Part 2 and the round trip is checkable without a camera; the camera path itself is Tarik's manual check (PRD §6).
+> *Why:* the frame contract is fixed in Blueprint and the round trip is checkable without a camera; the camera path itself is Tarik's manual check (PRD §6).
 
 **Lane**
 - OWNS: `app/transfer.js` (new), `app/app.js` (the share screen: `renderShare` and what it calls), `app/app.css` (transfer block only, tokens only), `scripts/build_app.py` (the JS tuple only), `tests/browser/test_transfer.py` (new)
@@ -16,13 +16,13 @@
 Screen 3 gains "Show" and "Receive". Show plays the whole running app as a loop of QR frames;
 Receive on another phone reads them with the camera, reassembles, inflates and opens the
 result with a save button. The app travels by light, no network, no file. PRD §4.2 second
-batch; Part 2 "Entry points: Transfer by camera".
+batch; Blueprint "Entry points: Transfer by camera".
 
 ## Execution Guide
 
 - Payload: `pageHtml()` (already in `app.js`, the bytes save-as-file writes) → UTF-8 bytes →
   gzip with `new CompressionStream("gzip")` → base64 text. `BarcodeDetector.rawValue` is a
-  string, not bytes, which is why the payload is base64 (Part 2, 2026-09-15).
+  string, not bytes, which is why the payload is base64 (Blueprint, 2026-09-15).
 - Frame text: `"CX" + index as 4 hex digits + count as 4 hex digits + up to 1,000 base64
   characters`. Each frame is encoded with `CrosscheckQR.encode(text, "L")` and rendered with
   `toSvgPath` into one `<svg>` that is swapped in place about 8 times a second

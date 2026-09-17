@@ -1,6 +1,6 @@
 """Service verdict rules over one capability-table row.
 
-Standard library only (CLAUDE.md Part 2, layer rule 1). Every rule takes a plain dict of
+Standard library only (CLAUDE.md Blueprint, layer rule 1). Every rule takes a plain dict of
 strings - one ``csv.DictReader`` row of the capability table - and returns a plain dict, so
 the rules are unit-tested with hand-built rows and never touch a data frame.
 """

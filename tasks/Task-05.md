@@ -12,7 +12,7 @@ Status: DONE (2026-09-13, verify-task; gate green, 75 unit + 1 browser tests, ru
 > 5. `data/raw/` was cleaned first: the duplicate `ntgov_communities_mobile_coverage_2021.xlsx` (same MD5 as `ntg_2021.xlsx`) and its data-quality PDF moved to `spike/raw/`. The two ACCC `.zip` archives stay and match the `accc_*_outdoor_2025.*` pattern.
 
 > **Execution:** agent `claude-worker` · effort `high`
-> *Why:* the join and the provenance registry are fully specified by the spike's `merge.py` and Part 2; the criterion is the 96-row regression against the frozen spike table plus a provenance completeness check.
+> *Why:* the join and the provenance registry are fully specified by the spike's `merge.py` and Blueprint; the criterion is the 96-row regression against the frozen spike table plus a provenance completeness check.
 
 **Lane**
 - OWNS: `pipeline/merge.py`, `pipeline/provenance.py`, `scripts/run_pipeline.py`, `tests/test_merge.py`, `tests/test_provenance.py`, `tests/fixtures/capability_table_2026-09-12.csv`, `pipeline/pack.py` (one edit: `INTERIM_TABLE` → `data/out/capability_table.csv`, `SOURCE_DATES` → provenance registry)

@@ -27,7 +27,7 @@ phone and travels only by choice, as one line the mesh text's channels already c
 
 ## Contract
 
-1. **The line** (CLAUDE.md Part 2, seam "Report line"):
+1. **The line** (CLAUDE.md Blueprint, seam "Report line"):
    `CR1|<bushtel_id>|<yyyymmddhhmm UTC>|<status>|<carrier>|<effectiveType>|<rtt>|<downlink>|<lat>,<lon>`
    with `status` in `works|slow|none`, `carrier` in `telstra|optus|tpg|other|-`, the three
    connection fields from `navigator.connection` when present else `-` (rtt an integer of

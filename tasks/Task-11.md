@@ -22,7 +22,7 @@ and the removal of the spike now that the pipeline reproduces its table from the
 - `README.md` "Reproduce" section: prerequisites (Python 3.13, uv), `uv sync`, the fetch
   scripts and which snapshots are committed vs re-fetched, `scripts/run_pipeline.py`,
   `scripts/build_app.py`, `scripts/gate.py`, where each output lands, and the offline claim with
-  the command that verifies it (the browser smoke test). Every command copied from Part 2, run
+  the command that verifies it (the browser smoke test). Every command copied from Blueprint, run
   once while writing. Say that the ACCC test builds `data/out/cache/` (290 MB, gitignored) on
   its first run and that this cold parse took 3,531 s on 2026-09-13; every later run is seconds.
 - `scripts/package_submission.py`: builds `dist/DataChallenge_Team DIC005_Submission.zip`
@@ -40,7 +40,7 @@ and the removal of the spike now that the pipeline reproduces its table from the
 
 - [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` exits 0.
 - [x] `tests/test_package.py`: running the packager produces a zip whose name matches `DataChallenge_Team DIC005_*.zip`, that contains `index.html`, `README.md`, `pipeline/rules.py`, `data/out/data_pack.json`, `data/out/capability_table.csv`, and no entry under `.venv/` or `spike/`; total size under 100 MB.
-- [x] `README.md` "Reproduce" section lists every command in Part 2's Entry points and the gate, and `grep -c "spike" README.md` counts only the historical mention in the scaffolding paragraph.
+- [x] `README.md` "Reproduce" section lists every command in Blueprint's Entry points and the gate, and `grep -c "spike" README.md` counts only the historical mention in the scaffolding paragraph.
 - [x] `spike/` no longer exists; `grep -rn "spike/" pipeline scripts tests app --include=*.py --include=*.js` prints nothing.
 - [x] `grep -rn "DIC005" scripts/package_submission.py` prints nothing (read from `constants.md`).
 

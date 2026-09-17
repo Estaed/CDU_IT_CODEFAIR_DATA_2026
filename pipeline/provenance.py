@@ -1,7 +1,7 @@
 """The source registry: where every raw file came from, and the lines that must be shown.
 
 This module is the one place a source URL, a publication date, a licence or an attribution
-line is written down (CLAUDE.md Part 2, Key Constraints). ``write`` turns it into
+line is written down (CLAUDE.md Blueprint, Key Constraints). ``write`` turns it into
 ``data/out/PROVENANCE.md`` by measuring the files actually on disk; ``citations`` hands the
 same registry to ``pipeline.pack`` so the app's sources table quotes the registry rather than
 a second copy of it.

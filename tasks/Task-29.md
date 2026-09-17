@@ -22,7 +22,7 @@ communities' verdicts break down, so the map's story survives at every zoom.
 ## Execution Guide
 
 - **Where it runs.** In the browser, because it depends on the live zoom; it is layout, not a
-  verdict (Part 2 "Pushed down" names it as a browser job since 2026-09-15). No pack change.
+  verdict (Blueprint "Pushed down" names it as a browser job since 2026-09-15). No pack change.
 - **Which points.** The points currently visible under the active filter (with `All` that is all
   96). The selected community is never clustered: it is always drawn as its own point.
 - **Algorithm (deterministic).** Radius in view-box units `r = CLUSTER_RADIUS / zoom` with

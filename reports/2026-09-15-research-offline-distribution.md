@@ -120,7 +120,7 @@ a connection. That contradiction is the thing to fix.
 - C1, C3: PRD §6 manual checklist (the iPhone case needs a test line and probably a rewrite).
 - C5: a new PRD decision, if chosen — QR content (`WIFI:` join vs URL), a hardware line item,
   and a `pipeline`-independent `scripts/` or `hardware/` folder for the ESP32 firmware and its
-  gzipped copy of `dist/index.html`. Part 2 "Entry points" would gain one line.
+  gzipped copy of `dist/index.html`. Blueprint "Entry points" would gain one line.
 - C7, C8: PRD §8 stays as is; Recommendations section of the report gains Meshtastic/Serval
   with the ≤200-byte proof; optionally a Task for a "mesh-size" statement.
 - C4, C6: nowhere; recorded here so they are not researched twice.

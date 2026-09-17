@@ -39,7 +39,7 @@ PACKAGE_DIRS = ("pipeline", "scripts", "tests", "data/out")
 EXCLUDE_DIR_NAMES = {"__pycache__", ".pytest_cache", ".ruff_cache"}
 EXCLUDE_SUFFIXES = {".pyc"}
 # data/out/cache/ is the gitignored ACCC parse cache, rebuilt from data/raw/ when stale
-# (CLAUDE.md Part 2) - a build artefact, not a deliverable.
+# (CLAUDE.md Blueprint) - a build artefact, not a deliverable.
 EXCLUDE_RELATIVE_DIRS = ("data/out/cache",)
 
 

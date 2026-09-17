@@ -42,7 +42,7 @@ PRD §11 (2026-09-16). This task builds the measured winner into the app and rem
    multiples of `K`); the sources-0..19-never-delivered test stays; a `CY` frame pushed to the
    receiver is ignored (`known` unchanged).
 6. `reports/spike-qr/` is deleted and the workflow's spike step and path removed.
-7. Part 2's transfer paragraph is rewritten by the main loop to the v3 contract with the
+7. Blueprint's transfer paragraph is rewritten by the main loop to the v3 contract with the
    measured numbers, dated; the worker does not edit it.
 
 ## Fixed since round two was approved (2026-09-16)
@@ -100,7 +100,7 @@ without `report.js`'s screen). `ruff check --no-cache .` → `All checks passed!
 `pytest tests/test_build.py -q` → **25 passed**. `pytest -m browser -q` → **98 passed**
 (`tests/browser/test_transfer.py` alone: 14). Loss tests, seed 20260915, against
 `dist/index.html` at **K 341**: 10 % → 505 pushed (cap 546), 50 % → 498 (cap 955), 70 % → 420
-(cap 1,535); sources 0..19 never delivered completes inside 1.75 × K. Part 2 greps: rule 5 prints
+(cap 1,535); sources 0..19 never delivered completes inside 1.75 × K. Blueprint greps: rule 5 prints
 nothing; rule 7 prints exactly one line, `transfer.js:806`; rule 8 prints exactly `transfer.js`
 and `audio: true` prints nothing.
 
@@ -125,7 +125,7 @@ and `audio: true` prints nothing.
 6. **The rule-7 grep test was added, not edited.** `tests/test_build.py` had no app-wide
    `fetch(` test — only per-file ones — so `test_exactly_one_fetch_in_the_app_and_it_is_guarded`
    is new: it counts one occurrence across `app/**/*.js` (excluding `sw.js`, the host-only
-   exception Part 2 already names), pins it to `transfer.js`, and asserts the guard and the
+   exception Blueprint already names), pins it to `transfer.js`, and asserts the guard and the
    click sit before it. `test_transfer.py`'s old no-network test kept every other token.
 7. **`tests/browser/conftest.py` gained a `blocking_page` fixture** rather than each lite test
    rolling its own router; the existing `_open_page` helpers in the other files are untouched.

@@ -17,7 +17,7 @@ The app can encode a QR code at runtime, from its own bytes or from text, with n
 Three later features need it: the transfer frames (Task-18), the nearby handshake and the
 Wi-Fi join code (Task-19). Today the only QR is rendered at build time by Python `qrcode`
 (`scripts/build_app.py: qr_svg`), which cannot encode anything the phone only knows at runtime.
-PRD §4.2 second batch; CLAUDE.md Part 2 "Where the code lives" and layer rule 7.
+PRD §4.2 second batch; CLAUDE.md Blueprint "Where the code lives" and layer rule 7.
 
 ## Execution Guide
 
@@ -37,7 +37,7 @@ PRD §4.2 second batch; CLAUDE.md Part 2 "Where the code lives" and layer rule 7
   version's block table (copy the table values from `qrcode/base.py: RS_BLOCK_TABLE`, they are
   data, not code).
 - `scripts/build_app.py`: `JS` becomes an ordered tuple `(app/qr.js, app/app.js)` inlined in
-  that order inside the one `<script>`; Part 2 fixes the full order `qr.js, transfer.js,
+  that order inside the one `<script>`; Blueprint fixes the full order `qr.js, transfer.js,
   nearby.js, app.js`, later tasks append their file to the tuple. No other change.
 - Keep `qr.js` under about 450 lines; the block table is most of it.
 

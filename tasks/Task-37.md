@@ -100,10 +100,10 @@ for the whole page and K 97 for the lite copy. `ruff check --no-cache .` → `Al
 `pytest tests/test_build.py -q` → **23 passed**. `pytest -m browser -q` → **98 passed**
 (`tests/browser/test_transfer.py` alone: 13). Loss tests, seed 20260915, at K 24: 10 % → **31**
 pushed (cap 39), 50 % → **40** (cap 68), 70 % → **30** (cap 108); sources 0..19 never delivered
-→ **32** pushed (cap 42). Part 2 greps: rule 5 prints nothing; rule 7 prints nothing; rule 8
+→ **32** pushed (cap 42). Blueprint greps: rule 5 prints nothing; rule 7 prints nothing; rule 8
 prints exactly `app/transfer.js` and `audio: true` prints nothing.
 `grep -rn "lite.html|CrosscheckLite|data-lite|fetch\(" app scripts tests` prints `app/sw.js`
-twice (the host-only exception Part 2 names) and test assertion text only.
+twice (the host-only exception Blueprint names) and test assertion text only.
 
 **Deviations, and why.**
 

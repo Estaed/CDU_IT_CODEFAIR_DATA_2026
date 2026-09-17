@@ -12,7 +12,7 @@ projection constants (``K = 30, X0 = 128.5, Y0 = -10.5``).
 2026-09-13 against ``data/raw/abs_ste_2021_shp.zip``.
 
 pyogrio and shapely are the only geo imports here; nothing outside this module's own reach
-is imported (CLAUDE.md Part 2, layer rule 6).
+is imported (CLAUDE.md Blueprint, layer rule 6).
 """
 
 from __future__ import annotations

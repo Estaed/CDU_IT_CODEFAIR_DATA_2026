@@ -17,7 +17,7 @@ The pack carries the geography the map's second pass draws: five towns, four hig
 SA3 regions inside the NT and the ACCC 2025 predicted 4G coverage per carrier, each as
 simplified SVG path strings in the pack's projected space, each with a provenance entry.
 `pack_version` stays 1 in this task (the key is additive and the app ignores it until
-Task-21). PRD §4.2 second batch, OQ13, OQ16; Part 2 "Map layer" seam and `layers.py`.
+Task-21). PRD §4.2 second batch, OQ13, OQ16; Blueprint "Map layer" seam and `layers.py`.
 
 ## Execution Guide
 
@@ -40,7 +40,7 @@ Task-21). PRD §4.2 second batch, OQ13, OQ16; Part 2 "Map layer" seam and `layer
   the roads fetcher named below) and take the polygon centroid of the five UCL names, projected.
 - `pipeline/layers.py`: `towns(ucl_zip) -> dict`, `regions(sa3_zip) -> dict`,
   `coverage(layer_id, label, cache_or_kml, boundary) -> dict`, and `build_layers(raw_dir,
-  boundary_path) -> list[dict]`. Each layer is `{id, label, kind, src, paths}` per the Part 2
+  boundary_path) -> list[dict]`. Each layer is `{id, label, kind, src, paths}` per the Blueprint
   seam: `kind` is `point` (towns: `paths` = `[{x, y, label}]`), `line` (region borders) or
   `area` (coverage). Geometry via geopandas/shapely as in `pipeline/outline.py`; project with
   `outline.project`; round to 1 decimal; drop rings under 4 projected square units; simplify
@@ -63,7 +63,7 @@ Task-21). PRD §4.2 second batch, OQ13, OQ16; Part 2 "Map layer" seam and `layer
 - [x] `tests/test_layers.py`: a hand-built square polygon in lat/lon becomes one path string with the expected projected, rounded coordinates; a ring under 4 square units is dropped; `build_layers` on the frozen `data/raw/` returns the ids listed above (highways may be absent only under the ⛔ case), every layer has `kind` in `{point, line, area}`, non-empty `paths`, and a `src` present in `provenance` with a URL, a date and a licence; the summed UTF-8 bytes of all path strings is at most the figure chosen from the report (assert the number).
 - [x] `tests/test_pack.py` (appended): the pack has a `layers` list whose every `src` is a key of the pack's `sources` table; `pack_version` is still 1; exactly 96 communities still.
 - [x] `PYTHONUTF8=1 .venv/Scripts/python scripts/run_pipeline.py` from the root regenerates `data/out/data_pack.json` under the new cap and `data/out/PROVENANCE.md` lists the new sources with licence lines.
-- [x] Layer rule 2 and 3 greps from Part 2 still print nothing; `ruff check --no-cache .` prints `All checks passed!`. (Main loop, 2026-09-15: rule 2 clean; rule 3's only hit is the string literal `"import requests"` inside an assertion in `tests/test_source_bushtel.py`, present since Task-01, not an import; ruff clean after the `reports/` exclude.)
+- [x] Layer rule 2 and 3 greps from Blueprint still print nothing; `ruff check --no-cache .` prints `All checks passed!`. (Main loop, 2026-09-15: rule 2 clean; rule 3's only hit is the string literal `"import requests"` inside an assertion in `tests/test_source_bushtel.py`, present since Task-01, not an import; ruff clean after the `reports/` exclude.)
 
 ## Status
 

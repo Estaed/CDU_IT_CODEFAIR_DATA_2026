@@ -1,6 +1,6 @@
 """Build data/out/data_pack.json, the subset of the capability table the app shows.
 
-Every figure the app renders is decided here, never in the browser (CLAUDE.md Part 2).
+Every figure the app renders is decided here, never in the browser (CLAUDE.md Blueprint).
 Run from the project root: ``PYTHONUTF8=1 .venv/Scripts/python -m pipeline.pack``.
 """
 
@@ -407,7 +407,7 @@ def source_table(
     communities; naming each of them once and referring to it by ``s<n>`` is what keeps the
     pack inside its byte budget (PRD decision log, 2026-09-13). Map layers cite the same way:
     each layer's ``src`` starts as a provenance ``pack_source`` name and is folded into the
-    same table, exactly as publisher lines are (Part 2 "Map layer" seam).
+    same table, exactly as publisher lines are (Blueprint "Map layer" seam).
     """
     community_pairs = {
         (line["source"], line["date"]) for c in communities for line in dated_lines(c)

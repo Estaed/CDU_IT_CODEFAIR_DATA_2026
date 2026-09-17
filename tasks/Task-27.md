@@ -25,7 +25,7 @@ The receiving screen is the feedback, and the sender's screen says so in one lin
 
 ## Execution Guide
 
-- **Frame contract v2** (Part 2 amended 2026-09-15). Payload = gzip of the UTF-8 bytes of
+- **Frame contract v2** (Blueprint amended 2026-09-15). Payload = gzip of the UTF-8 bytes of
   `pageHtml()`. Split into `K` source blocks of 750 bytes, the last padded with zeros. Frame text
   = `CY` + index (4 hex) + `K` (4 hex) + payload length in bytes (6 hex) + base64 of one
   750-byte block (exactly 1,000 characters). Index below `K` is source block `index`. Index `K` or
@@ -202,5 +202,5 @@ measurement of that exact variant rather than the original `1.5 * K` estimate. T
 the resulting `m = 1.75`, and the code change are above.
 
 Not verified by this lane: the actual camera round trip on a phone (out of the Definition of
-Done per Part 2, "Not in the Definition of Done"), and `scripts/gate.py` end to end (no
+Done per Blueprint, "Not in the Definition of Done"), and `scripts/gate.py` end to end (no
 `data/raw/` in this worktree).

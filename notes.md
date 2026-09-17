@@ -144,7 +144,7 @@ questions, 5 deferred decisions, decision log); licence email drafts in
 
 Next, in order:
 1. Claude Design, three screens (Community, Map, Share) per PRD §4.2, into `design/`.
-2. `create-architecture` (Part 2), then `generate-tasks`. Part 2 inherits the spike's data facts
+2. `create-architecture` (Blueprint), then `generate-tasks`. Blueprint inherits the spike's data facts
    (ACCC Optus 4G = 1.1 M placemarks, clip once; NBN FW is Darwin-only; RRL join recipe) and the
    PRD's size bar (HTML ≤ 1 MB, data pack ≤ 300 KB).
 

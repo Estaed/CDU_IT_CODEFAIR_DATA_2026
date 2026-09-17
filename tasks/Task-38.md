@@ -161,9 +161,9 @@ rest of this batch (Task-39's `claim_reliability`, Task-40's score) will push fu
 
 **Decided by Tarik, 2026-09-17, and applied:** a loss budget is a distribution, not one seed.
 Over the twenty fixed seeds `20260915 + s * 7919`, s = 0..19, the median frames-needed ratio
-must stay within Part 2's 1.6 / 2.8 / 4.5 x K and the worst seed within 2.5 / 3.5 / 4.5 x K,
+must stay within Blueprint's 1.6 / 2.8 / 4.5 x K and the worst seed within 2.5 / 3.5 / 4.5 x K,
 every seed completing; the deterministic sources-0..19 scenario moves from 1.75 to 2.0 x K.
-Tarik amended Part 2 himself; this lane applied it in `tests/browser/test_transfer.py` and
+Tarik amended Blueprint himself; this lane applied it in `tests/browser/test_transfer.py` and
 nowhere else. Observed at K 25: 10 % median 1.44 worst 2.32, 50 % median 1.56 worst 3.24,
 70 % median 1.40 worst 2.28, omission 1.80. The three loss tests now run their twenty seeds
 inside one page evaluation, so the transfer file still takes about 5 s.

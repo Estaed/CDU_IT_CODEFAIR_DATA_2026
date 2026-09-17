@@ -143,14 +143,14 @@ sources is being scored on its own, separately from the modelling.
 
 This folder is a Project Ignition clone. `CLAUDE.md` and its Codex twin `AGENTS.md` carry the
 workflow: dump raw thinking into `notes.md`, then `create-prd`, then `create-architecture` to
-write Part 2, then `generate-tasks`, then `verify-task` per task. `.codex/hooks.json` has been
-generated for this path. Part 2 of `CLAUDE.md` is still the placeholder and must be written
+write Blueprint, then `generate-tasks`, then `verify-task` per task. `.codex/hooks.json` has been
+generated for this path. Blueprint of `CLAUDE.md` is still the placeholder and must be written
 before any task is generated.
 
 ## Reproduce
 
 Every command below runs from this folder (the project root) and was run once while writing
-this section. Commands are copied verbatim from `CLAUDE.md` Part 2 "Entry points" and "Quality
+this section. Commands are copied verbatim from `CLAUDE.md` Blueprint "Entry points" and "Quality
 gate"; if the two ever disagree, `CLAUDE.md` is the source of truth.
 
 ### Prerequisites

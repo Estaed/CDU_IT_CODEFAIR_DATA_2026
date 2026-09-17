@@ -33,7 +33,7 @@ def context(browser):
 
 
 def _open_page(context, hash_route: str = ""):
-    """A page with every non-file: request aborted and counted (CLAUDE.md Part 2, gate 3b)."""
+    """A page with every non-file: request aborted and counted (CLAUDE.md Blueprint, gate 3b)."""
     page = context.new_page()
     blocked: list[str] = []
     errors: list[str] = []

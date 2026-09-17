@@ -124,7 +124,7 @@ Status: IMPLEMENTED (2026-09-17, claude-worker sonnet) — awaiting verify-task
 **Tests-section grep**
 
 `grep -rn "changes_header\|statementMesh\|renderCompare\|history" pipeline scripts app tests`
-→ one hit: `scripts/build_app.py:10: gzipped in the browser at Show time. CLAUDE.md Part 2
+→ one hit: `scripts/build_app.py:10: gzipped in the browser at Show time. CLAUDE.md Blueprint
 keeps that history.` — pre-existing prose about Task-36/37's withdrawn lite-copy history,
 unrelated to the deleted snapshot-history feature; `scripts/build_app.py` is outside this
 task's OWNS and was not touched.

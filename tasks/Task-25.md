@@ -17,7 +17,7 @@ Safari on iPhone has no `BarcodeDetector` (broken since iOS 18), so today an iPh
 codes but cannot read them: no Receive by light, no scanning in nearby chat. After this task every
 scan in the app goes through one adapter that uses the browser's reader where it exists and the
 vendored jsQR decoder where it does not. Tarik's decision 2026-09-15 (OQ15 answered). This is the
-one library exception Part 2 allows.
+one library exception Blueprint allows.
 
 ## Execution Guide
 
@@ -91,7 +91,7 @@ refused the cross-tree path as expected):**
 - All three (tarball, unmodified, edited) recorded in `app/vendor/jsQR.LICENSE`, alongside both
   edits made and the full Apache-2.0 text.
 
-**jsQR version-23 defect -- resolved, second edit applied (coordinator decision, CLAUDE.md Part 2
+**jsQR version-23 defect -- resolved, second edit applied (coordinator decision, CLAUDE.md Blueprint
 amended in main to allow it):**
 `app/vendor/jsQR.js`'s own version table (`VERSIONS[22]`, `versionNumber: 23`) read
 `alignmentPatternCenters: [6, 30, 54, 74, 102]`; the ISO/IEC 18004 value for the fourth centre is

@@ -171,7 +171,7 @@ bullet), this file.
    only `line`-kind layer in the pack, so both readings produce an identical chip list. Chose the
    kind-based rule instead of an id check because "line" already means "region border" in
    `renderLayerGroup`'s existing kind switch, and a hardcoded id inside app.js would be exactly
-   the kind of per-layer special-case Part 2's "the app draws any layer it is given" seam is
+   the kind of per-layer special-case Blueprint's "the app draws any layer it is given" seam is
    meant to avoid. Flagging in case a future line-kind layer (e.g. a highways layer, named in
    Task-21's own Objective prose but never built) is meant to default *visible* rather than
    hidden -- nothing in Task-33 says either way for a layer that does not exist yet.

@@ -16,7 +16,7 @@
 Screen 2 stops being 96 dots in a blank outline: coverage shading per carrier with toggles,
 region borders, highways, the five towns with labels, pinch-zoom and pan, and community names
 once zoomed in. The pack becomes version 2 and the app accepts version 2 only. PRD §4.2 second
-batch ("Map, second pass"); Part 2 "Map layer" seam, layer rule 5 (the `layers.css` exception)
+batch ("Map, second pass"); Blueprint "Map layer" seam, layer rule 5 (the `layers.css` exception)
 and "Pack header".
 
 ## Execution Guide
@@ -148,7 +148,7 @@ bytes**, unchanged from before this task (limit 512,000; no new bytes since only
 6. **Layer chip labels use the pack's own `layer.label` string** ("Telstra 4G", "Optus 4G",
    "TPG (Optus sites, MOCN)"), not the bare carrier names ("Telstra", "Optus", "TPG") the
    Execution Guide's prose uses as examples. Chosen so the app never hardcodes a carrier name
-   (Part 2's own "no app change" claim for new layers only holds if the label comes from the
+   (Blueprint's own "no app change" claim for new layers only holds if the label comes from the
    pack); the hash slug (`telstra`, `optus`, `tpg`, stripped of the `cov-` id prefix) still
    matches the `&layers=telstra,optus` example literally.
 7. **A real bug found and fixed in passing, not part of this task's own surface:** the zoom/pan

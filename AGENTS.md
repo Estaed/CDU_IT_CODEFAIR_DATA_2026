@@ -4,13 +4,13 @@
      Codex reads AGENTS.md rather than CLAUDE.md; this file is generated
      from it so the content remains identical. -->
 
-# CLAUDE.md — Crosscheck — CDU IT Code Fair 2026, Data Innovation Challenge (Python 3.13 pipeline + single-file vanilla JS app; pinned in Part 2)
+# CLAUDE.md — Crosscheck — CDU IT Code Fair 2026, Data Innovation Challenge (Python 3.13 pipeline + single-file vanilla JS app; pinned in Blueprint)
 
 > **Competition context lives in this repo, not in your memory.** Read `README.md`
 > at the root of this folder before doing anything, and the files under `docs/` that it
 > points to: the official brief, the deliverables, the deadlines and the judging criteria
 > are all transcribed there from the organiser's website. They are the constraints this
-> project is graded against — treat them the way Part 2 treats the architecture.
+> project is graded against — treat them the way Blueprint treats the architecture.
 
 ---
 # TarikOS (Second Brain) link — Eko identity
@@ -44,7 +44,7 @@ Both take `--check`; `--check` never repairs.
 
 ---
 
-## Part 2: Technical Architecture
+## Blueprint
 
 Written 2026-09-13 with `create-architecture` from `docs/PRD.md`, the 20-community spike
 (`reports/2026-09-12-spike-20.md`) and the design files in `design/`. Three calls were put to
@@ -315,11 +315,3 @@ red gate at the start is expected; a task marked DONE on a red gate is not.
   never shell strings or POSIX-only idioms; every command in this file is runnable from the root
   as written.
 - The repository is English-only, including comments, commits and this file.
-
-### Why this section exists
-
-`docs/PRD.md` says *what* to build and *why*. `tasks/Task-XX.md` says *how* to build one
-slice. Neither survives as ambient context; they are read on demand. `CLAUDE.md` is loaded into
-**every** session, so Part 2 is the only place where the project's technical invariants are
-always present. Without it, each session re-derives the stack and 30 tasks drift into 30
-slightly different architectures. Part 2 is what makes task 27 look like task 3 wrote it.

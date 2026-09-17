@@ -3,7 +3,7 @@
 **Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
 
 > **Execution:** agent `claude-worker` · effort `high`
-> *Why:* the channel contract is fixed in Part 2 and proven by the 2026-09-15 spike; the loopback criterion runs headless. The hotspot case (OQ14) is Tarik's manual check, not gated.
+> *Why:* the channel contract is fixed in Blueprint and proven by the 2026-09-15 spike; the loopback criterion runs headless. The hotspot case (OQ14) is Tarik's manual check, not gated.
 
 **Lane**
 - OWNS: `app/nearby.js` (new), `app/app.js` (the `#/nearby` route and screen, plus one "Nearby chat" button on the share screen), `app/app.css` (nearby block only, tokens only), `scripts/build_app.py` (the JS tuple only), `tests/browser/test_nearby.py` (new), `tests/test_build.py` (append only)
@@ -16,7 +16,7 @@
 Two phones on one Wi-Fi (a personal hotspot or any router) chat directly, browser to browser,
 after scanning each other's QR once. No server, no STUN, no TURN, no storage. The same channel
 hands over the data pack on request. The screen also shows a Wi-Fi join QR for the host's
-hotspot. PRD §4.2 second batch; Part 2 "Entry points: Nearby chat"; spike
+hotspot. PRD §4.2 second batch; Blueprint "Entry points: Nearby chat"; spike
 `reports/spike-webrtc-hotspot/` is the working reference for the WebRTC calls.
 
 ## Execution Guide
@@ -61,7 +61,7 @@ hotspot. PRD §4.2 second batch; Part 2 "Entry points: Nearby chat"; spike
 
 DONE 2026-09-15 (main loop: integrated, gate green; mutation check: labelling a received
 message as `me` turns the loopback test red, restored. The chunked pack transfer is the right
-call and Part 2's contract line is amended to say so.) Worker notes follow.
+call and Blueprint's contract line is amended to say so.) Worker notes follow.
 
 Implemented `app/nearby.js` (`window.CrosscheckNearby`: `start`, `accept`, `finish`, `send`,
 `requestPack`, `close`, `onEvent`, plus `buildScanButton` — see deviation below), the `#/nearby`

@@ -3,11 +3,11 @@
 Status: DONE (verify-task, 2026-09-13; gate GREEN: ruff clean, 32 unit + 1 browser test)
 
 > **Execution:** agent `claude-worker` · effort `high`
-> *Why:* every file, function and criterion is named below and in CLAUDE.md Part 2; the criterion is the gate's exit code. Tarik's standing instruction (2026-09-13): Claude workers, not Codex.
+> *Why:* every file, function and criterion is named below and in CLAUDE.md Blueprint; the criterion is the gate's exit code. Tarik's standing instruction (2026-09-13): Claude workers, not Codex.
 
 **Lane**
 - OWNS: `pipeline/__init__.py`, `pipeline/rules.py`, `pipeline/thresholds.csv`, `pipeline/pack.py`, `app/`, `scripts/build_app.py`, `tests/`
-- MUST NOT TOUCH: `spike/` (frozen; read `spike/out/capability_table.csv` and `spike/thresholds.csv` as inputs only), `design/` (read-only), `scripts/gate.py` (owned by Part 2), `pyproject.toml` (append-only: pytest `pythonpath` if needed)
+- MUST NOT TOUCH: `spike/` (frozen; read `spike/out/capability_table.csv` and `spike/thresholds.csv` as inputs only), `design/` (read-only), `scripts/gate.py` (owned by Blueprint), `pyproject.toml` (append-only: pytest `pythonpath` if needed)
 - GATE: `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` from the project root
 - DEPENDS ON: none
 
@@ -46,7 +46,7 @@ The four publishers and their kinds, details and dates are exactly those on `des
 
 **App shell** (`app/index.html`, `app/app.css`, `app/app.js`). `index.html` is the template with three placeholders `<!-- CSS -->`, `<!-- PACK -->`, `<!-- JS -->` and the markup of the top bar from `design/screens/share.html` (title, three tabs, offline chip) plus an empty `<main class="content">`. `app.js` (ES2020, no imports from anywhere) reads the pack from `#pack`, routes on `location.hash` (`#/community/<id>`, `#/map`, `#/share`, default `#/community/426`), marks the selected tab `aria-selected`, calls `scrollIntoView({inline: "nearest"})` on it, sets the offline chip from `navigator.onLine`, and for now renders one line per screen: `"<n> communities"` on community, `"Map"` on map, `"Share"` on share. `app.css` holds only rules the three screen files did not need (for example `main { min-height: ... }` using tokens) and may be empty.
 
-**Build** (`scripts/build_app.py`). `inline(template, css_parts, js, pack_json) -> str` and `main()` reading, in the order Part 2 fixes: `design/ds/design/tokens/colors.css`, `typography.css`, `spacing.css`, `design/ds/design/base.css`, `design/screens/screens.css`, `app/app.css`; then `app/app.js`; then `data/out/data_pack.json` as `<script type="application/json" id="pack">` (escape `</` as `<\/`). Writes `dist/index.html`. `APP_URL` and `TEAM_NUMBER` are read from `constants.md` by a small parser in `pack.py` (the table row for the name), never retyped.
+**Build** (`scripts/build_app.py`). `inline(template, css_parts, js, pack_json) -> str` and `main()` reading, in the order Blueprint fixes: `design/ds/design/tokens/colors.css`, `typography.css`, `spacing.css`, `design/ds/design/base.css`, `design/screens/screens.css`, `app/app.css`; then `app/app.js`; then `data/out/data_pack.json` as `<script type="application/json" id="pack">` (escape `</` as `<\/`). Writes `dist/index.html`. `APP_URL` and `TEAM_NUMBER` are read from `constants.md` by a small parser in `pack.py` (the table row for the name), never retyped.
 
 **Tests** (`tests/`): `test_rules.py` with hand-built rows for every spike pattern (unanimous covered 1/1/1/1, unanimous not 0/0/0/0, 1/0/1/1, 0/0/1/0, 1/1/0/1, 0/0/1/1, fixed line Yirrkala, WiFi-only voice) asserting verdict word and reason; `test_pack.py` asserting 96 communities, every `population`, `publisher` line, `service.sources[*]` and `flag` carries a non-empty `source` and ISO `date`, no BushTel free-text field appears, Wadeye's four verdicts are degraded/degraded/works/works and Baniyala's telehealth is fails; `test_build.py` asserting the output contains the pack exactly once, no `http://` or `https://` outside the pack JSON, no `<link` or `<script src`, and size under the limits; `tests/browser/test_smoke.py` marked `browser`: a Playwright fixture opens `dist/index.html` with `page.route("**/*", ...)` aborting and counting every request whose URL does not start with `file:`, asserts the count is 0, `#pack` parses, the top bar has three `[role=tab]`, and the browser is closed at teardown.
 
@@ -228,7 +228,7 @@ string HTML with data in it. No literal px, no hex colour, no `http`.
 js, pack_json)` replaces `<!-- CSS -->` with `<style>` + `"\n".join(css_parts)` + `</style>`,
 `<!-- PACK -->` with `<script type="application/json" id="pack">` + `pack_json.replace("</", "<\\/")`
 + `</script>`, `<!-- JS -->` with `<script>` + js + `</script>`; raises `ValueError` naming any
-placeholder that is missing from the template. `main()` reads the files Part 2 lists in that
+placeholder that is missing from the template. `main()` reads the files Blueprint lists in that
 order (`design/ds/design/tokens/colors.css`, `typography.css`, `spacing.css`,
 `design/ds/design/base.css`, `design/screens/screens.css`, `app/app.css`; `app/app.js`;
 `data/out/data_pack.json`) and writes `dist/index.html` (UTF-8, LF), creating `dist/`.

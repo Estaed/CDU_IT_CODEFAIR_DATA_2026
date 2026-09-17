@@ -4,11 +4,11 @@ receiver's lossless and lossy-drop round trips, and the progress UI on both ends
 What travels is the **data pack, not the app**: the payload is the pack this copy is running
 with, `layers` replaced by `[]`, gzipped at Show time. The receiver stores it through
 store.js, which carries this copy's own map layers over the incoming empty ones. Headless
-Chromium may lack BarcodeDetector and a camera (Part 2), so every round trip below pushes
+Chromium may lack BarcodeDetector and a camera (Blueprint), so every round trip below pushes
 frame texts straight into CrosscheckTransfer.receiver() (or the mounted receive UI's
 testPushFrame hook) instead of scanning.
 
-The loss budgets are Part 2's, and since 2026-09-17 they are read over a distribution: for
+The loss budgets are Blueprint's, and since 2026-09-17 they are read over a distribution: for
 each of 10 / 50 / 70 % loss the median of twenty fixed seeds stays within 1.6 / 2.8 / 4.5 * K
 pushed frames and the worst seed within 2.5 / 3.5 / 4.5 * K, every seed completing, and the
 deterministic sources-0..19 scenario stays within 2.0 * K. The medians are the budgets
@@ -167,7 +167,7 @@ def test_round_trip_between_two_pages_is_the_pack_and_layers_are_carried_over(co
 
 
 # Tarik's decision, 2026-09-17: a loss budget is a distribution, not one seed. Over the twenty
-# fixed seeds below, the MEDIAN frames-needed ratio must sit inside Part 2's 1.6 / 2.8 / 4.5 x K
+# fixed seeds below, the MEDIAN frames-needed ratio must sit inside Blueprint's 1.6 / 2.8 / 4.5 x K
 # and the WORST seed inside 2.5 / 3.5 / 4.5 x K, and every seed must complete. One seed was
 # never a property of the decoder: at K 24 three of these twenty already needed more than
 # 1.6 x K at 10 % loss, and one block more of pack (K 25) moved the fixed seed from 1.29 to
@@ -449,7 +449,7 @@ def test_receiving_screen_progress_and_received_message(context):
 
 
 def test_transfer_module_has_no_network_literals():
-    # CLAUDE.md Part 2, layer rule 7: this file writes down no address and no transport. The
+    # CLAUDE.md Blueprint, layer rule 7: this file writes down no address and no transport. The
     # request count itself is asserted app-wide in tests/test_build.py, which is the one place
     # the token appears, so the grep behind the rule reads clean everywhere else.
     source = (ROOT / "app" / "transfer.js").read_text(encoding="utf-8")

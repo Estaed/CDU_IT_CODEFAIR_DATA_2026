@@ -28,7 +28,7 @@ byte-equal, NTG 18 columns including the embedded newline in row 654.
    it, every bee diagnosed it correctly and left the file alone because it was outside OWNS. The
    main loop fixed it on main (`bd89b1d`) and cherry-picked the fix into each worktree before
    running the lane gates. **Decision for Tarik:** make `scripts/gate.py` run ruff with
-   `--no-cache` (a Part 2 change: the gate is owned by Part 2). The lint step costs under a second
+   `--no-cache` (a Blueprint change: the gate is owned by Blueprint). The lint step costs under a second
    either way.
 2. **The Task-03 bee ended its turn on a background wait.** It wrote the module, fetch script,
    test and fixture, started the 50-minute cold parse in the background, said "a background wait

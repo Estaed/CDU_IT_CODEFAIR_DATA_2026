@@ -1,6 +1,6 @@
 # Tasks index — Crosscheck
 
-Generated 2026-09-13 by `generate-tasks` from `docs/PRD.md`, `CLAUDE.md` Part 2 and the three
+Generated 2026-09-13 by `generate-tasks` from `docs/PRD.md`, `CLAUDE.md` Blueprint and the three
 reference screens in `design/screens/`. Only `verify-task` ticks a box here. The task file wins
 over this table when they disagree.
 
@@ -9,7 +9,7 @@ over this table when they disagree.
 | Phase | What it holds | Where it is owned |
 |---|---|---|
 | **v1 (this list)** | Pipeline from frozen snapshots to the 96-row capability table and data pack; the single-file offline app with three screens; report-ready figures; submission zip. Deadline 2026-09-30. | PRD §4, §5, §6 |
-| v1.1, deferred not cancelled | D1 modelled coverage publisher; D2 "report signal here"; D3 wider universe; D4 LLM road-note extraction; D5 national scope. Seams already in Part 2: publisher line (`kind`), flag emitter, requirement row, pack header version. | PRD §10 |
+| v1.1, deferred not cancelled | D1 modelled coverage publisher; D2 "report signal here"; D3 wider universe; D4 LLM road-note extraction; D5 national scope. Seams already in Blueprint: publisher line (`kind`), flag emitter, requirement row, pack header version. | PRD §10 |
 | Optional flags, licence-gated | BoM cyclone count (OQ3), National Audit tiles (OQ2): new flag emitters, drop if unanswered by 2026-09-26. | PRD §9 |
 
 Outside the software gate, owned by Emma, Thanh and Will: the 8-page report, the deck, the
@@ -91,7 +91,7 @@ Tasks 02, 03 and 04 own disjoint files and can run as one wave in separate workt
 Task-07 and Task-10. Every other step is serial because it edits `app/app.js` or `pipeline/pack.py`.
 
 After each wave goes green: `/code-review` over the accumulated diff with the task files and
-Part 2 attached; `review-visual` after Tasks 07, 08 and 09 against `design/screens/*.html`,
+Blueprint attached; `review-visual` after Tasks 07, 08 and 09 against `design/screens/*.html`,
 advisory only.
 | Task-17 | claude-worker | no | high | none | 14 |
 | Task-22 | claude-worker | no | medium | none | 14 (beside Task-17) |

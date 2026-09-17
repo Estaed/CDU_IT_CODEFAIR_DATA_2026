@@ -2,7 +2,7 @@
 BarcodeDetector (Safari on iPhone, broken since iOS 18), and the native reader is used when one
 exists. Headless Chromium has no camera, so every code here is drawn onto a canvas by the page
 itself (fillRect at 4 units per module, a 4-module quiet zone) and decoded back through
-CrosscheckScan; no video element or getUserMedia is involved (CLAUDE.md Part 2, layer rule 8).
+CrosscheckScan; no video element or getUserMedia is involved (CLAUDE.md Blueprint, layer rule 8).
 
 Vendored jsQR 1.4.0 shipped with a wrong `alignmentPatternCenters` entry for version 23 (its own
 table read `[6, 30, 54, 74, 102]`; the ISO/IEC 18004 value is `[6, 30, 54, 78, 102]`), found while

@@ -3,7 +3,7 @@
 CDU IT Code Fair 2026, Data Innovation Challenge (theme: Remote Connectivity). Written
 2026-09-12 from `notes.md`, the idea-arena verdict (`reports/2026-09-12-arena-verdict.md`), the
 20-community spike (`reports/2026-09-12-spike-20.md`) and the official brief (`README.md`,
-`docs/`). Says *what* and *why*; *how* is `CLAUDE.md` Part 2, written next.
+`docs/`). Says *what* and *why*; *how* is `CLAUDE.md` Blueprint, written next.
 
 Team [number pending]: Tarik (pipeline, app, README, report-ready figures), Emma, Thanh, Will
 (report, slides, pitch). Submission 30 September 2026; Challenge Day 7 October 2026.
@@ -361,7 +361,7 @@ What the app shows for one community; not a schema.
 | Mesh-size statement fits one packet | Unit test: every community's text is ≤ 200 bytes in UTF-8 |
 | Verdict rules are correct as written | Unit tests on the rule functions with hand-built rows for every pattern in the spike (unanimous yes, unanimous no, the six disagreement patterns, fixed line) |
 | The 96-row table matches the spike where inputs are unchanged | Regression test against `spike/out/capability_table.csv` columns that the pipeline keeps |
-| Visual fidelity to `design/` | Advisory review by eye after `design/` exists; not a gate (recorded in Part 2) |
+| Visual fidelity to `design/` | Advisory review by eye after `design/` exists; not a gate (recorded in Blueprint) |
 | Report format | Emma/Thanh/Will against `docs/report-requirements.md`; not in the software gate |
 
 ## 7. Ethics, culture, community (the Discussion section's raw material)
@@ -439,7 +439,7 @@ What the app shows for one community; not a schema.
 15. **iPhone camera receive route** — ANSWERED 2026-09-15 (Tarik): vendor jsQR 1.4.0
     (Apache-2.0, pure JavaScript, 256,885 bytes, 56,970 gzipped, last release 2021-04-24) behind
     one scan adapter that prefers the browser's own reader (Task-25). The one library exception
-    in the app, named in Part 2. Rejected: zxing-wasm (maintained, MIT, but a 3.7 MB package whose
+    in the app, named in Blueprint. Rejected: zxing-wasm (maintained, MIT, but a 3.7 MB package whose
     `.wasm` would have to be inlined), qr-scanner (MIT, last release 2022, needs a separate worker
     file).
 16. **Licence of the road and town source** for the map's second pass (Geoscience Australia
