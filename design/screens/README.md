@@ -184,6 +184,13 @@ component key is given in the first column. Every class is defined once in `scre
   above the filter tabs recolours the points, the cluster rings and the legend by any of the
   four services, not telehealth video alone. A worst-first list (Fails, Degraded, No data,
   Works, then by name) sits under the legend, one row per community the active filter shows.
+- **Priority tab, Task-41 (2026-09-17, PRD §4.2 fourth batch).** The app's fourth tab has
+  no screen file: PRD §2 ("the analyst's sixty seconds") is its source of truth, and it
+  reuses DESIGN.md's existing `chip` (one per intervention plus `All`, pressed state on the
+  active one) and a plain list of rows, with no new component and no new token. The two
+  lines it adds to the community screen -- the priority line and the map-claim reliability
+  line -- sit under the sources fold, below the two-action row, so Task-34's one-screen
+  budget at 360 x 780 is unchanged.
 - **Map height at 768.** The mirror's map is `width: 100%; height: auto` on a 300 × 480 view box,
   so inside the 640px content column it would be 1024px tall and the selected label would scale
   with it. Decided 2026-09-13: `screens.css` caps the map at `--size-viewport-min-height` and

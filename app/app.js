@@ -4,13 +4,27 @@
 (() => {
   const DEFAULT_HASH = "#/community/426";
   const DEFAULT_ID = 426;
-  const SCREENS = ["#/community", "#/map", "#/share"];
+  // Task-41, 2026-09-17: Priority is the fourth tab and sits second, because the analyst's
+  // sixty seconds (PRD §2) start with the ranked list (CLAUDE.md Blueprint, "Entry points").
+  const SCREENS = ["#/community", "#/priority", "#/map", "#/share"];
 
   const SERVICE_LABEL = {
     telehealth_video: "Telehealth video",
     school_video_meeting: "School video meeting",
     mygov_text: "myGov and banking",
     voice_sms: "Voice and SMS",
+  };
+
+  // Task-41, 2026-09-17: the five feature names pipeline/reliability.py emits as the two drivers
+  // of a community's reliability word, in the words a person reads. A name this map does not
+  // know falls through to the pipeline's own, so a new feature is never hidden -- it just reads
+  // raw until a line is added here.
+  const DRIVER_LABEL = {
+    site_km: "distance to the claiming carrier's nearest licensed site",
+    depth_km: "depth inside the claimed polygon",
+    sites_10km: "licensed sites within 10 km",
+    sites_20km: "licensed sites within 20 km",
+    carriers_claiming: "carriers claiming coverage",
   };
 
   // Task-34, 2026-09-16: one shape (a circle) in four fill states, departed from DESIGN.md's
@@ -36,7 +50,7 @@
   let pack = JSON.parse(document.getElementById("pack").textContent);
   const builtInBuilt = pack.built;
 
-  if (pack.pack_version !== 2) {
+  if (pack.pack_version !== 3) {
     main.textContent = "Unknown data pack";
     return;
   }
@@ -439,6 +453,65 @@
     return row;
   };
 
+  // Task-41, 2026-09-17: the two lines the fourth batch adds to the community screen, and the
+  // pieces the Priority tab below shares with them. Every figure here is read from the pack and
+  // printed: the rank, the intervention and the reliability word are all decided in
+  // pipeline/prioritise.py and pipeline/reliability.py (layer rule 9).
+  const PRIORITY_ALL = "all";
+
+  const priorityHash = (word) =>
+    word === PRIORITY_ALL ? "#/priority" : `#/priority?intervention=${encodeURIComponent(word)}`;
+
+  const interventionOf = (index) => pack.priority_interventions[index];
+
+  // `none` is the pack's word for a community no carrier polygon covers, so there is no claim
+  // for the model to have been right or wrong about; it carries no drivers.
+  const RELIABILITY_NONE_REASON = "no carrier claims coverage here";
+
+  const reliabilityTail = (reliability) =>
+    reliability.word === "none"
+      ? RELIABILITY_NONE_REASON
+      : reliability.drivers.map((name) => DRIVER_LABEL[name] || name).join(", ");
+
+  const priorityText = (community) => {
+    const one = interventionOf(community.priority.i);
+    return `Priority #${community.priority.rank} of ${pack.count} · ${one.word} · ${one.addressee}`;
+  };
+
+  const renderPriorityLine = (community) =>
+    h(
+      "p",
+      { class: "priority-line" },
+      h(
+        "a",
+        {
+          class: "text-link",
+          href: priorityHash(interventionOf(community.priority.i).word),
+        },
+        priorityText(community),
+      ),
+    );
+
+  // The source tap is the same one every other citation gets; the honesty note the pipeline
+  // wrote on that source entry (an extrapolation from audited roads, not a measurement here)
+  // rides on it as a title, the way the header already carries the population's citation.
+  const renderReliabilityLine = (community) => {
+    const reliability = community.claim_reliability;
+    const entry = pack.sources[reliability.src];
+    const source = sourceLine(reliability.src);
+    if (entry.note) {
+      source.setAttribute("title", entry.note);
+    }
+    return h(
+      "p",
+      { class: "reliability-line" },
+      "Map claim reliability: ",
+      h("span", { class: "reliability-line__word" }, reliability.word),
+      ` · ${reliabilityTail(reliability)}`,
+      source,
+    );
+  };
+
   // Task-35: the pack half of the Copy evidence block -- this is the only file that reads the
   // pack's service words, so report.js takes these lines already assembled and appends the
   // stored reports and the closing sentence (Task-35 contract item 6).
@@ -454,6 +527,10 @@
         const source = service.sources.length ? ` ${cite(service.sources[0].src)}` : "";
         return `${label}: ${VERDICTS[service.verdict].word} — ${plain(service.reason)}${source}`;
       }),
+      // Task-41: the two fourth-batch lines, after the service lines and before the publishers.
+      priorityText(community),
+      `Map claim reliability: ${community.claim_reliability.word} · ` +
+        `${reliabilityTail(community.claim_reliability)} ${cite(community.claim_reliability.src)}`,
       ...community.publishers.map((publisher) => {
         const says = SAYS_LABEL[publisher.says_covered] || publisher.says_covered;
         return `${publisher.publisher}: ${says} — ${plain(publisher.detail)} ${cite(publisher.src)}`;
@@ -650,6 +727,11 @@
     main.appendChild(renderServices(community));
     main.appendChild(renderSourcesFold(community));
     main.appendChild(renderActionsRow(community));
+    // Task-41, 2026-09-17: where it ranks and whether the coverage claim holds, under the
+    // sources fold and below the actions row -- above that row they would push it past
+    // Task-34's 780 px fold budget, the same reason the reports block sits here.
+    main.appendChild(renderPriorityLine(community));
+    main.appendChild(renderReliabilityLine(community));
     // Task-35: the community's own reports -- the count line, the paste-in fold and Copy
     // evidence -- sit under the sources fold, and below the row whose Report here button
     // writes one: above that row they would push it past Task-34's 780 px fold budget.
@@ -1457,6 +1539,71 @@
     watchOverflow(bar);
   };
 
+  // Task-41, 2026-09-17: the Priority tab. `pack.priority` is already in rank order and already
+  // carries the intervention index per row, so this screen filters that list by the chip and
+  // prints it -- it ranks nothing and compares nothing (CLAUDE.md Blueprint, "Priority row").
+  const renderPriorityChips = (activeWord) => {
+    const bar = h("div", { class: "chips priority-chips" });
+    for (const word of [PRIORITY_ALL, ...pack.priority_interventions.map((one) => one.word)]) {
+      const button = h(
+        "button",
+        {
+          type: "button",
+          class: "chip priority-chip",
+          "aria-pressed": word === activeWord ? "true" : "false",
+        },
+        word === PRIORITY_ALL ? "All" : word,
+      );
+      button.addEventListener("click", () => {
+        location.hash = priorityHash(word);
+      });
+      bar.appendChild(button);
+    }
+    return bar;
+  };
+
+  const renderPriorityRow = (row) => {
+    const community = pack.communities.find((c) => c.id === row.id);
+    const one = interventionOf(row.i);
+    return h(
+      "li",
+      { class: "priority-row" },
+      h(
+        "a",
+        { class: "priority-row__link", href: `#/community/${row.id}` },
+        h("span", { class: "priority-row__rank fig fig--xs" }, `#${row.rank}`),
+        h("span", { class: "priority-row__name" }, community.name),
+        renderBadge(serviceVerdict(community, DEFAULT_SERVICE), "priority-row__badge"),
+        h("span", { class: "priority-row__word" }, one.word),
+      ),
+      h(
+        "details",
+        { class: "priority-row__why" },
+        h("summary", {}, "Why"),
+        h("p", { class: "priority-row__reason" }, figures(row.why)),
+      ),
+    );
+  };
+
+  const renderPriority = (requestedWord) => {
+    const known = new Set(pack.priority_interventions.map((one) => one.word));
+    const active = known.has(requestedWord) ? requestedWord : PRIORITY_ALL;
+    const rows = pack.priority.filter(
+      (row) => active === PRIORITY_ALL || interventionOf(row.i).word === active,
+    );
+    main.textContent = "";
+    main.appendChild(
+      h(
+        "p",
+        { class: "priority-intro" },
+        `${pack.priority.length} communities ranked by ${pack.priority_components.length} ` +
+          "weighted components; weights and sensitivity in the report",
+      ),
+    );
+    main.appendChild(renderPriorityChips(active));
+    main.appendChild(h("ol", { class: "priority-list" }, rows.map(renderPriorityRow)));
+  };
+
   // The page as a standalone file: the rendered screen and host-only links are dropped, so the
   // copy is the built file again and renders itself when opened.
   const pageHtml = () => {
@@ -1593,7 +1740,10 @@
     if (selected) {
       selected.scrollIntoView({ inline: "nearest", block: "nearest" });
     }
-    if (screen === "#/map") {
+    if (screen === "#/priority") {
+      const query = new URLSearchParams(hash.split("?")[1] || "");
+      renderPriority(query.get("intervention") || PRIORITY_ALL);
+    } else if (screen === "#/map") {
       const query = new URLSearchParams(hash.split("?")[1] || "");
       const selectedParam = query.get("selected");
       const layersParam = query.has("layers") ? query.get("layers") : null;

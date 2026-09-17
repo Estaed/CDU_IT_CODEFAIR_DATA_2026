@@ -62,10 +62,11 @@ def test_top_bar_tabs_fit_360(browser):
 
     header = page.locator("header.top-bar")
     tabs = header.locator("[role=tab]")
-    expect(tabs).to_have_count(3)
+    # Task-41, 2026-09-17: a fourth tab, Priority, sits between Community and Map.
+    expect(tabs).to_have_count(4)
     title = header.get_by_text("Crosscheck", exact=True)
     title_box = title.bounding_box()
-    for i in range(3):
+    for i in range(4):
         box = tabs.nth(i).bounding_box()
         assert box["x"] >= 0
         assert box["x"] + box["width"] <= 360

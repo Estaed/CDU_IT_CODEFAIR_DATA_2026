@@ -562,11 +562,12 @@ def test_no_polygon_points(browser):
     page.close()
 
 
-def test_version_1_pack_is_refused(browser, tmp_path):
+def test_older_version_pack_is_refused(browser, tmp_path):
+    # Task-41 bumped the pack to 3 and the app accepts 3 only; 2 is now the older version.
     built = (ROOT / "dist" / "index.html").read_text(encoding="utf-8")
-    assert '"pack_version":2' in built
-    downgraded = built.replace('"pack_version":2', '"pack_version":1', 1)
-    copy_path = tmp_path / "version1.html"
+    assert '"pack_version":3' in built
+    downgraded = built.replace('"pack_version":3', '"pack_version":2', 1)
+    copy_path = tmp_path / "version2.html"
     copy_path.write_text(downgraded, encoding="utf-8")
 
     page = browser.new_page()

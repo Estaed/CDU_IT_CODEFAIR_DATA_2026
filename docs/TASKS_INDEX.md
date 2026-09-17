@@ -58,7 +58,7 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-42: Cuts: changes since the previous snapshot, the mesh text, compare (fourth batch, added 2026-09-17)
 - [x] Task-39: Map-claim reliability: one model trained in the pipeline on the Audit, AUC 0.65 kill criterion (fourth batch, added 2026-09-17; ⛔ cleared 2026-09-17)
 - [x] Task-40: Priority score, intervention and addressee; the LEO sentence; MBSP sites (fourth batch, added 2026-09-17)
-- [ ] Task-41: Priority tab, the reliability line, the analyst's sixty seconds; pack version 3 (fourth batch, added 2026-09-17)
+- [x] Task-41: Priority tab, the reliability line, the analyst's sixty seconds; pack version 3 (fourth batch, added 2026-09-17)
 - [ ] Task-43: Findings pack: figures, tables and docs/FINDINGS.md for the report (added 2026-09-17 evening)
 
 ## Execution routing

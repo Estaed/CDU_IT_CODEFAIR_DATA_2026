@@ -22,7 +22,7 @@ CONSTANTS = ROOT / "constants.md"
 BOUNDARY_RAW = ROOT / "data/raw" / outline.RAW_NAME
 RAW_DIR = ROOT / "data/raw"
 
-PACK_VERSION = 2
+PACK_VERSION = 3
 POPULATION_SOURCE = "ABS 2021 SA1 via BushTel"
 
 # The reliability line (Task-39). The model runs in pipeline/reliability.py and reaches the

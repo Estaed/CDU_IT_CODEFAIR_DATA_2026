@@ -427,3 +427,66 @@ a.button { text-decoration: none; }
   cursor: pointer;
 }
 .evidence-button:active { background: var(--surface-block); }
+
+/* Task-41 Priority tab (2026-09-17, PRD §4.2 fourth batch): the ranked list, its intervention
+   chips, and the two lines the community screen gains under the sources fold. New classes only,
+   tokens only (layer rule 5); `.chips`/`.chip`, `.fig` and `.section > summary` above are reused
+   as they stand. */
+
+.priority-intro {
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  font: var(--text-body-sm);
+  color: var(--text-secondary);
+}
+
+.priority-chips {
+  padding-bottom: var(--space-sm);
+  border-bottom: var(--size-hairline) solid var(--border-hairline);
+}
+
+.priority-chip { border: none; cursor: pointer; }
+.priority-chip[aria-pressed="false"] { opacity: 0.5; }
+
+.priority-list { list-style: none; margin: 0; padding: 0; }
+
+.priority-row { border-bottom: var(--size-hairline) solid var(--border-hairline-soft); }
+
+.priority-row__link {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  min-height: var(--size-touch);
+  padding: var(--space-sm) var(--space-md) var(--space-xxs);
+  font: var(--text-body-md);
+  color: var(--text-heading);
+  text-decoration: none;
+}
+.priority-row__link:active { background: var(--surface-block); }
+
+.priority-row__rank { color: var(--text-secondary); }
+
+.priority-row__name { flex: 1 1 auto; min-width: 0; }
+
+/* The intervention takes the row's second line, so a long word never squeezes the name. */
+.priority-row__word {
+  flex: 0 0 100%;
+  font: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+.priority-row__why {
+  padding: 0 var(--space-md) var(--space-sm);
+  font: var(--text-body-sm);
+  color: var(--text-body);
+}
+.priority-row__why > summary { cursor: pointer; color: var(--text-secondary); }
+.priority-row__reason { margin: var(--space-xxs) 0 0; }
+
+.priority-line, .reliability-line {
+  margin: 0;
+  padding: var(--space-xs) var(--space-md) 0;
+  font: var(--text-body-sm);
+  color: var(--text-body);
+}
