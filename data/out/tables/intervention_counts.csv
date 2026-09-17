@@ -1,0 +1,9 @@
+intervention,addressee,count,population,health_centres
+low-latency backhaul,"DCDD, nbn",12,1340,12
+mobile site (MBSP nomination),"DCDD, carrier",4,79,0
+verify and publish the licensed site,"carrier, ACMA",5,305,0
+refresh the coverage list,DCDD,14,1910,8
+backup power,carrier,15,9954,15
+verify on the ground,"DCDD, carrier",3,1116,3
+measure the link here,DCDD,31,20526,31
+monitor,DCDD,12,1825,1

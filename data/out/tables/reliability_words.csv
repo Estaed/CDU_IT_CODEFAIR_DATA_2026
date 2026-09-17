@@ -1,0 +1,5 @@
+word,count,population,mean_p_wrong,top_driver_pairs
+high,8,2325,0.1015,"sites_20km, carriers_claiming (3); sites_20km, depth_km (2); carriers_claiming, depth_km (1)"
+medium,29,15598,0.4182,"sites_20km, carriers_claiming (29)"
+low,37,17536,0.595,"sites_20km, carriers_claiming (37)"
+none,22,1596,,
