@@ -39,6 +39,17 @@ The app is not a signal test. A speed test reports a symptom; Crosscheck reports
 with citations. The measurement button that would let a resident add "what I saw here" is v1.1
 (deferred decision D2).
 
+**Primary target, decided 2026-09-17 (Tarik, after Eko's function-by-function review).** The
+first row is the product's user: the **NTG DCDD analyst** who decides where connectivity money
+and verification effort go next. Three of the four judges are that person, and the brief's
+stated pain is that gaps are "not consistently represented, making it difficult ... to
+prioritise action and investment". Everything the app shows is judged by one test, the
+**analyst's sixty seconds**: open the app with no network, see the ranked list of communities
+to act on first, open one, read why it ranks there, which publisher says what, whether the
+coverage claim is reliable, and copy the evidence. The nurse and the community member are the
+second and third rows: they get the same row, in plain words, plus Report here. A feature that
+serves none of the three rows is cut (§4.2, fourth batch).
+
 ## 3. Scope
 
 - **Universe (decided 2026-09-12):** the 96 BushTel Major/Minor communities, ids and coordinates
@@ -227,6 +238,72 @@ browser cannot send ICMP, and a request from the app would break the one line th
 zero runtime requests); cimbar (needs WASM, licence unverified) and Decimen (AGPL) as transfer
 libraries.
 
+**v1 changes, fourth batch, decided 2026-09-17 (Tarik, on Eko's proposal, after the review
+that found the app answers "what is here" but never "where first", that 95 of 96 verdicts rest
+on one 664.9 ms figure, and that three features have no user who would press them).** Source of
+truth for each is this section. Nothing here computes in the browser: every model and every
+score runs in the pipeline and reaches the app as pack numbers with sources. The camera
+transfer is untouched by this batch and is revisited after it (Tarik: "önce işlevli yapalım,
+QR olayını sonra update ederiz").
+
+- *Measured publisher* (Task-38): the National Audit of Mobile Coverage non-alignment tiles
+  (drive tests where the government found no signal inside a carrier's claimed coverage;
+  237 NT tiles, CSV of 27 May 2026) become the **fifth publisher line**, `kind: "measured"`,
+  `says_covered: not-covered` where a tile lies within 5 km of the community, `not-recorded`
+  where no audited road passes within that distance (the Audit drove roads, not communities;
+  the line says so). The agreement count keeps counting only lines that make a claim. Licence
+  unstated (OQ2): the line ships with the attribution the page carries and the report says the
+  request is on file; if refused before 26 September the line is dropped from the pack and
+  kept in the report as a table.
+- *Map-claim reliability* (Task-39): a small supervised model, trained in the pipeline on the
+  audited NT roads (positives: non-alignment tiles; negatives: audited road samples inside a
+  carrier polygon with no non-alignment), with features the pack already has per community
+  (distance to the nearest licensed site of the claiming carrier, depth inside the polygon,
+  sites within 10 and 20 km, carriers claiming) and, if a coarse open DEM is fetched in time,
+  terrain relief. Validation is a held-out split by ABS SA3 region (boundaries already in the repo), fixed before training. The output per
+  community is one word, `high`, `medium` or `low`, with the probability and the two features
+  that drove it, as `claim_reliability` in the pack; the app prints it as one line under the
+  publishers. **Kill criterion fixed in advance:** held-out AUC under 0.65 and the model does
+  not ship; the line then rests on the measured publisher alone ("drive test found no signal
+  N km away"). Either way the app is complete. This is the D1 idea done with measurement rather
+  than propagation; D1 stays deferred. The model runs once in the pipeline, never on the
+  phone; the product still contains no model at runtime, and the report's appendix declares
+  scikit-learn as the library and the Audit as the training data.
+- *Priority list* (Task-40 pipeline, Task-41 app): a transparent score per community from
+  weights in `pipeline/priority_weights.csv` (population, services present with the clinic
+  counted twice, the telehealth and voice verdicts, claim reliability, a non-alignment tile
+  within 5 km, an MBSP-funded base station within 5 km counted against, and, when the licence
+  answers arrive, cyclone exposure (OQ3) and the LGA's ADII score (OQ5); an absent component
+  scores zero and the table says so). Each community also gets one **intervention** from a
+  rule over its pattern (`low-latency backhaul`, `verify and publish the licensed site`,
+  `refresh the coverage list`, `mobile site (MBSP nomination)`, `backup power`, `monitor`) and
+  the addressee it goes to. A sensitivity table perturbs every weight by ±50 % and reports how
+  much of the top 10 survives; the report prints it. The app gains a **fourth tab, Priority**:
+  the 96 ranked worst first, each row the rank, the name, the telehealth glyph, the
+  intervention; chips filter by intervention; a row opens the community, whose screen shows
+  `Priority #n of 96 · <intervention>` under the sources fold. `pack_version` becomes 3 and the
+  app accepts 3 only. The Recommendations section of the report is this list's top 10 with the
+  evidence per row.
+- *One honest sentence about LEO* (Task-40): every satellite-path telehealth verdict carries
+  the assumption that a low-earth-orbit service, where a clinic has installed one, is in no
+  public record (OQ10, OQ17); when a sourced LEO latency figure exists it enters
+  `thresholds.csv` as a capability row and the sentence quotes it. No verdict changes until a
+  per-community record exists.
+- *Cuts* (Task-42): `Changes since the previous snapshot` (the pack changes only when the
+  pipeline is rerun; nobody in the field presses it), the mesh-size text (no one has a
+  Meshtastic radio; the report keeps the 200-byte claim as one sentence), and `Compare two
+  communities` (the Priority list is the comparison an analyst wants). The freshness line,
+  SMS, the statement, Report here and the transfer stay. The myGov row (96 of 96 works) stays
+  in the app as a row because the table, the map selector and the evidence text carry four
+  services; the pitch says plainly that "text-first services work wherever any link works" is
+  the finding, not filler.
+
+Considered and dropped on 2026-09-17: a restart on a different idea (13 days to submission, one
+builder, the report not started; the pipeline already holds most of the inputs the priority
+score needs); dropping the myGov row (touches the table, the selector, the evidence text and
+the tests for one line of clarity the pitch can carry); a propagation model from ACMA site
+parameters (D1; the Audit gives measured labels, which a propagation model does not).
+
 ### 4.3 Report, slides, pitch
 
 Owned by Emma, Thanh and Will, built from §4.1 item 3. Structure and file rules are in
@@ -316,8 +393,11 @@ What the app shows for one community; not a schema.
 - Communities outside the 96 (D3); Australia outside the NT.
 - A native app, a server, a database, user accounts, analytics.
 - Trend 2018→2025 from ACCC polygons (methodology breaks documented by ACCC; dropped in the verdict).
-- Our own propagation model (D1).
-- Machine learning or LLM output anywhere in the product.
+- Our own propagation model (D1). Since 2026-09-17 the pipeline trains one supervised model on
+  the Audit's measured tiles (§4.2, fourth batch); propagation from site parameters stays out.
+- Machine learning or LLM output computed anywhere in the product at runtime. Since 2026-09-17
+  a model runs once in the pipeline and its output enters the pack as a sourced number with a
+  fixed kill criterion; the app still computes nothing and ships no model.
 
 ## 9. Open questions (numbered; never renumber — task files reference these)
 
@@ -364,12 +444,25 @@ What the app shows for one community; not a schema.
     file).
 16. **Licence of the road and town source** for the map's second pass (Geoscience Australia
     or NT Government open data, expected CC BY 4.0). Research, before the map task starts.
+17. **A sourced latency figure for a LEO satellite service in remote Australia** (Starlink or
+    the nbn LEO service), for the assumption sentence and a `thresholds.csv` capability row.
+    Owner: Eko, via `research`. Until answered the sentence says no public figure is cited.
+18. **Licence of the Audit's road-route layers** (the `Main_Audit_Roads` ArcGIS services the
+    negatives in Task-39 sample from), beside OQ2 for the non-alignment CSV. Same email as OQ2.
+    If refused, the model does not ship and the reliability line rests on the measured
+    publisher alone (the Task-39 kill path).
+19. **An MBSP-funded base station within 5 km** as a priority component: the MBSP
+    all-funded-base-stations zip is CC BY 4.0 (`reports/2026-09-12-arena-failure.md` §4.2) and
+    needs no answer; listed here so Task-40 fetches it under `pipeline/fetch/mbsp.py` and
+    registers it in provenance. Not a question, a pointer; closed on fetch.
 
 ## 10. Deferred decisions (later phases; unanswered on purpose, block nothing today)
 
 D1. **v1.1 — our own coverage model.** Terrain-aware propagation from ACMA site parameters
     (EIRP, azimuth, height, frequency) and open elevation data, added as a *modelled* publisher
     line. Started only after v1 passes its gate. Decide the model and its validation then.
+    Since 2026-09-17 the *measured* half of this idea is in v1 (§4.2, fourth batch, Task-39):
+    a model trained on the Audit's drive tests, not on propagation. Propagation stays D1.
 D2. ~~**v1.1 — "report signal here".**~~ Pulled into v1 on 2026-09-16 as *Report here* (§4.2,
     third batch): no measurement, the person's own word plus the browser's estimate, stored on
     the phone, shared by choice as one text line. Storage is IndexedDB, consent is the tap.
@@ -426,3 +519,4 @@ D5. **National scope** — only if the NT is finished early; the brief allows it
 | 2026-09-16 (evening) | Tarik: "if the purpose is only an update, why an animated QR at all?" Eko's audit of the chain: the camera could never install the app (the receiver reassembles the frames, so it must already have Crosscheck); the lite copy and `Complete this copy` served a scenario that does not exist; the honest purpose is the **pairing-free, cross-platform data update** (Bluetooth file transfer does not exist on iPhone, AirDrop not on Android, Quick Share not on iPhone; the camera is the one channel a browser has between the two). Task-37: the frames carry the pack only (about 18 KB, K about 25, about 7 s), the lite copy, the constant and the fetch exception are withdrawn, layer rule 7 is whole again. Install stays "open the address once" or a shared file | Tarik, on Eko's proposal ("önerini yap") |
 | 2026-09-16 | Round two measured on the S24: the lite copy (K 94) completes in 36 s at 5 fps and 28 s at 3.75 fps, 70 % of read frames decoded; `Open lite copy` runs online and offline. Ship 3.75 fps (Task-36). The Xiaomi Mi 6 (2017) cannot read the frames and is dropped as a reference device: the target is a current phone, and the demo uses the S24 | Tarik ("o kadar eski telefonla yapmayacağız") |
 | 2026-09-16 | Transfer sweep round one failed on both phones (best 15 of 233 blocks, A/B/C/B+C, holds 4, 8, 12, laptop sender): the phone decoder is the wall. Round two is one candidate: a *lite* copy (no jsQR, no map layers, about 65 KB gzipped) at 5 frames a second, soliton repair, the v2 reader loop. The lite copy gains `Complete this copy`: on a tap, and only then, it fetches the full page from `APP_URL` and swaps itself through the received-page path — "arrives by light, grows on the first network". Layer rule 7 gets that one exception. B and C are shelved. Share sheet (Quick Share / AirDrop) is the demo's guaranteed offline handoff | Tarik ("evet onaylıyorum"), on Eko's proposal |
+| 2026-09-17 | Fourth batch (§4.2). Primary target named: the DCDD analyst, judged by the "analyst's sixty seconds" (§2). Added: the Audit non-alignment tiles as a fifth, *measured* publisher; a map-claim reliability model trained in the pipeline on the Audit with an AUC 0.65 kill criterion; a transparent priority score with weights in a CSV, one intervention and one addressee per community, a sensitivity table, and a fourth tab; one LEO assumption sentence. Cut: changes since the previous snapshot, the mesh text, compare. Kept: the myGov row, the camera transfer (revisited after this batch). Rejected: a restart (13 days, one builder, no report yet) | Tarik ("evet yap, emin ol uygulamanın işlevsel olduğuna"), on Eko's proposal |

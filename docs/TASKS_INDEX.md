@@ -54,6 +54,11 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-35: Report here: the community's own evidence, on the phone, shared by choice (third batch, added 2026-09-16)
 - [x] Task-36: Transfer v3 in the app from the Task-31 winner (third batch, added 2026-09-16; spec completed after Task-31)
 - [x] Task-37: Transfer v4: the pack travels by light, not the app; lite copy withdrawn (added 2026-09-16 evening)
+- [ ] Task-38: Measured publisher: the National Audit non-alignment tiles as the fifth line (fourth batch, added 2026-09-17)
+- [ ] Task-42: Cuts: changes since the previous snapshot, the mesh text, compare (fourth batch, added 2026-09-17)
+- [ ] Task-39: Map-claim reliability: one model trained in the pipeline on the Audit, AUC 0.65 kill criterion (fourth batch, added 2026-09-17; ⛔ OQ18 before the roads fetch)
+- [ ] Task-40: Priority score, intervention and addressee; the LEO sentence; MBSP sites (fourth batch, added 2026-09-17)
+- [ ] Task-41: Priority tab, the reliability line, the analyst's sixty seconds; pack version 3 (fourth batch, added 2026-09-17)
 
 ## Execution routing
 
@@ -108,6 +113,20 @@ advisory only.
 | Task-35 | claude-worker (opus) | no | high | Task-34 | 24 (beside Task-33: report.js, community sections; Task-33 owns the map sections) |
 | Task-36 | claude-worker (opus) | no | high | Task-31 (measured), Task-32 | 25 |
 | Task-37 | claude-worker (opus) | no | high | Task-36 | 26 |
+
+| Task-38 | claude-worker (opus) | no | high | none | 27 |
+| Task-42 | claude-worker | no | medium | none | 27 (beside Task-38; disjoint files except `pack.py`, different hunks) |
+| Task-39 | claude-worker (opus) | ⛔ OQ18 before the roads fetch; the kill path completes the task without it | high | Task-38 | 28 |
+| Task-40 | claude-worker (opus) | no | high | Task-38, Task-39 | 29 |
+| Task-41 | claude-worker (opus) | no | high | Task-40, Task-42 | 30 |
+
+Fourth batch (2026-09-17) execution note: Tarik's decision after Eko's function-by-function
+review, PRD §4.2 fourth batch and §2 "the analyst's sixty seconds". Codex is at 100 % until
+2026-09-19, so every lane is a Claude worker; the main loop (Fable) writes the specs, runs
+`verify-task` and the gate. Wave 27 is two disjoint lanes; 28 to 30 are serial on
+`pipeline/pack.py` and then `app/app.js`. The camera transfer is untouched by this batch and is
+revisited after Task-41. Tarik owns the OQ2/OQ18 licence email, the BoM download (OQ3), the ADII
+export (OQ5) and the weights in `pipeline/priority_weights.csv` once Task-40 writes them.
 
 Third batch (2026-09-16) execution note: Codex is at 100 % on both windows until 2026-09-19, so
 every lane is a Claude worker; the main loop (Fable) writes the specs, runs `verify-task` and the
