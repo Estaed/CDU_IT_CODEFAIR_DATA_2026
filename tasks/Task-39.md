@@ -15,10 +15,11 @@
 > TOUCH `app/`, `pipeline/rules.py`, `pipeline/merge.py`, `pipeline/prioritise.py` (Task-40),
 > `design/`, `CLAUDE.md` (the version cell in the stack table is the main loop's) · GATE
 > `PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` · DEPENDS ON Task-38
-> ⛔ Before the fetcher runs: OQ18 (licence of the `Main_Audit_Roads` ArcGIS layers) is on the
-> same email as OQ2. If the roads cannot be fetched or the answer is a refusal, skip contract
-> items 2 to 4, write every `claim_reliability` as `none`, and say so in Status: the kill path
-> is a valid completion of this task.
+> Stop marker cleared 2026-09-17 by Tarik ("evet, indir ve eğit"): fetch the roads and train
+> before the OQ18 answer, the same policy as BushTel (request on file, the Methodology says so);
+> the licence answer decides whether the model ships in the pack, not whether it is built. If
+> the roads cannot be fetched, or a refusal arrives, skip contract items 2 to 4, write every
+> `claim_reliability` as `none`, and say so in Status: the kill path is a valid completion.
 
 ## Why
 
