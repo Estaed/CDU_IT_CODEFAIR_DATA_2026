@@ -59,6 +59,7 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-39: Map-claim reliability: one model trained in the pipeline on the Audit, AUC 0.65 kill criterion (fourth batch, added 2026-09-17; ⛔ cleared 2026-09-17)
 - [x] Task-40: Priority score, intervention and addressee; the LEO sentence; MBSP sites (fourth batch, added 2026-09-17)
 - [ ] Task-41: Priority tab, the reliability line, the analyst's sixty seconds; pack version 3 (fourth batch, added 2026-09-17)
+- [ ] Task-43: Findings pack: figures, tables and docs/FINDINGS.md for the report (added 2026-09-17 evening)
 
 ## Execution routing
 
@@ -119,6 +120,7 @@ advisory only.
 | Task-39 | claude-worker (opus) | no (⛔ cleared 2026-09-17 by Tarik: fetch and train before the OQ18 answer) | high | Task-38 | 28 |
 | Task-40 | claude-worker (opus) | no | high | Task-38, Task-39 | 29 |
 | Task-41 | claude-worker (opus) | no | high | Task-40, Task-42 | 30 |
+| Task-43 | claude-worker | no | medium | Task-41 | 31 |
 
 Fourth batch (2026-09-17) execution note: Tarik's decision after Eko's function-by-function
 review, PRD §4.2 fourth batch and §2 "the analyst's sixty seconds". Codex is at 100 % until
