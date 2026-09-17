@@ -9,8 +9,8 @@
 > **Lane:** OWNS `pipeline/prioritise.py` (new), `pipeline/priority_weights.csv` (new),
 > `pipeline/fetch/mbsp.py` (new), `pipeline/sources/mbsp.py` (new; one column), `pipeline/rules.py`
 > (the LEO assumption sentence in the satellite-path telehealth reason only),
-> `pipeline/thresholds.csv` (one `capability,leo_satellite,latency` row, value empty until
-> OQ17), `pipeline/merge.py` (the MBSP column only), `pipeline/pack.py` (the `priority` list
+> `pipeline/thresholds.csv` (one `capability,leo_satellite,latency,29.8` row; OQ17 answered
+> 2026-09-17), `pipeline/merge.py` (the MBSP column only), `pipeline/pack.py` (the `priority` list
 > and the `priority` pointer per community only), `pipeline/figures.py` (one PNG map by
 > priority tier and the two report tables), `pipeline/provenance.py` (append),
 > `scripts/run_pipeline.py` (load MBSP; call `prioritise.main` after `reliability.main`),
@@ -67,10 +67,12 @@ that shows the top of the queue does not depend on a weight nobody can defend.
    (count) and `mbsp_nearest_km`; registry entry with URL, date, licence, attribution.
 6. **LEO sentence.** `rules.telehealth_video` appends to the satellite-path reason's
    `assumption`: `A low-earth-orbit service, where a clinic has installed one, is in no public
-   record; <figure or "no sourced latency figure is cited">.` The figure comes from
-   `capability.leo_satellite.latency` in `thresholds.csv`, a row this task adds with an empty
-   value and `note: TBD OQ17`. No verdict changes in this task; the regression test still
-   passes on every column it checks.
+   record; the same ACCC report measured Starlink at <figure>.` The figure is read from
+   `capability.leo_satellite.latency` in `thresholds.csv`, a row this task adds:
+   `capability,leo_satellite,latency,29.8,ms,measured,ACCC Measuring Broadband Australia release 147/24,https://www.accc.gov.au/media-release/broadband-performance-of-satellite-services-measured-for-the-first-time,2026-09-17,Starlink average all hours; same release as the Sky Muster figure (OQ17)`.
+   Rendered through `rules.fig` like every figure; never typed into the sentence. No verdict
+   changes in this task; the regression test still passes on every column it checks. The
+   telehealth verdict's `sources` gain no new entry: the release is already cited for 664.9 ms.
 7. **Pack.** `pack["priority"]` is the 96 rows in rank order,
    `{id, rank, score, components, intervention, addressee, why}`; each community also carries
    `priority: {rank, intervention}` so the community screen needs no lookup. `pack_version`
@@ -94,7 +96,7 @@ the six words.
 ## Out of the gate
 
 The weights themselves (Tarik reads the CSV and the sensitivity table and decides; the
-report prints both); OQ3, OQ5, OQ17.
+report prints both); OQ3, OQ5.
 
 ## Status
 

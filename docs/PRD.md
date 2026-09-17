@@ -444,9 +444,15 @@ What the app shows for one community; not a schema.
     file).
 16. **Licence of the road and town source** for the map's second pass (Geoscience Australia
     or NT Government open data, expected CC BY 4.0). Research, before the map task starts.
-17. **A sourced latency figure for a LEO satellite service in remote Australia** (Starlink or
-    the nbn LEO service), for the assumption sentence and a `thresholds.csv` capability row.
-    Owner: Eko, via `research`. Until answered the sentence says no public figure is cited.
+17. **A sourced latency figure for a LEO satellite service in remote Australia** — ANSWERED
+    2026-09-17 (Eko, `research`): the same ACCC Measuring Broadband Australia release that
+    gives Sky Muster's 664.9 ms (release 147/24, 5 December 2024,
+    <https://www.accc.gov.au/media-release/broadband-performance-of-satellite-services-measured-for-the-first-time>)
+    measured **Starlink at 29.8 ms average latency across all hours** and 165.5 Mbps busy-hours
+    download. Task-40 writes it as `capability,leo_satellite,latency,29.8` with that URL; the
+    assumption sentence quotes it. Which communities have a LEO terminal stays unrecorded
+    (OQ10). nbn's own LEO service (Amazon Kuiper, announced for mid-2026 from Tasmania) is a
+    report sentence, not a figure: no ACCC measurement of it was found on 2026-09-17.
 18. **Licence of the Audit's road-route layers** (the `Main_Audit_Roads` ArcGIS services the
     negatives in Task-39 sample from), beside OQ2 for the non-alignment CSV. Same email as OQ2.
     If refused, the model does not ship and the reliability line rests on the measured

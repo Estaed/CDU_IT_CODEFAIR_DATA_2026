@@ -38,7 +38,17 @@ before the first fit.
    Status. Imported in `pipeline/reliability.py` only (layer rule 9).
 2. **Negatives.** `pipeline/fetch/audit_roads.py` queries the `Main_Audit_Roads_DITRDCA_2024`
    MapServer layers (`reports/2026-09-12-arena-measured.md` §3.1.9) for NT geometry and writes
-   `data/raw/audit_roads_<date>.geojson`. `reliability.samples()` places points every 1 km along
+   `data/raw/audit_roads_<date>.geojson`. Verified by the main loop on 2026-09-17: the service
+   answers without a token at
+   `https://spatial.infrastructure.gov.au/server/rest/services/Main_Audit_Roads_DITRDCA_2024/MapServer`
+   (the `/Hosted/` path wants a token), layers `0` Year_1_Roads, `1` Year_2_Roads, `2`
+   Year_3_Roads; a `query` with the NT envelope `129,-26,138,-10.9` (`esriGeometryEnvelope`,
+   `inSR=4326`, `returnCountOnly=true`) counts 2,518 / 4,191 / 4,191 features (OSM road
+   segments, fields `OSM_ID`, `name`, `Major_Urban`); `exceededTransferLimit` is true on a
+   full query, so page with `resultOffset` and `resultRecordCount`, and pass
+   `returnGeometry=true` and `outSR=4326` explicitly. Union the three years; the sample date
+   is the fetch date. Roads in the `Major_Urban = T` set are kept (no community sits in one,
+   and the model needs the negatives). `reliability.samples()` places points every 1 km along
    the NT audited roads that lie inside at least one ACCC 2025 4G polygon (the cache the
    pipeline already writes) and labels each point `1` if it lies within a non-alignment tile of
    a carrier that claims it, else `0`. Points within 1 km of another point of the same label

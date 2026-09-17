@@ -86,6 +86,20 @@ tarik.bulut@cdu.edu.au
 **Status:** not sent. Only needed if the Audit tiles are kept as an optional column; the core
 table does not depend on it.
 
+**Follow-up, drafted 2026-09-17 (PRD OQ18; send as a reply on the same thread).** Since
+2026-09-17 the tiles are the fifth publisher line and the training labels of the reliability
+model (Task-38, Task-39), so the answer now decides a feature, not a column.
+
+> One further question, if we may. To tell "no signal was found here" apart from "no road was
+> audited here", we would sample the audited road routes published in the
+> `Main_Audit_Roads_DITRDCA_2024` map service on spatial.infrastructure.gov.au.
+>
+> 3. May the road-route geometry be used for that purpose and a derived per-community
+>    flag redistributed, attributed to the Department and the Audit, on the same terms as
+>    question 2?
+>
+> We would not redistribute the route geometry itself.
+
 ---
 
 ## 3. Bureau of Meteorology — Southern Hemisphere tropical cyclone track CSV
