@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
-from pipeline import figures
+from pipeline import figures, prioritise
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -91,6 +91,48 @@ def test_no_hex_literal_in_figures_module():
 
 def test_no_suppressed_population_language_in_tables(built):
     banned = re.compile(r"vulnerable|disadvantaged|at-risk|underserved", re.IGNORECASE)
-    for name in ("disagreement_patterns.csv", "verify_on_the_ground.csv", "verdict_counts.csv"):
+    for name in ("disagreement_patterns.csv", "verify_on_the_ground.csv", "verdict_counts.csv",
+                 "priority.csv"):
         text = (built["tables_dir"] / name).read_text(encoding="utf-8")
         assert not banned.search(text)
+
+
+# --- The priority map and tables (Task-40) ---
+
+
+def test_map_priority_png_dimensions_and_not_flat(built):
+    path = built["figures_dir"] / "map_priority.png"
+    assert path.is_file()
+    image = Image.open(path)
+    assert image.size == (2000, 3200)
+    assert _distinct_colors(path) > 1000
+
+
+def test_priority_table_has_96_rows_in_rank_order(built):
+    path = built["tables_dir"] / "priority.csv"
+    with path.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    assert len(rows) == 96
+    assert list(rows[0]) == list(figures.PRIORITY_COLUMNS)
+    assert [int(row["rank"]) for row in rows] == list(range(1, 97))
+    assert all(row["intervention"] for row in rows)
+
+
+def test_priority_sensitivity_table_has_one_row_per_weight_and_factor():
+    path = prioritise.OUT_SENSITIVITY
+    assert path.is_file(), f"missing {path}; run pipeline.prioritise"
+    with path.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    weights = prioritise.load_weights()
+    assert len(rows) == len(weights) * len(prioritise.SENSITIVITY_FACTORS)
+    assert {row["component"] for row in rows} == {spec["component"] for spec in weights}
+    for row in rows:
+        assert 0 <= int(row["top10_overlap"]) <= prioritise.TOP_N
+        assert -1.0 <= float(row["spearman_rho"]) <= 1.0
+
+
+def test_terciles_split_96_into_three_thirds():
+    bands = [figures._tercile(rank, 96) for rank in range(1, 97)]
+    assert bands.count(0) == 32
+    assert bands.count(1) == 32
+    assert bands.count(2) == 32

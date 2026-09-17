@@ -18,8 +18,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from pipeline import figures, merge, pack, provenance, reliability, rules  # noqa: E402
-from pipeline.sources import accc, audit, bushtel, nbn, ntg, rrl  # noqa: E402
+from pipeline import figures, merge, pack, prioritise, provenance, reliability, rules  # noqa: E402
+from pipeline.sources import accc, audit, bushtel, mbsp, nbn, ntg, rrl  # noqa: E402
 
 RAW = ROOT / "data/raw"
 OUT = ROOT / "data/out"
@@ -68,6 +68,10 @@ def main() -> None:
     )
     print(f"audit: {len(audit_frame)} rows, {(audit_frame['audit5'] == '1').sum()} within 5 km")
 
+    mbsp_frame = mbsp.load(newest("mbsp_funded_*.zip", mbsp.FETCH_COMMAND), communities)
+    within = (mbsp_frame["mbsp_within_5km"] != "0").sum()
+    print(f"mbsp: {len(mbsp_frame)} rows, {within} with a funded site within 5 km")
+
     ntg_frame = ntg.load(
         newest("ntg_2019.xlsx", ntg.FETCH_COMMAND),
         newest("ntg_2021.xlsx", ntg.FETCH_COMMAND),
@@ -78,7 +82,14 @@ def main() -> None:
     print(f"ntg: {len(ntg_frame)} rows")
 
     table = merge.merge(
-        communities, nbn_frame, accc_frame, rrl_frame, ntg_frame, audit_frame, thresholds
+        communities,
+        nbn_frame,
+        accc_frame,
+        rrl_frame,
+        ntg_frame,
+        audit_frame,
+        mbsp_frame,
+        thresholds,
     )
     OUT.mkdir(parents=True, exist_ok=True)
     table.to_csv(TABLE_CSV, index=False, lineterminator="\n", encoding="utf-8")
@@ -95,6 +106,11 @@ def main() -> None:
     # non-alignment CSV cannot know, and rewrites the table it read. After the table, before
     # the pack, because the pack reads both.
     reliability.main()
+
+    # Task-40: reads the table and the reliability word, writes data/out/priority.csv and the
+    # sensitivity table. After reliability, because the score's claim_reliability component is
+    # that run's word; before the pack, because the pack reads the ranking.
+    prioritise.main()
 
     pack.main()
     figures.main()

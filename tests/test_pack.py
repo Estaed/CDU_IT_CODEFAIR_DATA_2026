@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from pipeline import pack, rules
+from pipeline import pack, prioritise, rules
 
 ROOT = Path(__file__).resolve().parent.parent
 TABLE = ROOT / "data/out/capability_table.csv"
@@ -392,3 +392,55 @@ def test_reliability_words_match_the_model_output(data_pack):
         pytest.skip("data/out/reliability.csv has not been written")
     for community in data_pack["communities"]:
         assert community["claim_reliability"]["word"] == lines[community["id"]]["word"]
+
+
+# --- The priority row (Task-40) ---
+
+
+def test_priority_list_is_96_rows_in_rank_order(data_pack):
+    priority = data_pack["priority"]
+    assert len(priority) == 96
+    assert [entry["rank"] for entry in priority] == list(range(1, 97))
+    assert {entry["id"] for entry in priority} == {c["id"] for c in data_pack["communities"]}
+
+
+def test_priority_components_header_matches_the_weights_csv(data_pack):
+    weights = prioritise.load_weights()
+    assert data_pack["priority_components"] == [
+        {"name": spec["component"], "weight": spec["weight"]} for spec in weights
+    ]
+    for entry in data_pack["priority"]:
+        assert len(entry["c"]) == len(weights)
+
+
+def test_priority_intervention_is_one_of_the_eight_words(data_pack):
+    words = [entry["word"] for entry in data_pack["priority_interventions"]]
+    assert words == [word for word, _, _ in prioritise.INTERVENTIONS]
+    assert len(words) == 8
+    for entry in data_pack["priority_interventions"]:
+        assert entry["addressee"]
+    for entry in data_pack["priority"]:
+        # The word is an index into the header, not a string repeated 96 times.
+        assert 0 <= entry["i"] < len(words)
+        assert entry["why"].endswith(".")
+
+
+def test_every_community_carries_its_rank_and_intervention_index(data_pack):
+    by_id = {entry["id"]: entry for entry in data_pack["priority"]}
+    for community in data_pack["communities"]:
+        pointer = community["priority"]
+        assert set(pointer) == {"rank", "i"}
+        assert pointer["rank"] == by_id[community["id"]]["rank"]
+        assert pointer["i"] == by_id[community["id"]]["i"]
+
+
+def test_priority_score_is_the_sum_of_its_contributions(data_pack):
+    for entry in data_pack["priority"]:
+        assert entry["score"] == pytest.approx(sum(entry["c"]), abs=0.002)
+
+
+def test_pack_carries_no_weight_the_app_could_recompute_a_verdict_from(data_pack):
+    """The pack ships the score, not the thresholds it was measured against (layer rule 4)."""
+    assert "thresholds" not in data_pack
+    names = {entry["name"] for entry in data_pack["priority_components"]}
+    assert "telehealth_verdict" in names

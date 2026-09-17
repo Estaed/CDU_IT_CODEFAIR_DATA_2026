@@ -36,6 +36,8 @@ VERDICT_MAP = {"GREEN": "works", "AMBER": "degraded", "RED": "fails", "n/a": "no
 
 # Task-38: the measured publisher's columns, joined through but read only by pipeline.pack.
 AUDIT_COLUMNS = ("audit5", "audit_nearest_km", "audit_carriers", "audit_year")
+# Task-40: the MBSP pair, joined through and read only by pipeline.prioritise.
+MBSP_COLUMNS = ("mbsp_within_5km", "mbsp_nearest_km")
 
 
 def _read(path: Path) -> pd.DataFrame:
@@ -51,6 +53,15 @@ def _audit_frame(bushtel_ids: list[str]) -> pd.DataFrame:
     hit = {"audit5": "1", "audit_nearest_km": "1.0", "audit_carriers": "Telstra",
            "audit_year": "2024"}
     empty = dict.fromkeys(hit, "")
+    return pd.DataFrame(
+        [{"bushtel_id": i, **(hit if i == "580" else empty)} for i in bushtel_ids]
+    )
+
+
+def _mbsp_frame(bushtel_ids: list[str]) -> pd.DataFrame:
+    """A hand-built MBSP frame: a funded site within 5 km of Barunga and nowhere else."""
+    hit = {"mbsp_within_5km": "1", "mbsp_nearest_km": "1.0"}
+    empty = {"mbsp_within_5km": "0", "mbsp_nearest_km": ""}
     return pd.DataFrame(
         [{"bushtel_id": i, **(hit if i == "580" else empty)} for i in bushtel_ids]
     )
@@ -74,6 +85,7 @@ def sources():
         "rrl": _read(RRL_FIXTURE),
         "ntg": _read(NTG_FIXTURE),
         "audit": _audit_frame(list(bushtel["bushtel_id"])),
+        "mbsp": _mbsp_frame(list(bushtel["bushtel_id"])),
     }
 
 
@@ -91,6 +103,7 @@ def frame(sources, thresholds):
         sources["rrl"],
         sources["ntg"],
         sources["audit"],
+        sources["mbsp"],
         thresholds,
     )
 
@@ -118,7 +131,12 @@ def test_shape(frame):
 
 
 def test_columns(frame):
-    expected = (set(_fixture_columns()) - {"spike20"}) | {"best_path"} | set(AUDIT_COLUMNS)
+    expected = (
+        (set(_fixture_columns()) - {"spike20"})
+        | {"best_path"}
+        | set(AUDIT_COLUMNS)
+        | set(MBSP_COLUMNS)
+    )
     assert set(frame.columns) == expected
 
 
@@ -172,6 +190,7 @@ def test_missing_source_row_still_yields_96_rows(sources, thresholds):
         sources["rrl"],
         sources["ntg"],
         sources["audit"],
+        sources["mbsp"],
         thresholds,
     )
     assert len(result) == 96
@@ -198,3 +217,12 @@ def test_mobile_says_still_has_four_keys(frame):
         keys = [pair.split("=")[0] for pair in value.split(";")]
         assert keys == list(PUBLISHER_KEYS)
     assert set(frame["mobile_publishers_available"]) == {"4"}
+
+
+def test_mbsp_columns_join_on_the_right_row(frame):
+    by_id = _frame_by_id(frame)
+    for column in MBSP_COLUMNS:
+        assert column in frame.columns
+    assert by_id.loc["580", "mbsp_within_5km"] == "1"
+    assert by_id.loc["580", "mbsp_nearest_km"] == "1.0"
+    assert (frame["mbsp_within_5km"] == "1").sum() == 1

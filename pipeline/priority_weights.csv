@@ -1,0 +1,10 @@
+component,weight,source_column,transform,note
+population,0.20,population_abs2021,log,ABS 2021 SA1 population via BushTel; log10(1 + people) then scaled across the 96
+services_present,0.20,svc_*,linear,count of the ten BushTel presence flags with svc_health_centre counted twice
+telehealth_verdict,0.20,telehealth_video,map,"fails 1, degraded 0.5, nodata 0.25, works 0"
+voice_sms_verdict,0.15,voice_sms,map,"fails 1, degraded 0.5, works 0"
+claim_reliability,0.10,claim_reliability_word,map,"low 1, medium 0.5, high 0, none 0.25"
+audit_non_alignment_5km,0.10,audit5,map,1 when the National Audit found a non-alignment tile within 5 km
+mbsp_funded_5km,-0.10,mbsp_within_5km,map,counted against: a funded base station within 5 km is already in someone's pipeline
+cyclone_exposure,0,,map,awaiting OQ3
+adii_lga,0,,map,awaiting OQ5

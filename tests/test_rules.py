@@ -271,14 +271,15 @@ def test_wifi_only_voice_0000(thresholds):
     assert voice["reason"] == "No carrier 4G polygon and not on the 2022 list; public WiFi only"
 
 
-# --- Fails case: no "assumption" key ---
+# --- The satellite-path assumption, and the LEO sentence inside it (Task-40) ---
 
 
-def test_telehealth_fails_has_no_assumption(thresholds):
+def test_telehealth_fails_carries_only_the_leo_assumption(thresholds):
+    """Task-40: the fails branch gained an assumption; before it there was none."""
     row = make_row()
     result = rules.telehealth_video(row, thresholds)
     assert result["verdict"] == "fails"
-    assert "assumption" not in result
+    assert result["assumption"] == rules.leo_assumption(thresholds)
 
 
 def test_telehealth_degraded_has_assumption_with_telstra(thresholds):
@@ -286,5 +287,48 @@ def test_telehealth_degraded_has_assumption_with_telstra(thresholds):
     result = rules.telehealth_video(row, thresholds)
     assert result["verdict"] == "degraded"
     assert result["assumption"] == (
-        "Could work over Telstra 4G if latency is under `100 ms`. No measurement exists here."
+        "Could work over Telstra 4G if latency is under `100 ms`. No measurement exists here. "
+        + rules.leo_assumption(thresholds)
     )
+
+
+def test_leo_threshold_row(thresholds):
+    entry = thresholds["capability.leo_satellite.latency"]
+    assert entry["value"] == 29.8
+    assert entry["unit"] == "ms"
+    assert entry["source"] == "ACCC Measuring Broadband Australia release 147/24"
+    assert entry["source_url"].startswith("https://www.accc.gov.au/")
+
+
+def test_leo_sentence_quotes_the_figure_from_the_table(thresholds):
+    """The figure is rendered through ``fig``, never typed into the sentence."""
+    sentence = rules.leo_assumption(thresholds)
+    assert "low-earth-orbit service" in sentence
+    assert "`29.8 ms`" in sentence
+    assert "29.8" not in rules.LEO_ASSUMPTION
+
+
+def test_both_satellite_paths_carry_the_leo_sentence_and_no_verdict_moves(thresholds):
+    figure = rules.fig(thresholds["capability.leo_satellite.latency"]["value"], "ms")
+    degraded = rules.telehealth_video(
+        make_row(carriers_4g_count="1", telstra_4g_2025="1"), thresholds
+    )
+    fails = rules.telehealth_video(make_row(), thresholds)
+
+    assert degraded["verdict"] == "degraded"
+    assert fails["verdict"] == "fails"
+    for result in (degraded, fails):
+        assert figure in result["assumption"]
+        # The sentence is an assumption, never part of the reason the verdict rests on.
+        assert "low-earth-orbit" not in result["reason"]
+    # The release is already cited for the 664.9 ms figure, so no source line is added.
+    assert len(fails["sources"]) == 3
+    assert len(degraded["sources"]) == 3
+
+
+def test_fixed_path_telehealth_has_no_leo_sentence(thresholds):
+    """Only a satellite path carries it: fixed access is not waiting on a dish."""
+    row = make_row(nbn_technology="FIXED_LINE", in_fixed_line="1")
+    result = rules.telehealth_video(row, thresholds)
+    assert result["verdict"] == "works"
+    assert "low-earth-orbit" not in result["assumption"]

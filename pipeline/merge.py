@@ -1,6 +1,6 @@
-"""Join the six source frames into one capability row per community and score each service.
+"""Join the seven source frames into one capability row per community and score each service.
 
-The six frames arrive keyed on ``bushtel_id`` from ``pipeline.sources.*``; BushTel is the
+The seven frames arrive keyed on ``bushtel_id`` from ``pipeline.sources.*``; BushTel is the
 base frame and the join is a left join onto it, so the result always carries exactly the
 communities BushTel lists and a source that recorded nothing yields empty cells rather than a
 dropped row. Every cell of the result is a string: the table is written to CSV and read back
@@ -130,6 +130,7 @@ def merge(
     rrl: pd.DataFrame,
     ntg: pd.DataFrame,
     audit: pd.DataFrame,
+    mbsp: pd.DataFrame,
     thresholds: dict[str, dict],
 ) -> pd.DataFrame:
     """One row per BushTel community, source columns joined and every verdict decided.
@@ -140,7 +141,10 @@ def merge(
     same answer on every column they share.
     """
     table = _strings(bushtel, base=True)
-    for frame in (nbn, accc, rrl, audit, ntg):
+    # Task-40: the MBSP pair joins after the Audit block, beside the other "what is already
+    # near this community" columns. It makes no coverage claim and no verdict reads it; only
+    # pipeline.prioritise does, as the one component that counts against a community.
+    for frame in (nbn, accc, rrl, audit, mbsp, ntg):
         table = table.merge(_strings(frame, base=False), on="bushtel_id", how="left")
     table = table.fillna("")
     table = table.sort_values("bushtel_id").reset_index(drop=True)

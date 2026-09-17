@@ -23,6 +23,15 @@ CARRIER_COLUMNS = (
 NO_RECORD = "No fixed-access record for this community"
 NO_REQUIREMENT = "Requirement figure not published"
 
+# Task-40, PRD section 4.2 fourth batch: every satellite-path telehealth verdict says out loud
+# that the 664.9 ms figure it fails on is Sky Muster's, and that a dish a clinic may already
+# have installed is in no public record (OQ10, OQ17). The figure is read from thresholds.csv
+# through ``fig`` like every other figure; no verdict moves until a per-community record exists.
+LEO_ASSUMPTION = (
+    "A low-earth-orbit service, where a clinic has installed one, is in no public record; "
+    "the same ACCC report measured Starlink at {figure}."
+)
+
 
 def load_thresholds(path: Path) -> dict[str, dict]:
     """Read the requirement and capability table, keyed kind.service.metric."""
@@ -103,6 +112,12 @@ def _path_source(row: dict[str, str]) -> dict:
     return {"label": "Path", "source": f"{word}, {RULE_NAME}", "date": RULE_DATE}
 
 
+def leo_assumption(thresholds: dict[str, dict]) -> str:
+    """The LEO sentence with its measured figure, read from the table, never typed here."""
+    entry = thresholds["capability.leo_satellite.latency"]
+    return LEO_ASSUMPTION.format(figure=fig(entry["value"], entry["unit"]))
+
+
 def _is_fixed(row: dict[str, str]) -> bool:
     return row["nbn_technology"] in ("FIXED_LINE", "FIXED_WIRELESS")
 
@@ -138,6 +153,9 @@ def telehealth_video(row: dict[str, str], thresholds: dict[str, dict]) -> dict:
     measured = thresholds["capability.nbn_satellite.latency"]
     have = fig(measured["value"], measured["unit"])
     sources = [_figure("Failing figure", measured), _figure("Required figure", required), path]
+    # Both satellite branches carry the LEO sentence; the release it quotes is already cited
+    # for the 664.9 ms figure above, so ``sources`` gains no entry (Task-40 contract item 6).
+    leo = leo_assumption(thresholds)
     if carrier_count(row) >= 1:
         return {
             "verdict": "degraded",
@@ -145,13 +163,14 @@ def telehealth_video(row: dict[str, str], thresholds: dict[str, dict]) -> dict:
             "sources": sources,
             "assumption": (
                 f"Could work over {join_names(carriers_4g(row))} 4G if latency is under {need}. "
-                "No measurement exists here."
+                f"No measurement exists here. {leo}"
             ),
         }
     return {
         "verdict": "fails",
         "reason": f"Latency {have} on satellite vs {need} required; no carrier 4G polygon",
         "sources": sources,
+        "assumption": leo,
     }
 
 

@@ -1,8 +1,8 @@
 """Report-ready figures and tables for the Findings section (PRD section 4.1, item 3).
 
 Reads ``data/out/capability_table.csv`` (already carries the merged verdicts and the
-mobile disagreement pattern, both written by ``merge.py``) and writes two static NT maps
-as PNG to ``data/out/figures/`` plus three CSV tables to ``data/out/tables/``. Colours and
+mobile disagreement pattern, both written by ``merge.py``) and writes three static NT maps
+as PNG to ``data/out/figures/`` plus four CSV tables to ``data/out/tables/``. Colours and
 glyphs are read from ``design/ds/design/tokens.json``, never retyped (CLAUDE.md Blueprint,
 layer rule 5). Run from the project root:
 ``PYTHONUTF8=1 .venv/Scripts/python -m pipeline.figures``.
@@ -30,6 +30,8 @@ plt.rcParams["font.family"] = "sans-serif"
 
 ROOT = Path(__file__).resolve().parent.parent
 TABLE = ROOT / "data/out/capability_table.csv"
+PRIORITY = ROOT / "data/out/priority.csv"
+PRIORITY_COMMAND = "PYTHONUTF8=1 .venv/Scripts/python -m pipeline.prioritise"
 TOKENS_PATH = ROOT / "design/ds/design/tokens.json"
 BOUNDARY_RAW = ROOT / "data/raw" / outline.RAW_NAME
 FIGURES_DIR = ROOT / "data/out/figures"
@@ -91,6 +93,15 @@ DISAGREEMENT_READINGS = {
 }
 UNANIMOUS_COVERED = "accc=1;ntg2022=1;rrl5=1;bushtel=1"
 UNANIMOUS_NOT_COVERED = "accc=0;ntg2022=0;rrl5=0;bushtel=0"
+
+# Task-40: the priority map splits the 96 into thirds of the ranking, worst first. Three
+# buckets, not 96 shades: the point of the map is which third to look at.
+PRIORITY_TERCILES = (
+    ("First third", "act first"),
+    ("Second third", "next"),
+    ("Last third", "watch"),
+)
+PRIORITY_COLUMNS = ("rank", "name", "score", "telehealth_video", "intervention", "addressee")
 
 
 def load_rows() -> list[dict[str, str]]:
@@ -227,6 +238,77 @@ def map_agreement(rows: list[dict[str, str]], tokens: dict, out_png: Path) -> No
     plt.close(fig)
 
 
+def load_priority() -> list[dict[str, str]]:
+    """The ranking ``pipeline.prioritise`` wrote, in rank order."""
+    if not PRIORITY.is_file():
+        raise FileNotFoundError(
+            f"{PRIORITY.relative_to(ROOT).as_posix()} is missing. Write it with: "
+            f"{PRIORITY_COMMAND}"
+        )
+    with PRIORITY.open(newline="", encoding="utf-8-sig") as handle:
+        entries = list(csv.DictReader(handle))
+    entries.sort(key=lambda entry: int(entry["rank"]))
+    return entries
+
+
+def _tercile(rank: int, total: int) -> int:
+    """0, 1 or 2: which third of the ranking this rank falls in."""
+    return min(2, (rank - 1) * 3 // total)
+
+
+def map_priority(
+    rows: list[dict[str, str]], priority: list[dict[str, str]], tokens: dict, out_png: Path
+) -> None:
+    """Map coloured by which third of the priority ranking a community falls in."""
+    fig, ax = _new_axes()
+    _draw_outline(ax, tokens)
+    cmap = matplotlib.colormaps["RdYlGn"]
+    ink = tokens["color"]["ink"]
+    by_id = {int(entry["id"]): int(entry["rank"]) for entry in priority}
+    total = len(priority)
+    counts = {index: 0 for index in range(len(PRIORITY_TERCILES))}
+    for row in rows:
+        rank = by_id[int(row["bushtel_id"])]
+        band = _tercile(rank, total)
+        counts[band] += 1
+        x, y = outline.project(float(row["lat"]), float(row["lon"]))
+        ax.scatter(
+            [x], [y], s=70, color=cmap(band / 2), edgecolors=ink, linewidths=1.0, zorder=2
+        )
+    handles = [
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            linestyle="",
+            markerfacecolor=cmap(index / 2),
+            markeredgecolor=ink,
+            markersize=12,
+            label=f"{label} of the ranking, {reading} ({counts[index]})",
+        )
+        for index, (label, reading) in enumerate(PRIORITY_TERCILES)
+    ]
+    ax.legend(handles=handles, loc="lower left", title="Priority ranking", frameon=False)
+    _title(ax, "Priority ranking by community")
+    _source_line(fig, SOURCE_LINE)
+    fig.savefig(out_png, dpi=DPI)
+    plt.close(fig)
+
+
+def write_priority_table(
+    rows: list[dict[str, str]], priority: list[dict[str, str]], out_csv: Path
+) -> None:
+    """The 96 in rank order with the six columns the app's Priority tab shows."""
+    verdicts = {int(row["bushtel_id"]): row["telehealth_video"] for row in rows}
+    out_csv.parent.mkdir(parents=True, exist_ok=True)
+    with out_csv.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.writer(handle, lineterminator="\n")
+        writer.writerow(PRIORITY_COLUMNS)
+        for entry in priority:
+            cells = {**entry, "telehealth_video": verdicts[int(entry["id"])]}
+            writer.writerow([cells[column] for column in PRIORITY_COLUMNS])
+
+
 def write_disagreement_patterns(rows: list[dict[str, str]], out_csv: Path) -> None:
     """One row per distinct ``mobile_says`` pattern: count, plain reading, community names."""
     groups: dict[str, list[str]] = defaultdict(list)
@@ -324,17 +406,23 @@ def main() -> None:
         )
     rows = load_rows()
     tokens = load_tokens()
+    priority = load_priority()
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     TABLES_DIR.mkdir(parents=True, exist_ok=True)
     map_verdict(rows, tokens, FIGURES_DIR / "map_verdict.png")
     map_agreement(rows, tokens, FIGURES_DIR / "map_agreement.png")
+    map_priority(rows, priority, tokens, FIGURES_DIR / "map_priority.png")
     write_disagreement_patterns(rows, TABLES_DIR / "disagreement_patterns.csv")
     write_verify_on_ground(rows, TABLES_DIR / "verify_on_the_ground.csv")
     write_verdict_counts(rows, TABLES_DIR / "verdict_counts.csv")
-    print(f"{FIGURES_DIR.relative_to(ROOT).as_posix()}: map_verdict.png, map_agreement.png")
+    write_priority_table(rows, priority, TABLES_DIR / "priority.csv")
+    print(
+        f"{FIGURES_DIR.relative_to(ROOT).as_posix()}: map_verdict.png, map_agreement.png, "
+        "map_priority.png"
+    )
     print(
         f"{TABLES_DIR.relative_to(ROOT).as_posix()}: disagreement_patterns.csv, "
-        "verify_on_the_ground.csv, verdict_counts.csv"
+        "verify_on_the_ground.csv, verdict_counts.csv, priority.csv"
     )
 
 

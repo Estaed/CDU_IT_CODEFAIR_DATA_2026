@@ -124,6 +124,22 @@ SOURCES = (
         "fetch_command": "PYTHONUTF8=1 .venv/Scripts/python -m pipeline.fetch.audit_roads",
     },
     {
+        "id": "mbsp_funded",
+        "name": "Mobile Black Spot Program, all funded base stations",
+        # Not a publisher line and not cited per community: the pack carries it only through
+        # the priority score's ``mbsp_funded_5km`` component, whose source is the weights CSV.
+        "pack_source": "",
+        "url": "https://data.gov.au/data/dataset/mobile-black-spot-program-mbsp",
+        "licence": "CC BY 4.0",
+        "attribution": (
+            "Mobile Black Spot Program funded base stations, Department of Infrastructure, "
+            "Transport, Regional Development, Communications, Sport and the Arts"
+        ),
+        "pattern": "mbsp_funded_*.zip",
+        "date": "2024-08-09",
+        "module": "mbsp",
+    },
+    {
         "id": "ntg_2019",
         "name": "Remote Communities with Mobile Coverage and Backhaul Transmission 2019",
         "pack_source": "NT Government 2019 coverage list",

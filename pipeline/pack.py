@@ -12,7 +12,7 @@ import re
 from datetime import date
 from pathlib import Path
 
-from pipeline import layers, outline, provenance, rules
+from pipeline import layers, outline, prioritise, provenance, rules
 
 ROOT = Path(__file__).resolve().parent.parent
 TABLE = ROOT / "data/out/capability_table.csv"
@@ -32,6 +32,19 @@ RELIABILITY_CSV = ROOT / "data/out/reliability.csv"
 RELIABILITY_VALIDATION = ROOT / "data/out/tables/reliability_validation.csv"
 RELIABILITY_SOURCE = "Crosscheck reliability model"
 RELIABILITY_WORDS = ("high", "medium", "low", "none")
+
+# The priority row (Task-40). The score, the rank, the intervention and the addressee are all
+# decided in pipeline/prioritise.py from pipeline/priority_weights.csv; nothing here weights
+# or ranks anything, and the app renders the row without recomputing it (layer rule 9).
+# The list is encoded against two headers rather than repeating names 96 times:
+# ``priority_components`` names the components once with their weights, and each row's ``c``
+# array is that many contributions in that order; ``priority_interventions`` names the eight
+# interventions once with their addressee, and a row's ``i`` is an index into it (so is a
+# community's ``priority.i``). 96 x 9 component key names is 20 KB the pack cannot spare, and
+# the index replaced the spelled-out word on 2026-09-17 evening, when the two interventions
+# Tarik added took the pack 369 bytes past its cap.
+PRIORITY_CSV = ROOT / "data/out/priority.csv"
+PRIORITY_DECIMALS = 3
 
 # BushTel publishes no single date for the set: every line citing a profile carries that
 # community's own stamp, so the registry's snapshot date must not stand in for it.
@@ -323,6 +336,59 @@ def _no_reliability() -> dict:
     }
 
 
+def _short(value: object) -> float | int:
+    """A pack number: three decimals, and an integer when that is what it rounds to."""
+    rounded = round(float(value), PRIORITY_DECIMALS)
+    return int(rounded) if rounded == int(rounded) else rounded
+
+
+def priority_components(weights: list[dict] | None = None) -> list[dict]:
+    """The score components once, in the order every row's ``c`` array follows."""
+    weights = prioritise.load_weights() if weights is None else weights
+    return [{"name": spec["component"], "weight": spec["weight"]} for spec in weights]
+
+
+def priority_interventions() -> list[dict]:
+    """The six interventions with their addressee, in the order the rules are tried.
+
+    The addressee is a function of the intervention and of nothing else, so it is named once
+    here instead of 96 times in the rows. No screen prints it beside a community; the report's
+    Recommendations column reads it from this list, or from ``data/out/priority.csv``.
+    """
+    return [
+        {"word": word, "addressee": addressee}
+        for word, addressee, _ in prioritise.INTERVENTIONS
+    ]
+
+
+def priority_rows(path: Path = PRIORITY_CSV, weights: list[dict] | None = None) -> list[dict]:
+    """The 96 priority rows in rank order from ``data/out/priority.csv``.
+
+    Empty when ``pipeline.prioritise`` has not been run: the pack then carries no priority
+    list and no community carries a priority pointer, which is the shape the app already
+    tolerates because ``pack_version`` does not move for this key (Task-41 renders it).
+    """
+    path = Path(path)
+    if not path.is_file():
+        return []
+    names = [entry["name"] for entry in priority_components(weights)]
+    index_of = {entry["word"]: position for position, entry in enumerate(priority_interventions())}
+    with path.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+    rows.sort(key=lambda row: int(row["rank"]))
+    return [
+        {
+            "id": int(row["id"]),
+            "rank": int(row["rank"]),
+            "score": _short(row["score"]),
+            "c": [_short(row[f"c_{name}"]) for name in names],
+            "i": index_of[row["intervention"]],
+            "why": row["why"],
+        }
+        for row in rows
+    ]
+
+
 def citations(thresholds: dict[str, dict]) -> dict[str, dict[str, str]]:
     """``{source name: {date, url, licence, note}}``: the requirement table under the registry.
 
@@ -384,7 +450,11 @@ def actions_for(row: dict[str, str]) -> list[dict[str, str]]:
 
 
 def _community(
-    row: dict[str, str], thresholds: dict[str, dict], cited: dict, reliability: dict
+    row: dict[str, str],
+    thresholds: dict[str, dict],
+    cited: dict,
+    reliability: dict,
+    priority: dict[int, dict],
 ) -> dict:
     profile = row["profile_last_updated"]
     publishers = [_dated(line, profile, cited) for line in publisher_lines(row, profile)]
@@ -452,6 +522,12 @@ def _community(
         ],
         "actions": actions_for(row),
     }
+    # The rank and the intervention the community screen prints, so it needs no walk of the
+    # priority list; the score and the contributions stay in that list, said once. ``i`` indexes
+    # ``priority_interventions``, which the screen already has in hand.
+    entry = priority.get(int(row["bushtel_id"]))
+    if entry is not None:
+        community["priority"] = {"rank": entry["rank"], "i": entry["i"]}
     if BUSHTEL_TEXT_ALLOWED:
         community["notes"] = [
             {"name": field, "text": row[field], "source": "BushTel profile", "date": profile}
@@ -573,12 +649,15 @@ def build_pack(
     boundary_path: Path = BOUNDARY_RAW,
     raw_dir: Path = RAW_DIR,
     reliability: dict[int, dict] | None = None,
+    priority: list[dict] | None = None,
 ) -> dict:
     """The whole pack, version 1, communities sorted by BushTel id."""
     cited = citations(thresholds)
     lines = reliability_lines() if reliability is None else reliability
+    ranking = priority_rows() if priority is None else priority
+    by_id = {entry["id"]: entry for entry in ranking}
     communities = sorted(
-        (_community(row, thresholds, cited, lines) for row in rows),
+        (_community(row, thresholds, cited, lines, by_id) for row in rows),
         key=lambda entry: entry["id"],
     )
     map_layers = layers.build_layers(raw_dir, boundary_path)
@@ -595,6 +674,9 @@ def build_pack(
         "layers": map_layers,
         "filters": filters(rows),
         "legend": legend(communities),
+        "priority_components": priority_components(),
+        "priority_interventions": priority_interventions(),
+        "priority": ranking,
         "sources": sources,
         "attributions": attributions(thresholds),
         "communities": communities,

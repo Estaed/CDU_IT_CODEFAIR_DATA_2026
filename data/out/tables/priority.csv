@@ -1,0 +1,97 @@
+rank,name,score,telehealth_video,intervention,addressee
+1,Nauiyu,0.632,degraded,verify on the ground,"DCDD, carrier"
+2,Nitjpurru,0.608,fails,low-latency backhaul,"DCDD, nbn"
+3,Galiwinku,0.597,degraded,backup power,carrier
+4,Amanbidji,0.596,fails,low-latency backhaul,"DCDD, nbn"
+5,Areyonga,0.586,fails,low-latency backhaul,"DCDD, nbn"
+6,Maningrida,0.582,degraded,measure the link here,DCDD
+7,Wurrumiyanga,0.568,degraded,backup power,carrier
+8,Milingimbi,0.561,degraded,backup power,carrier
+9,Jilkminggan,0.553,degraded,verify on the ground,"DCDD, carrier"
+10,Numbulwar,0.549,degraded,measure the link here,DCDD
+11,Pirlangimpi,0.548,degraded,backup power,carrier
+12,Barunga,0.545,degraded,verify on the ground,"DCDD, carrier"
+13,Wadeye,0.543,degraded,measure the link here,DCDD
+14,Warruwi,0.538,degraded,backup power,carrier
+15,Kintore,0.537,degraded,backup power,carrier
+16,Milikapiti,0.537,degraded,backup power,carrier
+17,Ngukurr,0.529,degraded,measure the link here,DCDD
+18,Santa Teresa,0.528,degraded,backup power,carrier
+19,Rittarangu,0.526,fails,low-latency backhaul,"DCDD, nbn"
+20,Dhalinybuy,0.525,fails,low-latency backhaul,"DCDD, nbn"
+21,Angurugu,0.524,degraded,measure the link here,DCDD
+22,Gan Gan,0.523,fails,low-latency backhaul,"DCDD, nbn"
+23,Ramingining,0.522,degraded,measure the link here,DCDD
+24,Papunya,0.520,degraded,measure the link here,DCDD
+25,Umbakumba,0.519,degraded,measure the link here,DCDD
+26,Peppimenarti,0.517,degraded,measure the link here,DCDD
+27,Gunbalanya,0.512,degraded,measure the link here,DCDD
+28,Minyerri,0.512,degraded,measure the link here,DCDD
+29,Woodycupaldiya,0.502,fails,low-latency backhaul,"DCDD, nbn"
+30,Atitjere,0.501,degraded,backup power,carrier
+31,Gurrumuru,0.500,fails,low-latency backhaul,"DCDD, nbn"
+32,Lajamanu,0.498,degraded,measure the link here,DCDD
+33,Baniyala,0.489,fails,low-latency backhaul,"DCDD, nbn"
+34,Kaltukatjara,0.486,degraded,measure the link here,DCDD
+35,Kalkarindji,0.485,degraded,measure the link here,DCDD
+36,Orrtipa-Thurra,0.483,fails,low-latency backhaul,"DCDD, nbn"
+37,Gapuwiyak,0.482,degraded,measure the link here,DCDD
+38,Bulman,0.477,degraded,measure the link here,DCDD
+39,Hermannsburg,0.476,degraded,measure the link here,DCDD
+40,Ampilatwatja,0.470,degraded,backup power,carrier
+41,Milyakburra,0.466,degraded,refresh the coverage list,DCDD
+42,Yuendumu,0.465,degraded,measure the link here,DCDD
+43,Nganmarriyanga,0.465,degraded,measure the link here,DCDD
+44,Robinson River,0.461,degraded,measure the link here,DCDD
+45,Ali Curung,0.449,degraded,measure the link here,DCDD
+46,Alpurrurulam,0.446,degraded,measure the link here,DCDD
+47,Yarralin,0.441,degraded,backup power,carrier
+48,Canteen Creek,0.441,degraded,refresh the coverage list,DCDD
+49,Wugularr,0.439,degraded,measure the link here,DCDD
+50,Nyirripi,0.438,degraded,refresh the coverage list,DCDD
+51,Titjikala,0.432,degraded,backup power,carrier
+52,Laramba,0.431,degraded,refresh the coverage list,DCDD
+53,Wutunugurra,0.424,degraded,refresh the coverage list,DCDD
+54,Mutitjulu,0.421,degraded,measure the link here,DCDD
+55,Minjilang,0.407,degraded,backup power,carrier
+56,Imangara,0.389,nodata,mobile site (MBSP nomination),"DCDD, carrier"
+57,Gunyangara,0.387,degraded,measure the link here,DCDD
+58,Mount Liebig,0.387,degraded,measure the link here,DCDD
+59,Bulla,0.386,degraded,measure the link here,DCDD
+60,Willowra,0.385,degraded,refresh the coverage list,DCDD
+61,Finke,0.381,degraded,refresh the coverage list,DCDD
+62,Manyallaluk,0.379,degraded,backup power,carrier
+63,Belyuen,0.375,degraded,measure the link here,DCDD
+64,Haasts Bluff,0.374,nodata,monitor,DCDD
+65,Mapuru,0.358,nodata,verify and publish the licensed site,"carrier, ACMA"
+66,Mungkarta,0.355,fails,low-latency backhaul,"DCDD, nbn"
+67,Imanpa,0.352,degraded,measure the link here,DCDD
+68,Amoonguna,0.349,degraded,low-latency backhaul,"DCDD, nbn"
+69,Wallace Rockhole,0.343,degraded,backup power,carrier
+70,Manmoyi,0.342,nodata,verify and publish the licensed site,"carrier, ACMA"
+71,Daguragu,0.341,nodata,monitor,DCDD
+72,Engawala,0.341,nodata,monitor,DCDD
+73,Yuelamu,0.338,nodata,refresh the coverage list,DCDD
+74,Birany Birany,0.318,nodata,verify and publish the licensed site,"carrier, ACMA"
+75,Rorruwuy,0.318,nodata,verify and publish the licensed site,"carrier, ACMA"
+76,Binjari,0.314,degraded,measure the link here,DCDD
+77,Nturiya,0.314,nodata,monitor,DCDD
+78,Yirrkala,0.312,works,monitor,DCDD
+79,Wilora,0.311,nodata,refresh the coverage list,DCDD
+80,Weemol,0.304,nodata,monitor,DCDD
+81,Wurankuwu,0.303,nodata,verify and publish the licensed site,"carrier, ACMA"
+82,Pmara Jutunta,0.283,degraded,measure the link here,DCDD
+83,Arawerr,0.278,nodata,refresh the coverage list,DCDD
+84,Ngangalala,0.275,nodata,monitor,DCDD
+85,Irrultja,0.264,nodata,monitor,DCDD
+86,Tara,0.244,degraded,refresh the coverage list,DCDD
+87,Wandangula,0.244,nodata,refresh the coverage list,DCDD
+88,Gochan Jiny Jirra,0.225,nodata,mobile site (MBSP nomination),"DCDD, carrier"
+89,Hodgson River Station,0.225,nodata,mobile site (MBSP nomination),"DCDD, carrier"
+90,Likkaparta,0.225,nodata,mobile site (MBSP nomination),"DCDD, carrier"
+91,Marlinja,0.218,nodata,monitor,DCDD
+92,Yathalamarra,0.206,nodata,monitor,DCDD
+93,Rockhole,0.187,nodata,monitor,DCDD
+94,Kybrook Farm,0.168,nodata,monitor,DCDD
+95,Pickertaramoor,0.168,nodata,refresh the coverage list,DCDD
+96,Iwupataka,0.150,nodata,refresh the coverage list,DCDD

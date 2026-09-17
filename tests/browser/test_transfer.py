@@ -173,12 +173,14 @@ def test_round_trip_between_two_pages_is_the_pack_and_layers_are_carried_over(co
 # 1.6 x K at 10 % loss, and one block more of pack (K 25) moved the fixed seed from 1.29 to
 # 2.20 x K. The twenty runs share one page evaluation; twenty page loads for one assertion is
 # the slow way round.
+# Tarik's decision, 2026-09-17 evening: the 10 % MEDIAN moves 1.6 -> 1.8 x K, measured at K 31
+# after Task-40's priority list and LEO sentence grew the pack; no other budget changes.
 SEEDS = [20260915 + s * 7919 for s in range(20)]
 
 
 @pytest.mark.parametrize(
     ("loss", "median_budget", "worst_budget"),
-    [(0.1, 1.6, 2.5), (0.5, 2.8, 3.5), (0.7, 4.5, 4.5)],
+    [(0.1, 1.8, 2.5), (0.5, 2.8, 3.5), (0.7, 4.5, 4.5)],
     ids=["loss10", "loss50", "loss70"],
 )
 def test_seeded_drop_completes_within_budget(context, loss, median_budget, worst_budget):

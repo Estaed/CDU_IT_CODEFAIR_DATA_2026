@@ -276,8 +276,10 @@ QR olayını sonra update ederiz").
   answers arrive, cyclone exposure (OQ3) and the LGA's ADII score (OQ5); an absent component
   scores zero and the table says so). Each community also gets one **intervention** from a
   rule over its pattern (`low-latency backhaul`, `verify and publish the licensed site`,
-  `refresh the coverage list`, `mobile site (MBSP nomination)`, `backup power`, `monitor`) and
-  the addressee it goes to. A sensitivity table perturbs every weight by ±50 % and reports how
+  `refresh the coverage list`, `mobile site (MBSP nomination)`, `backup power`, and since the
+  evening of 2026-09-17 `verify on the ground` for a measured non-alignment within 5 km and
+  `measure the link here` for a clinic whose telehealth verdict rests on the unmeasured 4G
+  assumption, then `monitor`) and the addressee it goes to. A sensitivity table perturbs every weight by ±50 % and reports how
   much of the top 10 survives; the report prints it. The app gains a **fourth tab, Priority**:
   the 96 ranked worst first, each row the rank, the name, the telehealth glyph, the
   intervention; chips filter by intervention; a row opens the community, whose screen shows
@@ -528,3 +530,4 @@ D5. **National scope** — only if the NT is finished early; the brief allows it
 | 2026-09-17 | Fourth batch (§4.2). Primary target named: the DCDD analyst, judged by the "analyst's sixty seconds" (§2). Added: the Audit non-alignment tiles as a fifth, *measured* publisher; a map-claim reliability model trained in the pipeline on the Audit with an AUC 0.65 kill criterion; a transparent priority score with weights in a CSV, one intervention and one addressee per community, a sensitivity table, and a fourth tab; one LEO assumption sentence. Cut: changes since the previous snapshot, the mesh text, compare. Kept: the myGov row, the camera transfer (revisited after this batch). Rejected: a restart (13 days, one builder, no report yet) | Tarik ("evet yap, emin ol uygulamanın işlevsel olduğuna"), on Eko's proposal |
 | 2026-09-17 | Task-39 fetches the Audit road routes and trains before the OQ18 licence answer, as BushTel was used before OQ1: request on file, Methodology says so; a refusal removes the model from the pack and keeps it in the report | Tarik ("evet, indir ve eğit") |
 | 2026-09-17 | Transfer loss budgets become a distribution over 20 fixed seeds (median within the old budgets, worst seed within 2.5 / 3.5 / 4.5 × K, omission within 2.0 × K). Task-38's fifth publisher line pushed K from 24 to 25 and the single-seed check went red; measured, 3 of 20 seeds were already over budget at K 24, so the old check was a seed, not a property | Tarik ("dağılım ölçütü"), on Eko's proposal with the worker's measurement |
+| 2026-09-17 (evening) | Task-40 measured: the pack reached 510,477 of 512,000 bytes, K 31, and the 10 % loss median read 1.65 × K against 1.6; the 10 % median budget becomes 1.8 (the one binding row; 50 % and 70 % sit at half their budgets). Two intervention rules added before `monitor`: `verify on the ground` (a drive-test non-alignment within 5 km) and `measure the link here` (a clinic whose telehealth verdict is the unmeasured 4G assumption), because 46 of 96 fell through to `monitor`, Nauiyu at rank 1 among them. The addressee lives once per intervention in a pack header | Tarik (both recommended options), on Eko's proposal with the worker's measurement |

@@ -28,6 +28,7 @@ EXPECTED_IDS = {
     "ntg_2021",
     "ntg_2022",
     "ntg_smallcell",
+    "mbsp_funded",
     "abs_ste_2021",
     "abs_sa3_2021",
     "abs_ucl_2021",
