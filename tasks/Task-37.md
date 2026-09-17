@@ -1,5 +1,7 @@
 # Task-37: Transfer v4 — the pack travels by light, not the app
 
+**Status: DONE** — verified 2026-09-17 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` (opus) · effort `high` · plan mode **no**
 > *Why:* 2026-09-16 evening. Frame contract and store validation are correctness-sensitive;
 > the "how" is fully written. Codex is at 100 % until 2026-09-19.

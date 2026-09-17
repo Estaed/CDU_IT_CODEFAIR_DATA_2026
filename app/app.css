@@ -34,23 +34,6 @@ a.button { text-decoration: none; }
   color: var(--text-secondary);
 }
 
-/* Task-15 compare route. The screens carry no media query (design/screens/README.md), so the
-   grid wraps on width: two columns inside the content width, stacked on a 360 wide phone. */
-
-.compare {
-  display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(min(100%, calc(var(--size-content-max) / 2 - var(--space-md))), 1fr)
-  );
-}
-
-.compare__column { min-width: 0; }
-
-.compare .community-header__name .text-link { font: inherit; letter-spacing: inherit; }
-
-.compare__service { padding: var(--space-xs) var(--space-md); }
-
 /* Task-18 transfer by camera: Show and Receive on the share screen. New classes only, tokens
    only (layer rule 5); the share card above is untouched and its own tests still address it. */
 
@@ -244,14 +227,6 @@ a.button { text-decoration: none; }
   cursor: pointer;
 }
 
-/* Task-26: the Share screen's Changes row. screens.css's .link-row is a plain flex row with no
-   wrap, which overflows a 360 px screen and left a trailing "." before app.js stopped joining
-   the sentence and the date with one; this modifier wraps the name+sentence together and puts
-   the date on its own line underneath, tokens only. */
-.link-row--changes { flex-wrap: wrap; row-gap: var(--space-xxs); }
-.link-row--changes .link-row__text { flex: 1 1 100%; min-width: 0; }
-.link-row--changes .link-row__date { flex: 0 0 100%; margin: 0; }
-
 /* Task-30 clarity batch (Tarik on a phone, 2026-09-16). New classes only, tokens only. */
 
 /* The three screen tabs get their own full-width row under the title, so none hides past the
@@ -281,10 +256,10 @@ a.button { text-decoration: none; }
   mask-image: linear-gradient(to right, transparent, black var(--space-xxl), black calc(100% - var(--space-xxl)), transparent);
 }
 
-/* One search bar: the location button sits under it, Compare sits inside each result. */
+/* One search bar: the location button sits under it. */
 .search__tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); margin-top: var(--space-xs); }
 
-.locate-button, .result-row__compare {
+.locate-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -297,7 +272,7 @@ a.button { text-decoration: none; }
   background: var(--surface-page);
   cursor: pointer;
 }
-.locate-button:active, .result-row__compare:active { background: var(--surface-block); }
+.locate-button:active { background: var(--surface-block); }
 .locate-button:disabled { color: var(--text-secondary); }
 
 .locate-status { margin: 0; font: var(--text-body-sm); color: var(--text-body); }
@@ -311,7 +286,6 @@ a.button { text-decoration: none; }
   border-bottom: var(--size-hairline) solid var(--border-hairline-soft);
 }
 .search-results__item .result-row { flex: 1 1 auto; min-width: 0; border-bottom: 0; }
-.result-row__compare { flex: 0 0 auto; }
 
 /* What exists here: a sentence, so nothing looks tappable that is not. */
 .present-list { margin: 0; padding: var(--space-xs) var(--space-md) 0; font: var(--text-body-sm); color: var(--text-body); }

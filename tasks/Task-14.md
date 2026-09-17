@@ -1,5 +1,7 @@
 # Task-14: Changes since the previous snapshot on the Share screen
 
+**Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* one list rendered from `pack.changes`; criteria are DOM assertions.
 

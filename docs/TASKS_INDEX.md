@@ -55,7 +55,7 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-36: Transfer v3 in the app from the Task-31 winner (third batch, added 2026-09-16; spec completed after Task-31)
 - [x] Task-37: Transfer v4: the pack travels by light, not the app; lite copy withdrawn (added 2026-09-16 evening)
 - [ ] Task-38: Measured publisher: the National Audit non-alignment tiles as the fifth line (fourth batch, added 2026-09-17)
-- [ ] Task-42: Cuts: changes since the previous snapshot, the mesh text, compare (fourth batch, added 2026-09-17)
+- [x] Task-42: Cuts: changes since the previous snapshot, the mesh text, compare (fourth batch, added 2026-09-17)
 - [ ] Task-39: Map-claim reliability: one model trained in the pipeline on the Audit, AUC 0.65 kill criterion (fourth batch, added 2026-09-17; ⛔ OQ18 before the roads fetch)
 - [ ] Task-40: Priority score, intervention and addressee; the LEO sentence; MBSP sites (fourth batch, added 2026-09-17)
 - [ ] Task-41: Priority tab, the reliability line, the analyst's sixty seconds; pack version 3 (fourth batch, added 2026-09-17)

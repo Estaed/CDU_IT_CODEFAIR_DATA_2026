@@ -1,5 +1,7 @@
 # Task-11: Reproduction README, submission packaging, spike retirement
 
+**Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* the organiser's file rules are transcribed in `docs/report-requirements.md`; the criterion is a zip whose listing and file names match them, checked by a test.
 

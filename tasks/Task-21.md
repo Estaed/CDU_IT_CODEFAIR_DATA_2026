@@ -1,5 +1,7 @@
 # Task-21: Map second pass in the app (layers, zoom, pan, labels)
 
+**Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` · effort `high`
 > *Why:* rendering pack data with DOM-checkable criteria; whether the result "reads" is the advisory eye review after DONE (PRD §6), not a gate.
 

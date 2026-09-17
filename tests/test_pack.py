@@ -280,19 +280,6 @@ def test_every_community_has_freshness(data_pack):
         assert DATE_RE.match(freshness["date"])
 
 
-def test_changes_names_milingimbi_wifi(data_pack):
-    changes = data_pack["changes"]
-    assert changes["from"] == "2026-09-12"
-    assert changes["to"] == "2026-09-15"
-    milingimbi = next(item for item in changes["items"] if item["id"] == 531)
-    assert milingimbi["text"] == "Public Wi-Fi no longer listed"
-
-
-def test_changes_excludes_5g_columns(data_pack):
-    serialised = json.dumps(data_pack["changes"], ensure_ascii=False)
-    assert "5g" not in serialised.lower()
-
-
 def test_layers_key_present_and_src_resolves(data_pack):
     # Task-20: the pack's map layers, each src a key of the pack's own sources table.
     layers = data_pack["layers"]

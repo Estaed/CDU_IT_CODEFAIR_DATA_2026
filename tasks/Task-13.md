@@ -1,5 +1,7 @@
 # Task-13: Send as SMS, copy statement and the freshness line
 
+**Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` · effort `high`
 > *Why:* render-only work on Screen 1 with strings already in the pack; criteria are Playwright assertions on text and on the `sms:` href.
 

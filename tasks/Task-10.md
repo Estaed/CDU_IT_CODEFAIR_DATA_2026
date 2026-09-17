@@ -1,5 +1,7 @@
 # Task-10: Report-ready figures and tables
 
+**Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* PRD §4.1 item 3 names the outputs; criteria are file existence, image dimensions and row counts fixed by the spike. The pictures are judged by the team, not by the gate.
 

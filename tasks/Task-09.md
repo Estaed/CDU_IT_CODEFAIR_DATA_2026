@@ -1,5 +1,7 @@
 # Task-09: Share screen, QR, save-as-file, and the host-only PWA files
 
+**Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` · effort `high`
 > *Why:* reference markup `design/screens/share.html`; QR produced at build by `qrcode` (Part 2 spike); criteria are Playwright assertions including an `expect_download`.
 

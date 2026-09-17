@@ -1,5 +1,7 @@
 # Task-36: Transfer v3 in the app, from the Task-31 winner
 
+**Status: DONE** — verified 2026-09-16 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` (opus) · effort `high`
 > *Why:* 2026-09-16. The frame contract is correctness-sensitive and the loss tests are the
 > criterion; Opus. The "how" is fixed by Task-31's measured verdict, filled into "The winner"

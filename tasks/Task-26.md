@@ -1,5 +1,7 @@
 # Task-26: Small fixes before outside testers, and the page that never updates
 
+**Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* five render fixes already described in BACKLOG plus a service worker bug; each has a DOM or static criterion.
 

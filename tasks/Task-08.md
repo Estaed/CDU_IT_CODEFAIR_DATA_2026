@@ -1,5 +1,7 @@
 # Task-08: Map screen in the app
 
+**Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` · effort `high`
 > *Why:* reference markup `design/screens/map.html`, geometry already in the pack (Task-06); criteria are DOM counts and hash changes under Playwright.
 

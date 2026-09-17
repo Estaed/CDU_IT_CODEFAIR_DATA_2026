@@ -1,5 +1,7 @@
 # Task-17: QR encoder in the app
 
+**Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` · effort `high`
 > *Why:* a pure algorithm with an exact oracle (Python `qrcode` at the pinned version); no eye needed.
 

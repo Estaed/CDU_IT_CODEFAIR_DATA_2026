@@ -1,5 +1,7 @@
 # Task-29: Map points cluster by zoom
 
+**Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` · effort `high`
 > *Why:* a deterministic grouping of 96 points by the live zoom, with DOM-countable criteria (cluster counts add up, tapping zooms in, nothing selected is hidden).
 

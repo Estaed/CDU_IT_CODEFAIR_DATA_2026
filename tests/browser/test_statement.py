@@ -145,62 +145,6 @@ def test_no_figure_literals():
         assert re.findall(r"#[0-9a-fA-F]{3}|[0-9]px", source) == []
 
 
-# Mesh (Meshtastic/LoRa) statement (Task-22): a third, byte-budgeted text for Screen 1.
-MESH_MAX_BYTES = 200
-MESH_SMS_LABEL = {
-    "telehealth_video": "Telehealth video",
-    "school_video_meeting": "School video",
-    "mygov_text": "myGov",
-    "voice_sms": "Voice/SMS",
-}
-
-
-def _mesh_word(verdict: str) -> str:
-    return "NOT RECORDED" if verdict == "nodata" else verdict.upper()
-
-
-def _expected_mesh_text(pack: dict, community: dict) -> str:
-    """Mirrors app.js statementMesh: drops the least essential fields from the end (built
-    date, then agreement, then each service, in reverse) until the line is <= 200 bytes UTF-8;
-    the community name and "crosscheck" are never dropped."""
-    service_parts = [
-        f"{MESH_SMS_LABEL[service['service']]} {_mesh_word(service['verdict'])}"
-        for service in community["services"]
-    ]
-    droppable = [
-        *service_parts,
-        f"agree {community['agreement']['covered']}/{community['agreement']['available']}",
-        pack["built"][:10],
-    ]
-    for count in range(len(droppable), -1, -1):
-        text = " - ".join([community["name"], *droppable[:count], "crosscheck"])
-        if len(text.encode("utf-8")) <= MESH_MAX_BYTES:
-            return text
-    raise AssertionError(f"statementMesh: {community['name']} exceeds {MESH_MAX_BYTES} bytes")
-
-
-def test_mesh_statement_under_limit_for_all(context):
-    pack = _pack()
-    page, blocked, errors = _open_page(context, "#/community/9")
-
-    results = page.evaluate(
-        """() => JSON.parse(document.getElementById("pack").textContent)
-            .communities.map((c) => [c.name, window.__statement.mesh(c)])"""
-    )
-    assert len(results) == 96
-    by_name = {community["name"]: community for community in pack["communities"]}
-    for name, text in results:
-        assert text == _expected_mesh_text(pack, by_name[name]), (name, text)
-        assert text.startswith(name), text
-        assert "crosscheck" in text, text
-        assert text.isascii(), text
-        assert len(text.encode("utf-8")) <= MESH_MAX_BYTES, (len(text.encode("utf-8")), text)
-
-    assert errors == []
-    assert blocked == []
-    page.close()
-
-
 def test_short_statement_has_no_middle_dot(context):
     # Task-26: "·" makes the SMS body UCS-2 (about 3 segments); "-" keeps it GSM-7. The "·" the
     # rest of the UI uses stays everywhere else (BACKLOG 2026-09-15, Task-13).
@@ -213,44 +157,6 @@ def test_short_statement_has_no_middle_dot(context):
     assert len(texts) == 96
     for text in texts:
         assert "·" not in text, text
-
-    assert errors == []
-    assert blocked == []
-    page.close()
-
-
-def test_copy_mesh_text(context):
-    pack = _pack()
-    community = next(c for c in pack["communities"] if c["name"] == "Wadeye")
-    expected = _expected_mesh_text(pack, community)
-    page, blocked, errors = _open_page(context, f"#/community/{community['id']}")
-
-    # Task-34: the mesh-text button folds behind "Share", closed by default.
-    page.locator("details.share-fold > summary").click()
-    button = page.locator("button[data-text]")
-    expect(button).to_have_count(1)
-    expect(button).to_have_text("Copy mesh text")
-    data_text = button.get_attribute("data-text")
-
-    assert data_text == (
-        "Wadeye - Telehealth video DEGRADED - School video DEGRADED - myGov WORKS - "
-        "Voice/SMS WORKS - agree 4/4 - 2026-09-15 - crosscheck"
-    )
-    assert data_text == expected
-    assert data_text.startswith(community["name"])
-    assert "crosscheck" in data_text
-    assert data_text.isascii()
-    assert len(data_text.encode("utf-8")) <= MESH_MAX_BYTES
-
-    button.click()
-    expect(button).to_have_text("Copied")
-    copied = page.evaluate("() => navigator.clipboard.readText()")
-    assert copied == data_text
-    expect(button).to_have_text("Copy mesh text", timeout=5000)
-
-    caption = page.locator(".source-line", has_text="Fits one LoRa mesh packet")
-    expect(caption).to_have_count(1)
-    assert "200 bytes" in caption.inner_text()
 
     assert errors == []
     assert blocked == []

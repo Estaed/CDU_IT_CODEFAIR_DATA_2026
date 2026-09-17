@@ -348,33 +348,6 @@
     ].join(" ");
   };
 
-  // Byte size limit for one LoRa/Meshtastic packet payload (Task-22): the app never talks to a
-  // radio, but the text must be short enough to be pasted into one packet by hand.
-  const MESH_MAX_BYTES = 200;
-
-  const byteLength = (text) => new TextEncoder().encode(text).length;
-
-  // The third statement: community name and "crosscheck" always stay; the fields between them
-  // (the four services, the agreement count, the build date) are dropped from the end, least
-  // essential first, until the whole line fits one mesh packet.
-  const statementMesh = (community) => {
-    const serviceParts = community.services.map(
-      (service) => `${SMS_LABEL[service.service] || service.service} ${statementWord(service.verdict)}`,
-    );
-    const droppable = [
-      ...serviceParts,
-      `agree ${community.agreement.covered}/${community.agreement.available}`,
-      pack.built.slice(0, 10),
-    ];
-    for (let count = droppable.length; count >= 0; count -= 1) {
-      const text = [community.name, ...droppable.slice(0, count), "crosscheck"].join(" - ");
-      if (byteLength(text) <= MESH_MAX_BYTES) {
-        return text;
-      }
-    }
-    throw new Error(`statementMesh: ${community.name} exceeds ${MESH_MAX_BYTES} bytes`);
-  };
-
   // Clipboard first; a selected off-screen textarea where the Clipboard API is refused.
   const copyText = async (text) => {
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -414,30 +387,10 @@
         copyButton.textContent = "Copy statement";
       }, 2000);
     });
-    const meshText = statementMesh(community);
-    const meshButton = h(
-      "button",
-      { type: "button", class: "button", "data-text": meshText },
-      "Copy mesh text",
-    );
-    let meshResetTimer = null;
-    meshButton.addEventListener("click", async () => {
-      await copyText(meshText);
-      meshButton.textContent = "Copied";
-      clearTimeout(meshResetTimer);
-      meshResetTimer = setTimeout(() => {
-        meshButton.textContent = "Copy mesh text";
-      }, 2000);
-    });
-    const meshCaption = h(
-      "div",
-      { class: "source-line" },
-      `Fits one LoRa mesh packet (${MESH_MAX_BYTES} bytes)`,
-    );
     return h(
       "div",
       { class: "share" },
-      h("div", { class: "share-card__buttons" }, smsLink, copyButton, meshButton, meshCaption),
+      h("div", { class: "share-card__buttons" }, smsLink, copyButton),
     );
   };
 
@@ -636,8 +589,7 @@
     return [button, status];
   };
 
-  // One bar for search and compare (Task-30): a result opens its community, and its Compare
-  // button compares it with the community on screen.
+  // One bar for search (Task-30): a result opens its community.
   const renderSearch = (current) => {
     const results = h("ul", { class: "search-results" });
     const input = h("input", {
@@ -670,13 +622,6 @@
           location.hash = `#/community/${community.id}`;
         });
         const item = h("li", { class: "search-results__item" }, row);
-        if (current && community.id !== current.id) {
-          const compare = h("button", { type: "button", class: "result-row__compare" }, "Compare");
-          compare.addEventListener("click", () => {
-            location.hash = `#/compare/${current.id}/${community.id}`;
-          });
-          item.appendChild(compare);
-        }
         results.appendChild(item);
       }
     });
@@ -691,9 +636,6 @@
     ];
   };
 
-  // Set when a compare route names no known community: Screen 1 opens with its search focused.
-  let openSearch = false;
-
   const renderCommunity = (id) => {
     const community =
       pack.communities.find((c) => c.id === id) ||
@@ -701,10 +643,6 @@
     main.textContent = "";
     for (const node of renderSearch(community)) {
       main.appendChild(node);
-    }
-    if (openSearch) {
-      openSearch = false;
-      main.querySelector(".search-input").focus();
     }
     // Task-34, 2026-09-16: no intro line, no verdict legend (item 3); the four rows, closed,
     // are the whole answer, and everything past them folds behind a summary (item 6, item 7).
@@ -720,38 +658,8 @@
     main.appendChild(renderActions(community));
   };
 
-  // One compare column: the header block with its name linking back, the agreement headline
-  // and the four verdict badges (Task-15).
-  const renderCompareColumn = (community) => {
-    const header = renderHeader(community, "h2");
-    const name = header.querySelector(".community-header__name");
-    name.textContent = "";
-    name.appendChild(
-      h("a", { class: "text-link", href: `#/community/${community.id}` }, community.name),
-    );
-    return h(
-      "div",
-      { class: "compare__column" },
-      header,
-      renderAgreement(community),
-      community.services.map((service) =>
-        h(
-          "div",
-          { class: "service-row__top compare__service" },
-          h("span", { class: "service-row__name" }, SERVICE_LABEL[service.service] || service.service),
-          renderBadge(service.verdict),
-        ),
-      ),
-    );
-  };
-
-  const renderCompare = (a, b) => {
-    main.textContent = "";
-    main.appendChild(h("div", { class: "compare" }, renderCompareColumn(a), renderCompareColumn(b)));
-  };
-
   // Exposed for the browser test, which runs the builders over every community in the pack.
-  window.__statement = { short: statementShort, long: statementLong, mesh: statementMesh };
+  window.__statement = { short: statementShort, long: statementLong };
 
   // The HTML parser places <svg> in the SVG namespace; reading it back keeps a namespace URL
   // literal out of the built file (tests/test_build.py forbids one outside the pack).
@@ -1602,7 +1510,6 @@
     shareButton.addEventListener("click", shareApp);
     saveButton.addEventListener("click", saveFile);
     main.textContent = "";
-    const changes = renderChanges(pack);
     const transfer = h("div", { class: "transfer" });
     main.appendChild(
       h(
@@ -1639,50 +1546,11 @@
           ),
         ),
         transfer,
-        changes,
       ),
     );
     // The camera loop and the camera read live in transfer.js (layer rule 8); this screen only
     // gives it the container and the same page bytes Save file writes.
     window.CrosscheckTransfer.mount(transfer, pageHtml);
-  };
-
-  // The Changes list is ordered by the pipeline; the browser does no sorting or filtering
-  // (Task-14 Execution Guide).
-  const renderChanges = (pack) => {
-    if (!pack.changes) {
-      return null;
-    }
-    const { from, to, items } = pack.changes;
-    const section = h(
-      "section",
-      { class: "section" },
-      h("h2", { class: "section__title" }, `Changes ${from} -> ${to}`),
-    );
-    if (items.length === 0) {
-      section.appendChild(h("div", { class: "source-line" }, `No changes between ${from} and ${to}`));
-      return section;
-    }
-    for (const item of items) {
-      section.appendChild(
-        h(
-          "div",
-          { class: "link-row link-row--changes" },
-          h(
-            "span",
-            { class: "link-row__text" },
-            h("a", { class: "text-link", href: `#/community/${item.id}` }, item.name),
-            `: ${item.text}`,
-          ),
-          h(
-            "span",
-            { class: "source-line link-row__date" },
-            h("span", { class: "fig fig--xs" }, item.date),
-          ),
-        ),
-      );
-    }
-    return section;
   };
 
   // Host-only install support: never touched over file://, so the single file stands alone.
@@ -1737,23 +1605,6 @@
       );
     } else if (screen === "#/share") {
       renderShare();
-    } else if (hash.startsWith("#/compare")) {
-      // An unknown id falls back to the known one's community route, or Screen 1 with the
-      // search open when neither is known.
-      const found = hash
-        .split("?")[0]
-        .split("/")
-        .slice(2, 4)
-        .map((part) => pack.communities.find((c) => c.id === Number(part)))
-        .filter(Boolean);
-      if (found.length === 2) {
-        renderCompare(found[0], found[1]);
-      } else if (found.length === 1) {
-        location.replace(`#/community/${found[0].id}`);
-      } else {
-        openSearch = true;
-        location.replace(DEFAULT_HASH);
-      }
     } else {
       const match = hash.match(/^#\/community\/(\d+)/);
       renderCommunity(match ? Number(match[1]) : DEFAULT_ID);

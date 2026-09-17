@@ -1,5 +1,7 @@
 # Task-12: Freshness, history and changes in the pack
 
+**Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* pure pipeline work over the capability table; every criterion is a unit test on hand-built rows or the committed history files.
 

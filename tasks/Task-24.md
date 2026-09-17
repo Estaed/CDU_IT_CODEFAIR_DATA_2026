@@ -1,5 +1,7 @@
 # Task-24: Received pack updates the app in place
 
+**Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` · effort `high`
 > *Why:* one storage seam and one startup branch; every criterion is a DOM or storage assertion in the existing browser fixture.
 

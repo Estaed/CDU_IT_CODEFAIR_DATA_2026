@@ -1,5 +1,7 @@
 # Task-18: Transfer by camera (QR frames)
 
+**Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` · effort `high`
 > *Why:* the frame contract is fixed in Part 2 and the round trip is checkable without a camera; the camera path itself is Tarik's manual check (PRD §6).
 

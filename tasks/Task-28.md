@@ -1,5 +1,7 @@
 # Task-28: Install as a real home-screen app (tactics from the Calisthenics app)
 
+**Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* head tags, a manifest and three generated icons; every criterion is a static check on `dist/` plus the existing smoke test. Whether a phone offers "Install" is Tarik's manual check.
 

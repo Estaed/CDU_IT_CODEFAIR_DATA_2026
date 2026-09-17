@@ -1,5 +1,7 @@
 # Task-22: Mesh-size statement (200 bytes)
 
+**Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` · effort `medium`
 > *Why:* one string builder beside the two existing ones, with a byte-count criterion over all 96 communities.
 

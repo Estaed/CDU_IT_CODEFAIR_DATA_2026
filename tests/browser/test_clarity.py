@@ -1,6 +1,6 @@
 """Browser tests for the clarity batch (Task-30): top bar tabs at 360 wide, scroll hints on tab
-rows, one search bar with per-row Compare, use my location, intro line, section order, verdict
-legend, facilities as text, collapsed footer sources, and the QR reading helpers."""
+rows, one search bar, use my location, intro line, section order, verdict legend, facilities as
+text, collapsed footer sources, and the QR reading helpers."""
 
 from __future__ import annotations
 
@@ -130,12 +130,11 @@ def test_one_search_bar_with_compare_buttons(browser):
     search.fill("Bani")
     item = _result_item(page, "Baniyala")
     expect(item).to_have_count(1)
-    compare = item.locator("button.result-row__compare")
-    expect(compare).to_have_count(1)
-    expect(compare).to_have_text("Compare")
-    compare.click()
+    expect(item.locator(".result-row__compare")).to_have_count(0)
+    item.locator(".result-row").click()
 
-    expect(page).to_have_url(re.compile(rf"#/compare/{current_id}/{other_id}$"))
+    expect(page).to_have_url(re.compile(rf"#/community/{other_id}$"))
+    expect(page.locator("h1.community-header__name")).to_have_text("Baniyala")
 
     assert errors == []
     assert blocked == []

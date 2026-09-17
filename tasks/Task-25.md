@@ -1,5 +1,7 @@
 # Task-25: QR reading on every browser (jsQR fallback for iPhone)
 
+**Status: DONE** — verified 2026-09-15 (line added 2026-09-17; the verification was recorded in the commit and the Status section only)
+
 > **Execution:** agent `claude-worker` · effort `high`
 > *Why:* one vendored file behind one small adapter; the criterion decodes QR codes the app itself draws, in headless Chromium with `BarcodeDetector` forced absent, so no camera or iPhone is needed to gate it.
 
