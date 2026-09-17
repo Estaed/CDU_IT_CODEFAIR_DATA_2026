@@ -1,0 +1,7 @@
+fold,regions,samples,positives,base_rate,auc,precision_at_0.5,recall_at_0.5
+1,Darwin Suburbs;Palmerston,204,0,0.0,,,
+2,East Arnhem;Litchfield,426,4,0.00939,0.9953,0.1818,1.0
+3,Alice Springs;Daly - Tiwi - West Arnhem,2002,38,0.01898,0.8078,0.0405,0.8158
+4,Barkly;Katherine,1251,69,0.05516,0.715,0.1023,0.7101
+5,Darwin City,36,0,0.0,,,
+pooled,"9 SA3 regions, seed 0",3919,111,0.02832,0.7915,0.0663,0.7568

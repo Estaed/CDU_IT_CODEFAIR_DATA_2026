@@ -1,0 +1,97 @@
+id,name,word,p_wrong,carrier,driver1,driver2
+9,Amoonguna,high,0.0045,TPG,sites_20km,carriers_claiming
+10,Ampilatwatja,medium,0.3229,Telstra,sites_20km,carriers_claiming
+20,Areyonga,none,,,,
+26,Orrtipa-Thurra,none,,,,
+33,Engawala,medium,0.4776,Telstra,sites_20km,carriers_claiming
+36,Finke,low,0.5199,Telstra,sites_20km,carriers_claiming
+41,Haasts Bluff,none,,,,
+42,Atitjere,low,0.5262,Telstra,sites_20km,carriers_claiming
+43,Hermannsburg,medium,0.4725,Telstra,sites_20km,carriers_claiming
+51,Imanpa,low,0.5041,Telstra,sites_20km,carriers_claiming
+63,Irrultja,none,,,,
+65,Iwupataka,low,0.7159,Telstra,sites_20km,carriers_claiming
+66,Kaltukatjara,low,0.5609,Telstra,sites_20km,carriers_claiming
+72,Kintore,low,0.5728,Telstra,sites_20km,carriers_claiming
+86,Laramba,medium,0.451,Telstra,sites_20km,carriers_claiming
+112,Mount Liebig,low,0.5874,Telstra,sites_20km,carriers_claiming
+120,Mutitjulu,medium,0.2679,Optus,sites_20km,carriers_claiming
+127,Nturiya,low,0.7397,Telstra,sites_20km,carriers_claiming
+128,Nyirripi,medium,0.4615,Telstra,sites_20km,carriers_claiming
+131,Papunya,low,0.6114,Telstra,sites_20km,carriers_claiming
+138,Pmara Jutunta,high,0.2207,Telstra,sites_20km,depth_km
+145,Santa Teresa,low,0.5939,Telstra,sites_20km,carriers_claiming
+147,Arawerr,low,0.7193,Telstra,sites_20km,carriers_claiming
+148,Titjikala,medium,0.46,Telstra,sites_20km,carriers_claiming
+174,Wallace Rockhole,low,0.5764,Telstra,sites_20km,carriers_claiming
+186,Willowra,high,0.2189,Telstra,sites_20km,depth_km
+187,Wilora,low,0.5377,Telstra,sites_20km,carriers_claiming
+197,Yuelamu,medium,0.4629,Telstra,sites_20km,carriers_claiming
+198,Yuendumu,medium,0.478,Telstra,sites_20km,carriers_claiming
+202,Ali Curung,medium,0.4062,Telstra,sites_20km,carriers_claiming
+203,Alpurrurulam,medium,0.3169,Telstra,sites_20km,carriers_claiming
+219,Canteen Creek,low,0.5379,Telstra,sites_20km,carriers_claiming
+227,Wutunugurra,medium,0.4551,Telstra,sites_20km,carriers_claiming
+244,Mungkarta,none,,,,
+250,Imangara,none,,,,
+252,Marlinja,medium,0.2751,Telstra,sites_20km,carriers_claiming
+256,Wandangula,low,0.6293,Telstra,sites_20km,carriers_claiming
+258,Robinson River,low,0.6085,Telstra,sites_20km,carriers_claiming
+264,Tara,medium,0.4786,Telstra,sites_20km,carriers_claiming
+294,Belyuen,high,0.0329,Telstra,sites_20km,carriers_claiming
+319,Gochan Jiny Jirra,none,,,,
+329,Gunbalanya,medium,0.451,Telstra,sites_20km,carriers_claiming
+362,Maningrida,low,0.6377,Telstra,sites_20km,carriers_claiming
+363,Manmoyi,none,,,,
+374,Milikapiti,low,0.6169,Telstra,sites_20km,carriers_claiming
+375,Minjilang,low,0.6307,Telstra,sites_20km,carriers_claiming
+397,Nauiyu,low,0.5025,Telstra,sites_20km,carriers_claiming
+400,Wurrumiyanga,low,0.5804,Telstra,sites_20km,carriers_claiming
+404,Nganmarriyanga,medium,0.4435,Telstra,sites_20km,carriers_claiming
+410,Peppimenarti,low,0.5685,Telstra,sites_20km,carriers_claiming
+411,Pirlangimpi,low,0.6283,Telstra,sites_20km,carriers_claiming
+426,Wadeye,medium,0.3868,Telstra,sites_20km,carriers_claiming
+429,Warruwi,low,0.636,Telstra,sites_20km,carriers_claiming
+434,Woodycupaldiya,none,,,,
+451,Angurugu,medium,0.3811,Telstra,sites_20km,carriers_claiming
+458,Baniyala,none,,,,
+464,Birany Birany,none,,,,
+469,Rorruwuy,none,,,,
+473,Dhalinybuy,none,,,,
+492,Galiwinku,low,0.6268,Telstra,sites_20km,carriers_claiming
+498,Gan Gan,none,,,,
+500,Gapuwiyak,medium,0.4554,Telstra,sites_20km,carriers_claiming
+514,Gunyangara,high,0.1201,Optus,sites_20km,carriers_claiming
+517,Gurrumuru,none,,,,
+524,Mapuru,none,,,,
+531,Milingimbi,low,0.6494,Telstra,sites_20km,carriers_claiming
+532,Milyakburra,low,0.5711,Telstra,sites_20km,carriers_claiming
+542,Ngangalala,low,0.6188,Telstra,sites_20km,carriers_claiming
+549,Numbulwar,low,0.6315,Telstra,sites_20km,carriers_claiming
+550,Ramingining,medium,0.3985,Telstra,sites_20km,carriers_claiming
+555,Umbakumba,low,0.6023,Telstra,sites_20km,carriers_claiming
+571,Yathalamarra,medium,0.4196,Telstra,sites_20km,carriers_claiming
+576,Yirrkala,high,0.1346,TPG,carriers_claiming,sites_20km
+580,Barunga,medium,0.4061,Telstra,sites_20km,carriers_claiming
+581,Wugularr,medium,0.4844,Telstra,sites_20km,carriers_claiming
+582,Binjari,high,0.0431,TPG,carriers_claiming,sites_10km
+586,Bulla,medium,0.3797,Telstra,sites_20km,carriers_claiming
+587,Bulman,low,0.63,Telstra,sites_20km,carriers_claiming
+591,Daguragu,low,0.5122,Telstra,sites_20km,carriers_claiming
+593,Jilkminggan,low,0.5549,Telstra,sites_20km,carriers_claiming
+595,Manyallaluk,medium,0.4786,Telstra,sites_20km,carriers_claiming
+600,Hodgson River Station,none,,,,
+603,Kalkarindji,medium,0.4165,Telstra,sites_20km,carriers_claiming
+608,Kybrook Farm,low,0.5162,Telstra,sites_20km,carriers_claiming
+609,Lajamanu,medium,0.3361,Telstra,sites_20km,carriers_claiming
+622,Amanbidji,none,,,,
+624,Minyerri,low,0.5021,Telstra,sites_20km,carriers_claiming
+633,Ngukurr,medium,0.407,Telstra,sites_20km,carriers_claiming
+639,Nitjpurru,none,,,,
+641,Rittarangu,none,,,,
+642,Rockhole,high,0.0373,TPG,carriers_claiming,depth_km
+654,Weemol,low,0.6437,Telstra,sites_20km,carriers_claiming
+658,Yarralin,medium,0.4986,Telstra,sites_20km,carriers_claiming
+721,Likkaparta,none,,,,
+744,Pickertaramoor,low,0.6122,Telstra,sites_20km,carriers_claiming
+868,Wurankuwu,none,,,,

@@ -18,7 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from pipeline import figures, merge, pack, provenance, rules  # noqa: E402
+from pipeline import figures, merge, pack, provenance, reliability, rules  # noqa: E402
 from pipeline.sources import accc, audit, bushtel, nbn, ntg, rrl  # noqa: E402
 
 RAW = ROOT / "data/raw"
@@ -90,6 +90,11 @@ def main() -> None:
 
     provenance.write(PROVENANCE, RAW)
     print(f"{PROVENANCE.relative_to(ROOT).as_posix()}: written")
+
+    # Task-39: trains on the audited roads, scores the 96 points, fills the audit5 "0" the
+    # non-alignment CSV cannot know, and rewrites the table it read. After the table, before
+    # the pack, because the pack reads both.
+    reliability.main()
 
     pack.main()
     figures.main()

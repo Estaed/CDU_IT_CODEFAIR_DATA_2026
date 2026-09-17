@@ -12,7 +12,8 @@ some: every one of the 237 NT rows carries ``Audit Data = "No audit roads covera
 * ``"1"``  at least one non-alignment tile within 5 km of the community point;
 * ``"0"``  an audited road passed within 5 km and carried no non-alignment -- **never written
   here**, because this CSV lists non-alignments only and cannot say where the Audit drove and
-  found nothing wrong. Task-39 samples the audited roads and fills it without a schema change;
+  found nothing wrong. ``audited_within`` answers that from the road samples
+  ``pipeline.reliability`` places (Task-39), which then writes the value into the table;
 * ``""``   nothing known within 5 km.
 
 Distances are metres in GDA2020 MGA (zone 52 west of 132 deg E, zone 53 east of it), the two

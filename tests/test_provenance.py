@@ -23,6 +23,7 @@ EXPECTED_IDS = {
     "accc_mir_2025",
     "rrl",
     "audit_non_alignment_2026_05",
+    "audit_roads_2024",
     "ntg_2019",
     "ntg_2021",
     "ntg_2022",

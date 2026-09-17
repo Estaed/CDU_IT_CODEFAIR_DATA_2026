@@ -329,7 +329,11 @@ def test_measured_publisher_line(data_pack):
             not_covered.append(community["id"])
             assert "Drive test found no" in measured["detail"]
         else:
-            assert measured["detail"].startswith("No audited road within")
+            # Task-39 fills audit5 "0": an audited road within 5 km carrying no
+            # non-alignment. Still not a claim of coverage, so still not-recorded.
+            assert measured["detail"].startswith(
+                ("No audited road within", "Audited road within")
+            )
 
     assert not_covered == [397, 580, 593]
 
@@ -351,3 +355,40 @@ def test_measured_line_turns_three_unanimous_communities_into_disagreements(data
             "available": 5,
             "note": "Sources disagree",
         }
+
+
+def test_every_community_carries_a_reliability_line(data_pack):
+    """Task-39: the word, its probability and the two features that drove it."""
+    sources = data_pack["sources"]
+    for community in data_pack["communities"]:
+        line = community["claim_reliability"]
+        assert set(line) == {"word", "p_wrong", "drivers", "src"}
+        assert line["word"] in pack.RELIABILITY_WORDS
+        # A probability exactly when there is a word to justify: no word, no number.
+        assert (line["p_wrong"] is None) == (line["word"] == "none")
+        if line["p_wrong"] is not None:
+            assert 0.0 <= line["p_wrong"] <= 1.0
+        assert len(line["drivers"]) == (0 if line["word"] == "none" else 2)
+        assert line["src"] in sources
+
+
+def test_reliability_line_cites_the_model_and_says_what_it_is_not(data_pack):
+    line = data_pack["communities"][0]["claim_reliability"]
+    entry = data_pack["sources"][line["src"]]
+    assert entry["source"] == pack.RELIABILITY_SOURCE
+    assert DATE_RE.match(entry["date"])  # the date the model was fit
+    assert "Main_Audit_Roads" in entry["url"]
+    assert entry["licence"]
+    # What the word is worth is said once, on the source every community points at.
+    assert "not a measurement here" in entry["note"]
+    assert "AUC" in entry["note"] and "{auc}" not in entry["note"]
+    assert {c["claim_reliability"]["src"] for c in data_pack["communities"]} == {line["src"]}
+
+
+def test_reliability_words_match_the_model_output(data_pack):
+    """The pack repeats pipeline/reliability.py's words; it never recomputes one."""
+    lines = pack.reliability_lines()
+    if not lines:
+        pytest.skip("data/out/reliability.csv has not been written")
+    for community in data_pack["communities"]:
+        assert community["claim_reliability"]["word"] == lines[community["id"]]["word"]

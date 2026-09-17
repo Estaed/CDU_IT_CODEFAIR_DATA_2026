@@ -106,6 +106,24 @@ SOURCES = (
         "module": "audit",
     },
     {
+        "id": "audit_roads_2024",
+        "name": "National Audit of Mobile Coverage audited roads (NT)",
+        "pack_source": "",
+        "url": (
+            "https://spatial.infrastructure.gov.au/server/rest/services/"
+            "Main_Audit_Roads_DITRDCA_2024/MapServer"
+        ),
+        # The same department and the same unstated terms as the non-alignment CSV (OQ2).
+        "licence": "unstated; request on file (OQ2)",
+        "attribution": (
+            "National Audit of Mobile Coverage audited roads, Department of Infrastructure, "
+            "Transport, Regional Development, Communications, Sport and the Arts"
+        ),
+        "pattern": "audit_roads_*.geojson",
+        "date": "2024",
+        "fetch_command": "PYTHONUTF8=1 .venv/Scripts/python -m pipeline.fetch.audit_roads",
+    },
+    {
         "id": "ntg_2019",
         "name": "Remote Communities with Mobile Coverage and Backhaul Transmission 2019",
         "pack_source": "NT Government 2019 coverage list",
@@ -232,6 +250,33 @@ PACK_SOURCES = (
         "attribution": "ACCC Measuring Broadband Australia, satellite latency",
         "date": "2024-12-05",
     },
+    {
+        "id": "reliability_model",
+        "name": (
+            "Crosscheck map-claim reliability model: logistic regression over audited NT road "
+            "samples, labelled by the National Audit non-alignment tiles"
+        ),
+        "pack_source": "Crosscheck reliability model",
+        "url": (
+            "https://spatial.infrastructure.gov.au/server/rest/services/"
+            "Main_Audit_Roads_DITRDCA_2024/MapServer"
+        ),
+        "licence": "unstated; request on file (OQ2), following its two input datasets",
+        "attribution": (
+            "Crosscheck map-claim reliability model, trained on the National Audit of Mobile "
+            "Coverage non-alignment tiles and audited roads"
+        ),
+        # Empty on purpose: the citing line carries the date the model was fit, which moves
+        # with every pipeline run, so it must not be frozen in the registry.
+        "date": "",
+        # What the word is worth, said once for all 96 communities: the entry every
+        # ``claim_reliability`` points at through its ``src`` (Task-39 contract item 7).
+        # ``{auc}`` is filled by pipeline.pack from the run's own validation table.
+        "note": (
+            "Trained on audited roads, applied at the community (pooled held-out AUC {auc}): "
+            "an extrapolation from the nearest audited conditions, not a measurement here."
+        ),
+    },
 )
 
 HEADER = (
@@ -253,6 +298,7 @@ def citations() -> dict[str, dict[str, str]]:
                 "date": entry["date"],
                 "url": entry["url"],
                 "licence": entry["licence"],
+                "note": entry.get("note", ""),
             }
     return table
 

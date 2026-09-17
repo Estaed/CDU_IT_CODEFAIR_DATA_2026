@@ -1,0 +1,7 @@
+feature,coefficient,mean,scale
+site_km,0.40657,9.8678,9.0031
+depth_km,-0.42982,3.074,3.3532
+sites_10km,-1.53143,6.8984,17.4451
+sites_20km,-3.56389,15.2552,31.2327
+carriers_claiming,-1.00915,2.1268,0.9598
+intercept,-2.71296,,

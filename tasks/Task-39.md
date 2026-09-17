@@ -1,5 +1,7 @@
 # Task-39: Map-claim reliability — one model, trained in the pipeline on the Audit, with a kill criterion
 
+**Status: DONE** — verified 2026-09-17 (main loop: gate green, 166 unit + 85 browser, pack 476,606 bytes; the model shipped at pooled held-out AUC 0.7915 against the fixed 0.65 floor; mutation: `CUT_LOW` 0.50 → 0.90 turns `test_words_from_cut_points` red, restored; layer-rule-9 grep prints nothing. Deviation 2 accepted as `not-recorded`; deviation 7 decided: the note lives once on the sources entry.)
+
 > **Execution:** agent `claude-worker` (opus) · effort `high`
 > *Why:* 2026-09-17. Label construction, a spatial hold-out and a pre-registered kill
 > criterion; a leak between train and test would ship a number that is not true, so Opus. The
@@ -104,4 +106,170 @@ time allows); OQ2 and OQ18.
 
 ## Status
 
-Status: TODO
+Status: IMPLEMENTED (2026-09-17, claude-worker opus) — awaiting verify-task
+
+**The model shipped.** Pooled held-out AUC **0.7915** against the floor of 0.65, so the kill
+path did not run: 74 of the 96 communities carry a word, 22 carry `none` because no carrier
+polygon covers them. Gate green, exit 0 (166 unit, 85 browser).
+
+### What landed
+
+- `pyproject.toml` / `uv.lock`: `scikit-learn` resolved to **1.9.1** (with scipy 1.18.1,
+  joblib 1.6.0, threadpoolctl 3.7.0, cloudpickle 3.1.2, narwhals 2.26.0). Imported in
+  `pipeline/reliability.py` only; layer rule 9 checked by
+  `tests/test_reliability.py::test_no_sklearn_elsewhere` and by hand.
+- `pipeline/fetch/audit_roads.py` (new): the audited road centrelines, run once by hand to
+  `data/raw/audit_roads_2026-09-17.geojson` (2,835,536 bytes, **10,900 segments**, exactly the
+  2,518 / 4,191 / 4,191 the contract records per layer — the fetcher asserts that count and
+  warns if short). See Deviation 1: the `query` endpoint the contract names returns attributes
+  but never geometry, so the geometry comes from `identify`.
+- `pipeline/reliability.py` (new): `features` (one pure function over a plain dict, the same
+  code on a road sample and on a community row), `road_points`, `Geography` (one spatial index
+  for claims, tiles and sites), `thin`, `regions_for`, `fold_of_region`, `samples`, `evaluate`,
+  `fit`, `community_rows`, `word_for`, `fill_audit_zero`, the three writers and `main`.
+  Distances are metres in EPSG:3577 (Deviation 6).
+- `pipeline/sources/audit.py`: `audited_within` only — the ids with an audited road sample
+  within `NEAR_M`, which is the `"0"` Task-38 defined and could not write. The module still
+  never writes `"0"` itself; `reliability.fill_audit_zero` puts it in the table.
+- `pipeline/pack.py`: `claim_reliability` per community — exactly the four seam keys
+  `{word, p_wrong, drivers, src}` — plus `reliability_lines`, `pooled_auc`,
+  `_no_reliability`, and the `audit5 == "0"` publisher branch (Deviation 2).
+- `pipeline/provenance.py`: two entries — `audit_roads_2024` in `SOURCES` (the raw snapshot, so
+  PROVENANCE.md records it with its fetch command) and `reliability_model` in `PACK_SOURCES`
+  (the pack's `src`, dateless on purpose so the citing line carries the fit date, and
+  carrying the honesty `note` whose `{auc}` the pack fills from the validation table).
+- `scripts/run_pipeline.py`: `reliability.main()` after the table is written and before
+  `pack.main()`. The whole run is **1 m 52 s**, the reliability step **83 s** of it; no new
+  cache was needed.
+- Tests: `tests/test_reliability.py` (new, 9), `tests/test_pack.py` (+3).
+
+### The numbers
+
+**Sampling.** 32,251 km of audited NT road; 40,895 points at 1 km collapse to **14,304**
+distinct locations (the three yearly layers overlap heavily — a road driven twice is published
+twice). After labelling, thinning at 1 km within a label and dropping points outside every NT
+SA3 polygon: **3,919 samples** (one per point and claiming carrier) over **9 SA3 regions**,
+**111 positives, base rate 2.832 %**.
+
+**Validation** (`data/out/tables/reliability_validation.csv`), five folds over regions, seed 0:
+
+| fold | regions | n | pos | AUC | precision@0.5 | recall@0.5 |
+|---|---|---|---|---|---|---|
+| 1 | Darwin Suburbs; Palmerston | 204 | 0 | — | — | — |
+| 2 | East Arnhem; Litchfield | 426 | 4 | 0.9953 | 0.1818 | 1.000 |
+| 3 | Alice Springs; Daly - Tiwi - West Arnhem | 2,002 | 38 | 0.8078 | 0.0405 | 0.8158 |
+| 4 | Barkly; Katherine | 1,251 | 69 | 0.7150 | 0.1023 | 0.7101 |
+| **pooled** | 9 regions, seed 0 | **3,919** | **111** | **0.7915** | **0.0663** | **0.7568** |
+
+Fold 5 (Darwin City, n=36) is omitted from the table above only for width; like fold 1 it holds
+no positive, so its AUC is undefined and the cell is blank in the CSV. The NT has just nine SA3
+regions and the two urban ones carry no non-alignment. The pooled row — every sample scored by a
+model that never saw its region — is what the kill criterion read.
+
+**Coefficients** (standardised, `data/out/tables/reliability_coefficients.csv`):
+`sites_20km` **−3.564**, `sites_10km` **−1.531**, `carriers_claiming` **−1.009**, `depth_km`
+**−0.430**, `site_km` **+0.407**, intercept −2.713. Every sign is the one a person would
+predict: more masts within 20 km, more carriers claiming and deeper inside the polygon all
+lower the risk; farther from the claiming carrier's own site raises it.
+
+**Words over the 96:** `high` **8**, `medium` **29**, `low` **37**, `none` **22**.
+
+**The ten highest `p_wrong`** (all Telstra claims, all driven by the same pair):
+
+| id | community | word | p_wrong | carrier | drivers |
+|---|---|---|---|---|---|
+| 127 | Nturiya | low | 0.7397 | Telstra | sites_20km, carriers_claiming |
+| 147 | Arawerr | low | 0.7193 | Telstra | sites_20km, carriers_claiming |
+| 65 | Iwupataka | low | 0.7159 | Telstra | sites_20km, carriers_claiming |
+| 531 | Milingimbi | low | 0.6494 | Telstra | sites_20km, carriers_claiming |
+| 654 | Weemol | low | 0.6437 | Telstra | sites_20km, carriers_claiming |
+| 362 | Maningrida | low | 0.6377 | Telstra | sites_20km, carriers_claiming |
+| 429 | Warruwi | low | 0.6360 | Telstra | sites_20km, carriers_claiming |
+| 549 | Numbulwar | low | 0.6315 | Telstra | sites_20km, carriers_claiming |
+| 375 | Minjilang | low | 0.6307 | Telstra | sites_20km, carriers_claiming |
+| 587 | Bulman | low | 0.6300 | Telstra | sites_20km, carriers_claiming |
+
+`sites_20km` with `carriers_claiming` drives 69 of the 74 scored communities; `depth_km`
+appears in 3 and `sites_10km` in 1. `p_wrong` ranges 0.0045 to 0.7397.
+
+**`audit5 = "0"` written for 37 communities** — an audited road passed within 5 km and carried
+no non-alignment. With Task-38's 3 ones, 40 of 96 cells now say something and 56 stay empty.
+
+**Sizes.** `data/out/data_pack.json` 464,416 → **476,606** bytes (limit 512,000; **35,394
+left**). `dist/index.html` 911,228 → **923,418** (limit 1,048,576). The pack's +12.2 KB is the
+words, probabilities and driver names; the honesty `note` costs 158 bytes once, on the
+`sources` entry (Deviation 7). Carrying that note per community instead cost 15,288 bytes
+more, measured both ways.
+
+**Tests.** 154 → **166 unit** (+12), **85 browser** unchanged. The transfer budget tests pass at
+the larger pack without touching a budget (they became a distribution in Task-38).
+
+### Gate
+
+`PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py` → **exit 0**, green on the first run after
+the code was complete and again after the Deviation 7 fix loop. Lint `All checks passed!`,
+166 unit in 116.2 s, build 923,418 bytes, both size checks ok, 85 browser in 38.8 s.
+
+### Deviations from the Contract
+
+1. **The roads come from `identify`, not `query`** (contract item 2 named the `query` endpoint,
+   its paging and its field names). The counts in the contract are right and the fetcher
+   reproduces them exactly, but **this service never returns geometry from `query`** — checked
+   on 2026-09-17 in every combination (`f=json`, `f=geojson`, `f=pbf`, with and without
+   `outSR`, by `objectIds`, with and without `resultOffset`): the response carries no
+   `geometryType` and every `geometry` is `null`. `/Hosted/` wants a token and no open
+   `FeatureServer` exists. `identify` on the same layers does return the paths, so the fetcher
+   walks the NT envelope in 1° tiles, asks all three layers at once, and splits a tile in four
+   whenever the answer comes back at the 2,000-record cap (that cap is silent, so an unsplit
+   tile would lose roads without saying so). Geometry is generalised to 0.001° (~100 m), well
+   inside the 1 km sampling step. The per-layer counts are asserted at the end of the fetch and
+   all three matched. Layer 2 also publishes different field names (`osm_id`, `oneway`, no
+   `Major_Urban`), which is why an explicit `outFields` list 400s on it.
+2. **`pack.publisher_lines` gained the `audit5 == "0"` branch** (outside OWNS, which named the
+   `claim_reliability` key only). Without it the 37 communities the contract just gave a `"0"`
+   would have kept the line "No audited road within 5 km", which is now false for them. The
+   branch keeps `says_covered: "not-recorded"` and says instead "Audited road within 5 km with
+   no non-alignment against any carrier's claim; the Audit drove roads, not communities", so
+   **no agreement count moves** and the measured line still never says `covered`. Calling it
+   `covered` would have been the other reading — the drive test found nothing against the map —
+   but that changes `rules.agreement` for 37 communities and contradicts PRD §4.2, which gives
+   the audit line two values only. Flagged for verify-task as the one judgement call here.
+3. **`tests/test_pack.py::test_measured_publisher_line`, one assertion widened** to accept
+   either not-recorded detail. Direct consequence of Deviation 2; nothing weakened.
+4. **`tests/test_provenance.py::EXPECTED_IDS`, one line** for `audit_roads_2024`. The set is
+   exact, exactly as in Task-38.
+5. **No `relief_m`.** `data/raw/` holds no DEM (checked at the start), so the feature is absent,
+   as contract item 3 allows. No dead code was left for it; the comment beside `FEATURE_NAMES`
+   says what adding it later costs.
+6. **Distances in EPSG:3577 (GDA94 Albers), not the MGA zones** `pipeline/sources/audit.py`
+   uses. One projection covers the whole NT, which matters when a road sample and its polygon
+   straddle 132° E; Task-38 already cross-checked the two against each other and they agreed
+   within 10 m. `audit.audited_within` takes the CRS from its caller, so the 5 km radius is
+   still measured by the module that owns it.
+7. **The `note` lives on the `sources` entry, not on the 96 communities** — raised by this lane,
+   **decided by the main loop on 2026-09-17 and applied**. `claim_reliability` now carries
+   exactly the four seam keys `{word, p_wrong, drivers, src}`, and the app reads the honesty
+   line through `src` like every other citation. The wording lives in the
+   `reliability_model` registry entry (`pipeline/provenance.py`), which is where source text
+   belongs; only the pooled AUC is a run figure, filled by `pack.citations` from the
+   validation table. `tests/test_pack.py` reads the note off the entry and asserts all 96
+   lines share one `src`. Worth **15,288 bytes**: the pack is 476,606 with the note said once
+   and was 491,894 with it said 96 times.
+
+### Two things the report should not skip
+
+- **`p_wrong` is a class-balanced score, not a calibrated frequency.** The contract fixes
+  `class_weight="balanced"` with a 2.83 % base rate, so probabilities are pulled towards the
+  middle: precision at 0.5 is **0.066** while recall is **0.757**. Read `low` as "this claim
+  ranks with the ones the drive test contradicted", never as "this claim is 63 % likely to be
+  wrong". The ranking is what the AUC of 0.79 supports; the level is not.
+- **Two of five folds could not produce an AUC** because the NT has nine SA3 regions and the
+  urban ones hold no non-alignment. The split is still honest — no region is on both sides —
+  but a reader should be told the pooled number rests on three folds.
+
+### One thing for the main loop
+
+Commit `e8f77ca` ("Blueprint replaces Part 2"), made while this lane was running, swept this
+lane's in-progress `pipeline/sources/audit.py` change (`audited_within`, +27 lines) into a docs
+commit. The content is correct and unchanged; it is simply already committed rather than waiting
+in the working tree with the rest of Task-39.

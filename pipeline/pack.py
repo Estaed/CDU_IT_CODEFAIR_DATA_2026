@@ -25,6 +25,14 @@ RAW_DIR = ROOT / "data/raw"
 PACK_VERSION = 2
 POPULATION_SOURCE = "ABS 2021 SA1 via BushTel"
 
+# The reliability line (Task-39). The model runs in pipeline/reliability.py and reaches the
+# pack as three numbers and two feature names; nothing here fits or scores anything, and the
+# app renders the word without recomputing it (CLAUDE.md layer rule 9).
+RELIABILITY_CSV = ROOT / "data/out/reliability.csv"
+RELIABILITY_VALIDATION = ROOT / "data/out/tables/reliability_validation.csv"
+RELIABILITY_SOURCE = "Crosscheck reliability model"
+RELIABILITY_WORDS = ("high", "medium", "low", "none")
+
 # BushTel publishes no single date for the set: every line citing a profile carries that
 # community's own stamp, so the registry's snapshot date must not stand in for it.
 PER_COMMUNITY_SOURCES = ("BushTel profile",)
@@ -193,9 +201,11 @@ def publisher_lines(row: dict[str, str], profile: str) -> list[dict]:
             f"nearest {site_carrier} site at {site_km}"
         )
 
-    # The Audit publishes non-alignments only, so this column is "1" or empty (Task-38);
-    # the "0" case (a road audited nearby with nothing wrong) is Task-39's and gets its own
-    # branch when it lands.
+    # Three-valued since Task-39: "1" a non-alignment tile within 5 km, "0" an audited road
+    # within 5 km carrying none, empty when the Audit drove nowhere near. "0" is still not a
+    # claim of coverage -- the drive test found nothing against the map, which is not the same
+    # as finding signal at the community -- so it stays ``not-recorded`` and the agreement
+    # count does not move.
     audit_radius = rules.fig(rules.LICENSED_RADIUS_KM, "km")
     if row["audit5"] == "1":
         carriers = rules.join_names(row["audit_carriers"].split("/"))
@@ -203,6 +213,12 @@ def publisher_lines(row: dict[str, str], profile: str) -> list[dict]:
         audit = (
             "not-covered",
             f"Drive test found no {carriers} signal {audit_km} away inside claimed coverage",
+        )
+    elif row["audit5"] == "0":
+        audit = (
+            "not-recorded",
+            f"Audited road within {audit_radius} with no non-alignment against any carrier's "
+            "claim; the Audit drove roads, not communities",
         )
     else:
         audit = (
@@ -261,12 +277,60 @@ def publisher_lines(row: dict[str, str], profile: str) -> list[dict]:
     ]
 
 
+def pooled_auc(path: Path = RELIABILITY_VALIDATION) -> str:
+    """The pooled held-out AUC the reliability run recorded, or ``not recorded``."""
+    path = Path(path)
+    if not path.is_file():
+        return "not recorded"
+    with path.open(newline="", encoding="utf-8") as handle:
+        for row in csv.DictReader(handle):
+            if row.get("fold") == "pooled" and row.get("auc"):
+                return row["auc"]
+    return "not recorded"
+
+
+def reliability_lines(path: Path = RELIABILITY_CSV) -> dict[int, dict]:
+    """``{bushtel_id: claim_reliability line}`` from ``data/out/reliability.csv``.
+
+    Empty when the model has not been run: the pack then carries the ``none`` word for every
+    community, which is the same shape the kill criterion produces (Task-39 contract item 5).
+    """
+    path = Path(path)
+    if not path.is_file():
+        return {}
+    fit_date = date.fromtimestamp(path.stat().st_mtime).isoformat()
+    lines: dict[int, dict] = {}
+    with path.open(newline="", encoding="utf-8") as handle:
+        for row in csv.DictReader(handle):
+            lines[int(row["id"])] = {
+                "word": row["word"],
+                "p_wrong": float(row["p_wrong"]) if row["p_wrong"] else None,
+                "drivers": [name for name in (row["driver1"], row["driver2"]) if name],
+                "source": RELIABILITY_SOURCE,
+                "date": fit_date,
+            }
+    return lines
+
+
+def _no_reliability() -> dict:
+    """The line a community carries when the model did not run, or did not clear its floor."""
+    return {
+        "word": "none",
+        "p_wrong": None,
+        "drivers": [],
+        "source": RELIABILITY_SOURCE,
+        "date": "",
+    }
+
+
 def citations(thresholds: dict[str, dict]) -> dict[str, dict[str, str]]:
-    """``{source name: {date, url, licence}}``: the requirement table under the registry.
+    """``{source name: {date, url, licence, note}}``: the requirement table under the registry.
 
     ``pipeline/thresholds.csv`` carries a URL and a checked date for every figure it holds;
     the provenance registry overrides both where it knows the source, so a publication date
-    beats the day the figure was read.
+    beats the day the figure was read. A registry ``note`` travels the same way, which is how
+    the reliability model's honesty line reaches the pack once rather than 96 times; only its
+    AUC is a run figure, read here from the validation table.
     """
     cited: dict[str, dict[str, str]] = {}
     for entry in thresholds.values():
@@ -274,6 +338,9 @@ def citations(thresholds: dict[str, dict]) -> dict[str, dict[str, str]]:
             cited[entry["source"]] = {"date": entry["checked"], "url": entry["source_url"]}
     for name, known in provenance.citations().items():
         cited[name] = {**cited.get(name, {}), **{k: v for k, v in known.items() if v}}
+    model = cited.get(RELIABILITY_SOURCE, {})
+    if "{auc}" in model.get("note", ""):
+        model["note"] = model["note"].format(auc=pooled_auc())
     return cited
 
 
@@ -316,7 +383,9 @@ def actions_for(row: dict[str, str]) -> list[dict[str, str]]:
     return actions
 
 
-def _community(row: dict[str, str], thresholds: dict[str, dict], cited: dict) -> dict:
+def _community(
+    row: dict[str, str], thresholds: dict[str, dict], cited: dict, reliability: dict
+) -> dict:
     profile = row["profile_last_updated"]
     publishers = [_dated(line, profile, cited) for line in publisher_lines(row, profile)]
     covered, available = rules.agreement(publishers)
@@ -354,6 +423,9 @@ def _community(row: dict[str, str], thresholds: dict[str, dict], cited: dict) ->
             "available": available,
             "note": "Sources agree" if covered in (0, available) else "Sources disagree",
         },
+        "claim_reliability": _dated(
+            reliability.get(int(row["bushtel_id"])) or _no_reliability(), profile, cited
+        ),
         "path": {
             "value": path,
             "rule": rules.RULE_NAME,
@@ -392,6 +464,7 @@ def _community(row: dict[str, str], thresholds: dict[str, dict], cited: dict) ->
 def dated_lines(community: dict):
     """Every line in one community that cites a source on a date."""
     yield community["population"]
+    yield community["claim_reliability"]
     yield from community["publishers"]
     for service in community["services"]:
         yield from service["sources"]
@@ -424,7 +497,7 @@ def source_table(
     for (source, published), key in ids.items():
         entry = {"source": source, "date": published}
         known = cited.get(source, {})
-        for field in ("url", "licence"):
+        for field in ("url", "licence", "note"):
             if known.get(field):
                 entry[field] = known[field]
         table[key] = entry
@@ -499,11 +572,14 @@ def build_pack(
     built: str,
     boundary_path: Path = BOUNDARY_RAW,
     raw_dir: Path = RAW_DIR,
+    reliability: dict[int, dict] | None = None,
 ) -> dict:
     """The whole pack, version 1, communities sorted by BushTel id."""
     cited = citations(thresholds)
+    lines = reliability_lines() if reliability is None else reliability
     communities = sorted(
-        (_community(row, thresholds, cited) for row in rows), key=lambda entry: entry["id"]
+        (_community(row, thresholds, cited, lines) for row in rows),
+        key=lambda entry: entry["id"],
     )
     map_layers = layers.build_layers(raw_dir, boundary_path)
     sources = source_table(communities, cited, map_layers)
