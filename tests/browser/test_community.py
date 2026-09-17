@@ -72,7 +72,8 @@ def test_wadeye_renders(browser):
     headline_text = page.locator(".agreement__headline").inner_text()
     assert headline_text.count("4") >= 2
 
-    expect(page.locator(".publisher-row")).to_have_count(4)
+    # Four claims, then the National Audit's measured line (Task-38).
+    expect(page.locator(".publisher-row")).to_have_count(5)
 
     footer_text = page.locator("footer").inner_text()
     assert "DIC005" in footer_text

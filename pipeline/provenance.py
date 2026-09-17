@@ -88,6 +88,24 @@ SOURCES = (
         "module": "rrl",
     },
     {
+        "id": "audit_non_alignment_2026_05",
+        "name": "National Audit of Mobile Coverage non-alignment tiles",
+        "pack_source": "National Audit non-alignment 2026-05",
+        "url": (
+            "https://www.infrastructure.gov.au/sites/default/files/documents/"
+            "national_audit_of_mobile_coverage_non-alignment_data_may_2026.csv"
+        ),
+        # The page states no licence at all; the request is on file (PRD Open Question 2).
+        "licence": "unstated; request on file (OQ2)",
+        "attribution": (
+            "National Audit of Mobile Coverage, Department of Infrastructure, Transport, "
+            "Regional Development, Communications, Sport and the Arts"
+        ),
+        "pattern": "audit_non_alignment_*.csv",
+        "date": "2026-05-27",
+        "module": "audit",
+    },
+    {
         "id": "ntg_2019",
         "name": "Remote Communities with Mobile Coverage and Backhaul Transmission 2019",
         "pack_source": "NT Government 2019 coverage list",

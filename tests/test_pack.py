@@ -88,7 +88,7 @@ def test_every_dated_field_has_source_and_date(data_pack):
 def test_publisher_order_and_kinds(data_pack):
     for community in data_pack["communities"]:
         kinds = [p["kind"] for p in community["publishers"]]
-        assert kinds == ["predicted", "listed", "licensed", "portal"]
+        assert kinds == ["predicted", "listed", "licensed", "portal", "measured"]
 
 
 def test_says_covered_values(data_pack):
@@ -120,8 +120,10 @@ def test_wadeye_426(data_pack):
     verdicts = [s["verdict"] for s in wadeye["services"]]
     assert verdicts == ["degraded", "degraded", "works", "works"]
     assert wadeye["path"]["value"] == "terrestrial_mobile"
-    for publisher in wadeye["publishers"]:
+    for publisher in wadeye["publishers"][:4]:
         assert publisher["says_covered"] == "covered"
+    # The Audit's nearest non-alignment tile is 142 km away: it records nothing here.
+    assert wadeye["publishers"][4]["says_covered"] == "not-recorded"
     assert wadeye["agreement"]["covered"] == 4
     assert wadeye["agreement"]["available"] == 4
     assert wadeye["agreement"]["note"] == "Sources agree"
@@ -308,3 +310,44 @@ def test_pack_build_imports_no_fetch_module():
         with (ROOT / name).open(encoding="utf-8") as handle:
             text = handle.read()
         assert not re.search(r"^(import|from) pipeline\.fetch", text, re.MULTILINE), name
+
+
+def test_measured_publisher_line(data_pack):
+    """Task-38: the fifth line is the National Audit, and it never says covered."""
+    not_covered = []
+    for community in data_pack["communities"]:
+        assert len(community["publishers"]) == 5
+        measured = community["publishers"][4]
+        assert measured["publisher"] == "National Audit of Mobile Coverage"
+        assert measured["kind"] == "measured"
+        assert measured["says_covered"] in {"not-covered", "not-recorded"}
+        entry = _cited(data_pack, measured)
+        assert entry["source"] == "National Audit non-alignment 2026-05"
+        assert entry["date"] == "2026-05-27"
+        assert entry["licence"] == "unstated; request on file (OQ2)"
+        if measured["says_covered"] == "not-covered":
+            not_covered.append(community["id"])
+            assert "Drive test found no" in measured["detail"]
+        else:
+            assert measured["detail"].startswith("No audited road within")
+
+    assert not_covered == [397, 580, 593]
+
+
+def test_agreement_counts_every_line_that_makes_a_claim(data_pack):
+    for community in data_pack["communities"]:
+        publishers = community["publishers"]
+        available = sum(1 for p in publishers if p["says_covered"] != "not-recorded")
+        covered = sum(1 for p in publishers if p["says_covered"] == "covered")
+        assert community["agreement"]["available"] == available
+        assert community["agreement"]["covered"] == covered
+
+
+def test_measured_line_turns_three_unanimous_communities_into_disagreements(data_pack):
+    for bushtel_id in (397, 580, 593):
+        community = _by_id(data_pack, bushtel_id)
+        assert community["agreement"] == {
+            "covered": 4,
+            "available": 5,
+            "note": "Sources disagree",
+        }

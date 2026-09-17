@@ -8,16 +8,18 @@ Chromium may lack BarcodeDetector and a camera (Part 2), so every round trip bel
 frame texts straight into CrosscheckTransfer.receiver() (or the mounted receive UI's
 testPushFrame hook) instead of scanning.
 
-The loss budgets are Part 2's: 10 % loss completes within 1.6 * K pushed frames, 50 % within
-2.8 * K, 70 % within 4.5 * K, and the sources-0..19 scenario within 1.75 * K. They are the
-budgets Task-36 measured at K 233 and are kept unchanged at v4's much smaller K, where the
-same overhead buys far fewer frames -- so they are a real check, not a loose one."""
+The loss budgets are Part 2's, and since 2026-09-17 they are read over a distribution: for
+each of 10 / 50 / 70 % loss the median of twenty fixed seeds stays within 1.6 / 2.8 / 4.5 * K
+pushed frames and the worst seed within 2.5 / 3.5 / 4.5 * K, every seed completing, and the
+deterministic sources-0..19 scenario stays within 2.0 * K. The medians are the budgets
+Task-36 measured at K 233 and they hold at v4's much smaller K, where the same overhead buys
+far fewer frames; the worst-seed line is what one fixed seed used to hide."""
 
 from __future__ import annotations
 
 import json
-import math
 import re
+import statistics
 from pathlib import Path
 
 import pytest
@@ -164,54 +166,88 @@ def test_round_trip_between_two_pages_is_the_pack_and_layers_are_carried_over(co
     receiver.close()
 
 
+# Tarik's decision, 2026-09-17: a loss budget is a distribution, not one seed. Over the twenty
+# fixed seeds below, the MEDIAN frames-needed ratio must sit inside Part 2's 1.6 / 2.8 / 4.5 x K
+# and the WORST seed inside 2.5 / 3.5 / 4.5 x K, and every seed must complete. One seed was
+# never a property of the decoder: at K 24 three of these twenty already needed more than
+# 1.6 x K at 10 % loss, and one block more of pack (K 25) moved the fixed seed from 1.29 to
+# 2.20 x K. The twenty runs share one page evaluation; twenty page loads for one assertion is
+# the slow way round.
+SEEDS = [20260915 + s * 7919 for s in range(20)]
+
+
 @pytest.mark.parametrize(
-    ("loss", "budget"),
-    [(0.1, 1.6), (0.5, 2.8), (0.7, 4.5)],
+    ("loss", "median_budget", "worst_budget"),
+    [(0.1, 1.6, 2.5), (0.5, 2.8, 3.5), (0.7, 4.5, 4.5)],
     ids=["loss10", "loss50", "loss70"],
 )
-def test_seeded_drop_completes_within_budget(context, loss, budget):
+def test_seeded_drop_completes_within_budget(context, loss, median_budget, worst_budget):
     # Three losses, not one: a phone reading a screen loses half the frames or more, which is
-    # what v2's uniform 6..12 degree was never tuned for and the robust soliton is. Same seed
-    # the test has always used (20260915), not chosen to make this pass.
+    # what v2's uniform 6..12 degree was never tuned for and the robust soliton is.
     page, blocked, errors = _open_page(context, "#/share")
 
     result = page.evaluate(
         f"""
-        async () => {{
+        async (seeds) => {{
             const text = await window.CrosscheckTransfer.testPayloadText();
             const built = await window.CrosscheckTransfer.encoder(text);
-            const seq = window.CrosscheckTransfer.createSequence(built.k);
             const mulberry32 = {MULBERRY32_JS};
-            const rand = mulberry32(20260915);
-
-            const rx = window.CrosscheckTransfer.receiver();
-            const cap = Math.ceil(built.k * {budget});
-            let pushed = 0;
-            let offered = 0;
-            // Enough send-order frames to find `cap` survivors at this loss, with headroom.
-            const maxOffered = Math.ceil(cap / (1 - {loss})) * 4;
-            let status = {{ complete: false, known: 0, total: built.k }};
-            while (!status.complete && pushed < cap && offered < maxOffered) {{
-                const {{ index }} = seq.next();
-                offered += 1;
-                if (rand() < {loss}) {{
-                    continue; // dropped, as if the camera missed this frame
+            const runs = [];
+            for (const seed of seeds) {{
+                const seq = window.CrosscheckTransfer.createSequence(built.k);
+                const rand = mulberry32(seed);
+                const rx = window.CrosscheckTransfer.receiver();
+                // Far more room than the worst budget, so a run that does not complete is the
+                // decoder's answer and never the cap's.
+                const cap = built.k * 8;
+                let pushed = 0;
+                let offered = 0;
+                const maxOffered = Math.ceil(cap / (1 - {loss})) * 4;
+                let status = {{ complete: false, known: 0, total: built.k }};
+                while (!status.complete && pushed < cap && offered < maxOffered) {{
+                    const {{ index }} = seq.next();
+                    offered += 1;
+                    if (rand() < {loss}) {{
+                        continue; // dropped, as if the camera missed this frame
+                    }}
+                    status = rx.push(built.frameAt(index));
+                    pushed += 1;
                 }}
-                status = rx.push(built.frameAt(index));
-                pushed += 1;
+                if (!status.complete) {{
+                    runs.push({{ seed, complete: false, ratio: null, same: false }});
+                    continue;
+                }}
+                const out = await window.CrosscheckTransfer.inflate(rx.bytes());
+                runs.push({{
+                    seed,
+                    complete: true,
+                    ratio: pushed / built.k,
+                    same: out === text,
+                }});
             }}
-            if (!status.complete) {{
-                return {{ complete: false, pushed, offered, k: built.k }};
-            }}
-            const out = await window.CrosscheckTransfer.inflate(rx.bytes());
-            return {{ complete: true, pushed, offered, k: built.k, same: out === text }};
+            return {{ k: built.k, runs }};
         }}
-        """
+        """,
+        SEEDS,
     )
 
-    assert result["complete"], result
-    assert result["pushed"] <= math.ceil(result["k"] * budget), result
-    assert result["same"]
+    runs = result["runs"]
+    k = result["k"]
+    never = [run["seed"] for run in runs if not run["complete"]]
+    assert never == [], f"k {k}: seeds that never completed within {k * 8} frames: {never}"
+    wrong = [run["seed"] for run in runs if not run["same"]]
+    assert wrong == [], f"k {k}: runs that completed but inflated to other bytes: {wrong}"
+
+    ratios = sorted(run["ratio"] for run in runs)
+    median = statistics.median(ratios)
+    worst = ratios[-1]
+    observed = (
+        f"{int(loss * 100)} % loss, k {k}, {len(ratios)} seeds: "
+        f"median {median:.2f} x K, worst {worst:.2f} x K"
+    )
+    print(observed)
+    assert median <= median_budget, f"{observed}; median budget {median_budget} x K"
+    assert worst <= worst_budget, f"{observed}; worst-seed budget {worst_budget} x K"
 
     assert errors == []
     assert blocked == []
@@ -219,9 +255,11 @@ def test_seeded_drop_completes_within_budget(context, loss, budget):
 
 
 def test_sources_0_to_19_never_delivered_still_completes(context):
-    # 1.75 * K (Tarik's decision, 2026-09-15). No randomness beyond the fixed omission, so it
-    # is deterministic: twenty source blocks that never arrive must be rebuilt from repairs.
+    # 2.0 * K (Tarik's decision, 2026-09-17; 1.75 until then). No randomness at all here: the
+    # omission is fixed and createSequence is deterministic, so this is one value and not a
+    # distribution. Twenty source blocks that never arrive must be rebuilt from repairs.
     page, blocked, errors = _open_page(context, "#/share")
+    budget = 2.0
 
     result = page.evaluate(
         """
@@ -233,7 +271,7 @@ def test_sources_0_to_19_never_delivered_still_completes(context):
             }
             const seq = window.CrosscheckTransfer.createSequence(built.k);
             const rx = window.CrosscheckTransfer.receiver();
-            const cap = Math.ceil(built.k * 1.75);
+            const cap = built.k * 8;
             let pushed = 0;
             let offered = 0;
             const maxOffered = cap * 4;
@@ -258,7 +296,10 @@ def test_sources_0_to_19_never_delivered_still_completes(context):
 
     assert not result.get("skip"), f"the payload is too small for this test (k {result['k']})"
     assert result["complete"], result
-    assert result["pushed"] <= math.ceil(result["k"] * 1.75)
+    ratio = result["pushed"] / result["k"]
+    observed = f"sources 0..19 dropped, k {result['k']}: {ratio:.2f} x K (deterministic)"
+    print(observed)
+    assert ratio <= budget, f"{observed}; budget {budget} x K"
     assert result["same"]
 
     assert errors == []

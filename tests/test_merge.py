@@ -14,7 +14,7 @@ import pandas as pd
 import pytest
 
 from pipeline import rules
-from pipeline.merge import merge
+from pipeline.merge import PUBLISHER_KEYS, merge
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -34,9 +34,26 @@ EXCLUDED = ("spike20", "telehealth_reason")
 
 VERDICT_MAP = {"GREEN": "works", "AMBER": "degraded", "RED": "fails", "n/a": "nodata"}
 
+# Task-38: the measured publisher's columns, joined through but read only by pipeline.pack.
+AUDIT_COLUMNS = ("audit5", "audit_nearest_km", "audit_carriers", "audit_year")
+
 
 def _read(path: Path) -> pd.DataFrame:
     return pd.read_csv(path, dtype=str, keep_default_na=False)
+
+
+def _audit_frame(bushtel_ids: list[str]) -> pd.DataFrame:
+    """A hand-built audit frame: every community empty but Barunga, which has a tile 1 km off.
+
+    The merge passes the audit columns through untouched, so the fixture only has to prove
+    that they arrive and that nothing joins onto the wrong row.
+    """
+    hit = {"audit5": "1", "audit_nearest_km": "1.0", "audit_carriers": "Telstra",
+           "audit_year": "2024"}
+    empty = dict.fromkeys(hit, "")
+    return pd.DataFrame(
+        [{"bushtel_id": i, **(hit if i == "580" else empty)} for i in bushtel_ids]
+    )
 
 
 def _bushtel_frame() -> pd.DataFrame:
@@ -49,12 +66,14 @@ def _bushtel_frame() -> pd.DataFrame:
 
 @pytest.fixture(scope="module")
 def sources():
+    bushtel = _bushtel_frame()
     return {
-        "bushtel": _bushtel_frame(),
+        "bushtel": bushtel,
         "nbn": _read(NBN_FIXTURE),
         "accc": _read(ACCC_FIXTURE),
         "rrl": _read(RRL_FIXTURE),
         "ntg": _read(NTG_FIXTURE),
+        "audit": _audit_frame(list(bushtel["bushtel_id"])),
     }
 
 
@@ -71,6 +90,7 @@ def frame(sources, thresholds):
         sources["accc"],
         sources["rrl"],
         sources["ntg"],
+        sources["audit"],
         thresholds,
     )
 
@@ -98,7 +118,7 @@ def test_shape(frame):
 
 
 def test_columns(frame):
-    expected = (set(_fixture_columns()) - {"spike20"}) | {"best_path"}
+    expected = (set(_fixture_columns()) - {"spike20"}) | {"best_path"} | set(AUDIT_COLUMNS)
     assert set(frame.columns) == expected
 
 
@@ -151,6 +171,7 @@ def test_missing_source_row_still_yields_96_rows(sources, thresholds):
         sources["accc"],
         sources["rrl"],
         sources["ntg"],
+        sources["audit"],
         thresholds,
     )
     assert len(result) == 96
@@ -161,3 +182,19 @@ def test_layer_rules():
     for line in text.splitlines():
         assert not re.match(r"^(import|from) (requests|pipeline\.fetch)", line)
     assert "spike" not in text
+
+
+def test_audit_columns_join_on_the_right_row(frame):
+    by_id = _frame_by_id(frame)
+    for column in AUDIT_COLUMNS:
+        assert column in frame.columns
+    assert by_id.loc["580", "audit5"] == "1"
+    assert by_id.loc["580", "audit_nearest_km"] == "1.0"
+    assert (frame["audit5"] == "1").sum() == 1
+
+
+def test_mobile_says_still_has_four_keys(frame):
+    for value in frame["mobile_says"]:
+        keys = [pair.split("=")[0] for pair in value.split(";")]
+        assert keys == list(PUBLISHER_KEYS)
+    assert set(frame["mobile_publishers_available"]) == {"4"}

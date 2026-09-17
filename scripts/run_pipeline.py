@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from pipeline import figures, merge, pack, provenance, rules  # noqa: E402
-from pipeline.sources import accc, bushtel, nbn, ntg, rrl  # noqa: E402
+from pipeline.sources import accc, audit, bushtel, nbn, ntg, rrl  # noqa: E402
 
 RAW = ROOT / "data/raw"
 OUT = ROOT / "data/out"
@@ -28,6 +28,7 @@ THRESHOLDS = ROOT / "pipeline/thresholds.csv"
 TABLE_CSV = OUT / "capability_table.csv"
 TABLE_XLSX = OUT / "capability_table.xlsx"
 PROVENANCE = OUT / "PROVENANCE.md"
+AUDIT_TABLE = OUT / "tables/audit_within_5km.csv"
 
 
 def newest(pattern: str, fetch_command: str) -> Path:
@@ -62,6 +63,11 @@ def main() -> None:
     rrl_frame = rrl.load(newest("spectra_rrl_*.zip", rrl.FETCH_COMMAND), communities)
     print(f"rrl: {len(rrl_frame)} rows")
 
+    audit_frame = audit.load(
+        newest("audit_non_alignment_*.csv", audit.FETCH_COMMAND), communities
+    )
+    print(f"audit: {len(audit_frame)} rows, {(audit_frame['audit5'] == '1').sum()} within 5 km")
+
     ntg_frame = ntg.load(
         newest("ntg_2019.xlsx", ntg.FETCH_COMMAND),
         newest("ntg_2021.xlsx", ntg.FETCH_COMMAND),
@@ -71,11 +77,16 @@ def main() -> None:
     )
     print(f"ntg: {len(ntg_frame)} rows")
 
-    table = merge.merge(communities, nbn_frame, accc_frame, rrl_frame, ntg_frame, thresholds)
+    table = merge.merge(
+        communities, nbn_frame, accc_frame, rrl_frame, ntg_frame, audit_frame, thresholds
+    )
     OUT.mkdir(parents=True, exist_ok=True)
     table.to_csv(TABLE_CSV, index=False, lineterminator="\n", encoding="utf-8")
     table.to_excel(TABLE_XLSX, index=False, engine="openpyxl")
     print(f"{TABLE_CSV.relative_to(ROOT).as_posix()}: {len(table)} rows, {table.shape[1]} columns")
+
+    audit.write_table(audit_frame, communities, AUDIT_TABLE)
+    print(f"{AUDIT_TABLE.relative_to(ROOT).as_posix()}: written")
 
     provenance.write(PROVENANCE, RAW)
     print(f"{PROVENANCE.relative_to(ROOT).as_posix()}: written")

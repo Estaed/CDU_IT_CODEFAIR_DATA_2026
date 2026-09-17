@@ -164,7 +164,7 @@ def _nearest_polygon(row: dict[str, str]) -> tuple[str, float]:
 
 
 def publisher_lines(row: dict[str, str], profile: str) -> list[dict]:
-    """The four mobile publishers, in the order the screens show them."""
+    """The four mobile publishers in the order the screens show them, then the measured line."""
     names = rules.carriers_4g(row)
     if rules.carrier_count(row) >= 1:
         accc_detail = f"{rules.join_names(names)} 4G outdoor polygon, carrier prediction"
@@ -191,6 +191,23 @@ def publisher_lines(row: dict[str, str], profile: str) -> list[dict]:
         rrl_detail = (
             f"No carrier cellular site licensed within {radius}; "
             f"nearest {site_carrier} site at {site_km}"
+        )
+
+    # The Audit publishes non-alignments only, so this column is "1" or empty (Task-38);
+    # the "0" case (a road audited nearby with nothing wrong) is Task-39's and gets its own
+    # branch when it lands.
+    audit_radius = rules.fig(rules.LICENSED_RADIUS_KM, "km")
+    if row["audit5"] == "1":
+        carriers = rules.join_names(row["audit_carriers"].split("/"))
+        audit_km = rules.fig(float(row["audit_nearest_km"]), "km")
+        audit = (
+            "not-covered",
+            f"Drive test found no {carriers} signal {audit_km} away inside claimed coverage",
+        )
+    else:
+        audit = (
+            "not-recorded",
+            f"No audited road within {audit_radius}; the Audit drove roads, not communities",
         )
 
     if row["svc_mobile_phone"] == "Y":
@@ -232,6 +249,14 @@ def publisher_lines(row: dict[str, str], profile: str) -> list[dict]:
             "detail": bushtel[1],
             "source": "BushTel profile",
             "date": profile,
+        },
+        {
+            "publisher": "National Audit of Mobile Coverage",
+            "kind": "measured",
+            "says_covered": audit[0],
+            "detail": audit[1],
+            "source": "National Audit non-alignment 2026-05",
+            "date": "",
         },
     ]
 
