@@ -83,3 +83,21 @@ Chain 4 launched: the mojibake fix at its source (one separator helper, a test a
 U+2014), the on-screen label offset fix, then the gate. One attempt each; a red here goes to
 `BACKLOG.md` and the run moves on to the audit.
 
+### Checkpoint 4, 01:43 ACST: chain 4 green and committed; audit launched; push still held
+
+Gate exit 0 (orchestrator): 212 unit + 100 browser, HTML 978,941, pack 506,433, no mojibake
+left in `docs/FINDINGS.md`. Task-50's line reads 17 of 96, 1,140 people, 8 with a health
+centre, 79 others. Eye review at 360 × 780: region view labels now sit beside their points;
+Sources lens reads at a glance (3 / 30 / 63).
+
+Emulator (`terra_nt`, Chrome, 412 px wide; `reports/shots/2026-09-22-map-v3-emulator.png`):
+works, legend visible, but at this width two label problems the 360 px tests do not see:
+"Maningrida" is placed left of marker 6 and reads as marker 7's name; "Numbulwar" overlaps
+the town label "Katherine". Rule to add in the fix wave: a label may not overlap ANY other
+label (towns included) and may not sit nearer to another tier-1 marker than to its own; else
+it is hidden (the list under the map carries every name). The push waits for that.
+
+Read-only audit bee launched (small tier, high, `--sandbox read-only`): wording, consistency,
+accessibility, empty and error states, 360 px overflow, map misreadings, judging criteria;
+at most 20 ranked defects, features excluded.
+
