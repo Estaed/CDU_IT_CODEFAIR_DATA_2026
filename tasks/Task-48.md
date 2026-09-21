@@ -1,6 +1,6 @@
 # Task-48: Map v3: three lenses, no clusters, regions that zoom, one screen; the degraded clause
 
-**Status: TODO**
+**Status: DONE** — verified 2026-09-22 (main loop: gate green, 212 unit + 117 browser, HTML 982,131 bytes. Four rounds: round 1 (top bee tier) met the contract but read badly at 360 x 780; round 2 raised the height cap and marker sizes; round 3 fixed a label drawn 150 px from its own point, a factual error no test had caught; round 4 put label offsets in screen units after the new DOM-measured label test went red in region views. Eye review at 360 and 412 wide and in the `terra_nt` emulator: `reports/shots/2026-09-22-*`. Lesson: the first spec capped the map too small and gave no label rule; both were spec gaps, not bee errors.)
 
 > **Execution:** agent `codex` (top bee tier) · effort `high`
 > *Why:* 2026-09-21 late. The largest render surface in `app.js` (about 700 lines), replaced

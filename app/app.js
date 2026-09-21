@@ -15,6 +15,13 @@
     voice_sms: "Voice and SMS",
   };
 
+  const MAP_SERVICE_LABEL = {
+    telehealth_video: "See a doctor by video",
+    school_video_meeting: "Join a school lesson by video",
+    mygov_text: "Use myGov and banking",
+    voice_sms: "Call and text",
+  };
+
   const SERVICE_QUESTION = {
     telehealth_video: "see a doctor by video",
     school_video_meeting: "join a school lesson by video",
@@ -66,7 +73,7 @@
   const builtInBuilt = pack.built;
 
   if (pack.pack_version !== 3) {
-    main.textContent = "Unknown data pack";
+    main.textContent = "This copy cannot read its data. Open the latest address once with internet.";
     return;
   }
 
@@ -303,7 +310,7 @@
       h(
         "p",
         { class: "service-row__path" },
-        "Best available path: ",
+        "The best connection this community can get: ",
         figures(path.note),
         ` · ${path.rule} `,
         h("span", { class: "fig fig--xs" }, path.date),
@@ -389,7 +396,7 @@
     if (navigator.clipboard && navigator.clipboard.writeText) {
       try {
         await navigator.clipboard.writeText(text);
-        return;
+        return true;
       } catch (error) {
         // Fall through to the textarea.
       }
@@ -403,8 +410,14 @@
     area.value = text;
     document.body.appendChild(area);
     area.select();
-    document.execCommand("copy");
+    let copied = false;
+    try {
+      copied = document.execCommand("copy");
+    } catch (error) {
+      copied = false;
+    }
     area.remove();
+    return copied;
   };
 
   const renderStatementButtons = (community) => {
@@ -416,12 +429,12 @@
     const copyButton = h("button", { type: "button", class: "button button--secondary" }, "Copy statement");
     let resetTimer = null;
     copyButton.addEventListener("click", async () => {
-      await copyText(statementLong(community));
-      copyButton.textContent = "Copied";
+      const copied = await copyText(statementLong(community));
+      copyButton.textContent = copied ? "Copied" : "Copy failed. Select the text and copy it manually.";
       clearTimeout(resetTimer);
       resetTimer = setTimeout(() => {
         copyButton.textContent = "Copy statement";
-      }, 2000);
+      }, copied ? 2000 : 4000);
     });
     return h(
       "div",
@@ -660,7 +673,7 @@
     const button = h("button", { type: "button", class: "locate-button" }, "Use my location");
     const fail = () => {
       button.disabled = false;
-      status.textContent = "Location not available on this phone";
+      status.textContent = "We couldn't use your location. Search for a community instead.";
     };
     button.addEventListener("click", () => {
       if (!navigator.geolocation) {
@@ -694,6 +707,11 @@
   // One bar for search (Task-30): a result opens its community.
   const renderSearch = (current) => {
     const results = h("ul", { class: "search-results" });
+    const empty = h(
+      "p",
+      { class: "results__empty", hidden: "" },
+      "No communities match that search.",
+    );
     const input = h("input", {
       class: "search-input",
       type: "search",
@@ -703,10 +721,16 @@
     input.addEventListener("input", () => {
       const query = input.value.trim().toLowerCase();
       results.textContent = "";
+      empty.hidden = true;
       if (!query) {
         return;
       }
-      for (const community of pack.communities.filter((c) => matchesQuery(c, query))) {
+      const matches = pack.communities.filter((c) => matchesQuery(c, query));
+      if (!matches.length) {
+        empty.hidden = false;
+        return;
+      }
+      for (const community of matches) {
         const alias = matchedAlias(community, query);
         const row = h(
           "button",
@@ -734,6 +758,7 @@
         current ? h("div", { class: "search__tools" }, input, renderLocate(current)) : input,
       ),
       results,
+      empty,
     ];
   };
 
@@ -995,7 +1020,7 @@
     const select = h(
       "select",
       { class: "map-service", "aria-label": "Service shown on the map" },
-      SERVICE_ORDER.map((id) => h("option", { value: id }, SERVICE_LABEL[id] || id)),
+      SERVICE_ORDER.map((id) => h("option", { value: id }, MAP_SERVICE_LABEL[id] || id)),
     );
     select.value = state.service;
     select.addEventListener("change", () => {
@@ -1038,9 +1063,9 @@
         counts[sourceState(community)] += 1;
       }
       items = [
-        ["map-legend__glyph--source-measured", "○", "Drive test found no signal", counts.measured],
-        ["map-legend__glyph--source-disagree", "●", "Sources disagree", counts.disagree],
-        ["map-legend__glyph--source-agree", "●", "Sources agree", counts.agree],
+        ["map-legend__glyph--source-measured", "○", "Drive test found no signal inside claimed coverage", counts.measured],
+        ["map-legend__glyph--source-disagree", "●", "Sources disagree on mobile coverage", counts.disagree],
+        ["map-legend__glyph--source-agree", "●", "Sources agree on mobile coverage", counts.agree],
       ];
     }
     return h(
@@ -1314,7 +1339,8 @@
           radius: mapRadius(community, state),
           selected: community.id === state.selected,
           town: false,
-          order: community.id === state.selected ? 0 : state.lens === "fix" && rank <= 10 ? 1 : 3,
+          tierOne: state.lens === "fix" && mapTier(community) === 1,
+          order: community.id === state.selected ? 0 : state.lens === "fix" && rank <= 10 ? 2 : 3,
         });
       }
 
@@ -1326,12 +1352,14 @@
           radius: Number(dot.getAttribute("r")),
           selected: false,
           town: true,
-          order: 2,
+          tierOne: false,
+          order: 1,
         };
       });
       const tierOneMarkers = communities
         .filter((community) => state.lens === "fix" && mapTier(community) === 1)
-        .map((community) => ({ id: community.id }));
+        .map((community) => ({ id: String(community.id), element: pointGroupsById.get(community.id)?.querySelector(".map__hit") }))
+        .filter((marker) => marker.element);
       const overlaps = (a, b) =>
         a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
       const scaledBox = (element) => {
@@ -1351,14 +1379,20 @@
         const box = element.getBoundingClientRect();
         return { x: box.left, y: box.top, width: box.width, height: box.height };
       };
-      const markerElement = (markerId) =>
-        pointGroupsById.get(Number(markerId))?.querySelector("circle, .map__pt, .map__marker");
-      const overlapsScreenMarker = (label, markerId) => {
-        const marker = markerElement(markerId);
-        return marker ? overlaps(screenBox(label), screenBox(marker)) : false;
-      };
-      const alignLabel = (label, markerId) => {
-        const marker = markerElement(markerId);
+      const allLabels = [...labels, ...townLabels].sort(
+        (a, b) => a.order - b.order || a.point.y - b.point.y || String(a.element.textContent).localeCompare(String(b.element.textContent)),
+      );
+      const occupied = [];
+      const labelCentre = (box) => ({
+        x: box.x + box.width / 2,
+        y: box.y + box.height / 2,
+      });
+      const ownMarker = (entry) =>
+        entry.town
+          ? entry.element.parentElement.querySelector(".map__town-dot")
+          : pointGroupsById.get(Number(entry.element.getAttribute("data-for")))?.querySelector(".map__hit");
+      const alignLabel = (label, entry) => {
+        const marker = ownMarker(entry);
         if (!marker) {
           return;
         }
@@ -1368,30 +1402,46 @@
         for (let attempt = 0; attempt < 3; attempt += 1) {
           const labelBox = screenBox(label);
           const markerBox = screenBox(marker);
-          const labelCentre = {
-            x: labelBox.x + labelBox.width / 2,
-            y: labelBox.y + labelBox.height / 2,
-          };
-          const markerCentre = {
-            x: markerBox.x + markerBox.width / 2,
-            y: markerBox.y + markerBox.height / 2,
-          };
-          const distance = Math.hypot(labelCentre.x - markerCentre.x, labelCentre.y - markerCentre.y);
+          const labelMid = labelCentre(labelBox);
+          const markerMid = labelCentre(markerBox);
+          const distance = Math.hypot(labelMid.x - markerMid.x, labelMid.y - markerMid.y);
           const allowed = 40 + labelBox.width / 2;
           if (distance <= allowed || distance === 0) {
             return;
           }
-          const factor = 1;
-          const x = Number(label.getAttribute("x")) + (markerCentre.x - labelCentre.x) * factor / scaleX;
-          const y = Number(label.getAttribute("y")) + (markerCentre.y - labelCentre.y) * factor / scaleY;
-          label.setAttribute("x", f1(x));
-          label.setAttribute("y", f1(y));
+          label.setAttribute(
+            "x",
+            f1(Number(label.getAttribute("x")) + (markerMid.x - labelMid.x) / scaleX),
+          );
+          label.setAttribute(
+            "y",
+            f1(Number(label.getAttribute("y")) + (markerMid.y - labelMid.y) / scaleY),
+          );
         }
       };
-      const allLabels = [...labels, ...townLabels].sort(
-        (a, b) => a.order - b.order || a.point.y - b.point.y || String(a.element.textContent).localeCompare(String(b.element.textContent)),
-      );
-      const occupied = [];
+      const keepsTierOneClear = (entry, box) => {
+        if (entry.selected) {
+          return true;
+        }
+        return tierOneMarkers.every((marker) => marker.id === entry.element.getAttribute("data-for") || !overlaps(box, screenBox(marker.element)));
+      };
+      const keepsOwnTierOneNearest = (entry, box) => {
+        if (entry.selected || !entry.tierOne || !tierOneMarkers.length) {
+          return true;
+        }
+        const own = ownMarker(entry);
+        if (!own) {
+          return false;
+        }
+        const centre = labelCentre(box);
+        const ownBox = screenBox(own);
+        const ownDistance = Math.hypot(centre.x - (ownBox.x + ownBox.width / 2), centre.y - (ownBox.y + ownBox.height / 2));
+        return tierOneMarkers.every((marker) => {
+          const markerBox = screenBox(marker.element);
+          const distance = Math.hypot(centre.x - (markerBox.x + markerBox.width / 2), centre.y - (markerBox.y + markerBox.height / 2));
+          return ownDistance <= distance;
+        });
+      };
       for (const entry of allLabels) {
         const label = entry.element;
         const gap = 8 / zoom;
@@ -1414,7 +1464,7 @@
           label.setAttribute("x", f1(candidate.x));
           label.setAttribute("y", f1(candidate.y));
           label.setAttribute("text-anchor", candidate.anchor);
-          let box = scaledBox(label);
+          const box = scaledBox(label);
           const left = view.x + 0.5;
           const top = view.y + 0.5;
           const right = view.x + view.w - 0.5;
@@ -1427,42 +1477,33 @@
           if ((shiftX || shiftY) && Math.hypot(shiftX, shiftY) <= gap) {
             label.setAttribute("x", f1(candidate.x + shiftX));
             label.setAttribute("y", f1(candidate.y + shiftY));
-            box = scaledBox(label);
           }
-          const ownId = entry.element.getAttribute("data-for");
-          alignLabel(label, ownId);
-          box = scaledBox(label);
-          const hitsTierOne = tierOneMarkers.some(
-            (marker) => String(marker.id) !== ownId && overlapsScreenMarker(label, marker.id),
-          );
-          if (!hitsTierOne && (entry.town || !occupied.some((other) => overlaps(box, other)))) {
-            accepted = box;
+          alignLabel(label, entry);
+          const screen = screenBox(label);
+          if (
+            !occupied.some((other) => overlaps(screen, other)) &&
+            keepsTierOneClear(entry, screen) &&
+            keepsOwnTierOneNearest(entry, screen)
+          ) {
+            accepted = screen;
             break;
           }
         }
         if (accepted) {
           label.removeAttribute("hidden");
           occupied.push(accepted);
-        } else if (entry.selected || entry.town || (entry.order === 1 && zoom >= LABEL_ZOOM)) {
-          const fallback = candidates[0];
-          label.setAttribute("x", f1(fallback.x));
-          label.setAttribute("y", f1(fallback.y));
-          label.setAttribute("text-anchor", fallback.anchor);
-          alignLabel(label, label.getAttribute("data-for"));
-          const fallbackBox = scaledBox(label);
-          const fallbackHitsTierOne = tierOneMarkers.some(
-            (marker) => String(marker.id) !== label.getAttribute("data-for") && overlapsScreenMarker(label, marker.id),
-          );
-          if (entry.selected || (entry.order === 1 && zoom >= LABEL_ZOOM) || !fallbackHitsTierOne) {
-            label.removeAttribute("hidden");
-            occupied.push(fallbackBox);
-          } else {
-            label.setAttribute("hidden", "");
-          }
         } else {
           label.setAttribute("hidden", "");
         }
       }
+      const selectedLabel = labels.find((entry) => entry.selected)?.element;
+      [...labelsGroup.children]
+        .sort(
+          (a, b) =>
+            Number(!b.hasAttribute("hidden")) - Number(!a.hasAttribute("hidden")) ||
+            Number(b === selectedLabel) - Number(a === selectedLabel),
+        )
+        .forEach((label) => labelsGroup.appendChild(label));
     };
 
     let layoutFrame = null;
@@ -1475,6 +1516,7 @@
         updateLayout();
       });
     };
+    window.addEventListener("resize", scheduleLayout);
 
     const apply = (layout = false) => {
       svg.setAttribute(
@@ -1642,7 +1684,9 @@
     const tier = String(mapTier(community));
     const attributes = {
       class: `map__pt-group map__community${isDimmed(community, state, filter) ? " map__community--dim" : ""}${community.id === state.selected ? " map__community--selected" : ""}`,
+      role: "link",
       tabindex: "0",
+      "aria-label": `${community.name}, fix first #${priority.rank} of ${pack.count}`,
       "data-id": String(community.id),
     };
     let title;
@@ -1782,6 +1826,7 @@
       svg.setAttribute("data-region", state.region);
     }
     main.textContent = "";
+    main.appendChild(h("h1", { class: "visually-hidden" }, "Map"));
     main.appendChild(renderMapLens(state));
     if (state.lens === "service") {
       main.appendChild(renderServiceSelector(state));
@@ -1802,7 +1847,11 @@
     main.appendChild(frame);
     const mapView = attachMapView(svg, ordered, state, pointGroupsById, labelsGroup, resetButton);
     resetButton.addEventListener("click", () => mapView.reset());
-    main.appendChild(renderLegend(state));
+    const legend = renderLegend(state);
+    if (filter.id !== DEFAULT_FILTER || state.region) {
+      legend.appendChild(h("p", { class: "map-legend__note" }, "Faded points are outside this highlight."));
+    }
+    main.appendChild(legend);
     main.appendChild(renderMapCard(selected));
     const regions = renderRegions(state);
     main.appendChild(regions);
@@ -1874,10 +1923,16 @@
     main.textContent = "";
     main.appendChild(
       h(
+        "h1",
+        { class: "visually-hidden" },
+        "What to fix first",
+      ),
+    );
+    main.appendChild(
+      h(
         "p",
         { class: "priority-intro" },
-        `${pack.priority.length} communities ranked by ${pack.priority_components.length} ` +
-          "weighted components; weights and sensitivity in the report",
+        `${pack.priority.length} communities, ordered by where action is needed first. Method and weights are in the report.`,
       ),
     );
     main.appendChild(renderPriorityChips(active));
@@ -1988,6 +2043,7 @@
     shareButton.addEventListener("click", shareApp);
     saveButton.addEventListener("click", saveFile);
     main.textContent = "";
+    main.appendChild(h("h1", { class: "visually-hidden" }, "Share"));
     const transfer = h("div", { class: "transfer" });
     const transferFold = h(
       "details",

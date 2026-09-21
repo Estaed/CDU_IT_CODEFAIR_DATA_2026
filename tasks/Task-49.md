@@ -1,6 +1,6 @@
 # Task-49: Tests for map v3 and the degraded clause, written from the contract
 
-**Status: TODO**
+**Status: DONE** — verified 2026-09-22 (main loop: 28 map tests written from the contract without opening the new code; two read `publisher_lines` for the pack's `publishers` and were corrected by a test bee; the label-adjacency test added in round 3 caught a real region-view defect.)
 
 > **Execution:** agent `codex` (small tier) · effort `high`
 > *Why:* 2026-09-21 late. Whoever writes the code does not write its test. This bee reads

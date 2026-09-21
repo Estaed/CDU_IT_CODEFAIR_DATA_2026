@@ -1,6 +1,6 @@
 # Task-47: `headline()` reads the health-centre label from a named constant
 
-**Status: TODO**
+**Status: DONE** — verified 2026-09-22 (main loop: gate green; `grep PRESENT_SERVICES\[0\]` prints nothing; pack byte size unchanged at 506,433.)
 
 > **Execution:** agent `codex` (small tier) · effort `low`
 > *Why:* 2026-09-21. A three-line mechanical change with a byte-identical output as the

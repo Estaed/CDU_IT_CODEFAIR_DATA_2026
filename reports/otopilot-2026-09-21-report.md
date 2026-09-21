@@ -101,3 +101,18 @@ Read-only audit bee launched (small tier, high, `--sandbox read-only`): wording,
 accessibility, empty and error states, 360 px overflow, map misreadings, judging criteria;
 at most 20 ranked defects, features excluded.
 
+### Checkpoint 5, 01:55 ACST: audit triaged, fix wave launched
+
+Audit (`reports/2026-09-22-audit.md`): 20 findings. Accepted as defects, 17 plus the label
+rule from the emulator review: F1 to F5, F19, F20 (silent or raw failure states), F7 to F10
+(accessibility), F11 (label collisions), F12 to F14, F18 and the app part of F15 (wording).
+Declined: F6 (tab semantics are right but every browser test keys on `[role=tab]`; too wide
+for an unattended night, logged under Later), the intervention words and `DCDD` in F15
+(pipeline and report vocabulary; the judges are DCDD), F16 and F17 (analyst-facing evidence
+text; transfer diagnostics kept on purpose).
+
+Chain 5: Task-51 (fixes, small tier, high), then Task-52 (tests from the contract, may run
+the browser suite because it runs after), then the gate by the orchestrator. A first
+attempt at writing the task files failed on a shell quoting error; nothing was written, the
+files were then written with the Write tool.
+

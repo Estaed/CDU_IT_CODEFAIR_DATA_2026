@@ -608,10 +608,11 @@ window.CrosscheckTransfer = (() => {
         return;
       }
       let result = null;
+      let saveFailed = !window.CrosscheckStore;
       try {
         result = window.CrosscheckStore ? await window.CrosscheckStore.save(text) : null;
       } catch (error) {
-        result = null; // Storage is optional; the refusal below is what the screen says.
+        saveFailed = true;
       }
       counter.hidden = false;
       if (result && result.built) {
@@ -622,8 +623,9 @@ window.CrosscheckTransfer = (() => {
         }
         return;
       }
-      counter.textContent =
-        result && result.reason === "pack_version"
+      counter.textContent = saveFailed
+        ? "The update is valid, but this phone could not save it. Try again."
+        : result && result.reason === "pack_version"
           ? "This copy is too old for that data; open the address once with the internet"
           : "That did not look like Crosscheck data; try again";
     };
@@ -692,8 +694,8 @@ window.CrosscheckTransfer = (() => {
       start().catch((error) => {
         stop();
         counter.hidden = false;
-        const why = error && error.name ? ` (${error.name}, ${location.protocol})` : "";
-        counter.textContent = `Could not access the camera${why}.`;
+        counter.title = error && error.name ? `${error.name}, ${location.protocol}` : location.protocol;
+        counter.textContent = "We couldn't use the camera. Allow camera access in your browser, then try again.";
       });
     });
 

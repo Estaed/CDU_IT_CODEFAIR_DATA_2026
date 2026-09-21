@@ -167,5 +167,7 @@ def test_version_3_only(browser, tmp_path):
     page = browser.new_page()
     page.goto(copy_path.resolve().as_uri())
     page.wait_for_load_state()
-    expect(page.locator("main")).to_have_text("Unknown data pack")
+    expect(page.locator("main")).to_have_text(
+        "This copy cannot read its data. Open the latest address once with internet."
+    )
     page.close()

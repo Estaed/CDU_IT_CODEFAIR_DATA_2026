@@ -176,7 +176,7 @@ def test_use_my_location_refused(browser):
 
         page.locator("button.locate-button").click()
         expect(page.locator(".locate-status")).to_have_text(
-            "Location not available on this phone", timeout=20_000
+            "We couldn't use your location. Search for a community instead.", timeout=20_000
         )
 
         assert errors == []

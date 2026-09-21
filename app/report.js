@@ -179,7 +179,7 @@ window.CrosscheckReport = (() => {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       try {
         await navigator.clipboard.writeText(text);
-        return;
+        return true;
       } catch (error) {
         // Fall through to the textarea.
       }
@@ -192,15 +192,21 @@ window.CrosscheckReport = (() => {
     area.value = text;
     document.body.appendChild(area);
     area.select();
-    document.execCommand("copy");
+    let copied = false;
+    try {
+      copied = document.execCommand("copy");
+    } catch (error) {
+      copied = false;
+    }
     area.remove();
+    return copied;
   };
 
-  const flash = (button, label) => {
-    button.textContent = "Copied";
+  const flash = (button, label, copied) => {
+    button.textContent = copied ? "Copied" : "Copy failed. Select the text and copy it manually.";
     setTimeout(() => {
       button.textContent = label;
-    }, 2000);
+    }, copied ? 2000 : 4000);
   };
 
   // Set by renderReports so a save made in the form below updates the count line above it in
@@ -262,8 +268,7 @@ window.CrosscheckReport = (() => {
   const renderLine = (line) => {
     const copyButton = el("button", { type: "button", class: "report-line__copy" }, "Copy line");
     copyButton.addEventListener("click", async () => {
-      await copyText(line);
-      flash(copyButton, "Copy line");
+      flash(copyButton, "Copy line", await copyText(line));
     });
     const smsLink = el(
       "a",
@@ -299,7 +304,7 @@ window.CrosscheckReport = (() => {
       "Save report",
     );
 
-    const statusRow = el("div", { class: "report-form__row" });
+    const statusRow = el("fieldset", { class: "report-form__row" }, el("legend", {}, "Status"));
     const statusButtons = STATUSES.map((entry) => {
       const button = el(
         "button",
@@ -317,7 +322,11 @@ window.CrosscheckReport = (() => {
       return button;
     });
 
-    const carrierRow = el("div", { class: "report-form__row chips" });
+    const carrierRow = el(
+      "fieldset",
+      { class: "report-form__row chips" },
+      el("legend", {}, "Carrier (optional)"),
+    );
     const carrierButtons = CARRIERS.map((entry) => {
       const button = el(
         "button",
@@ -360,12 +369,26 @@ window.CrosscheckReport = (() => {
         lat: position ? position.lat : null,
         lon: position ? position.lon : null,
       });
-      await window.CrosscheckStore.saveReport(line);
+      let saved = true;
+      try {
+        await window.CrosscheckStore.saveReport(line);
+      } catch (error) {
+        saved = false;
+      }
       result.textContent = "";
+      if (!saved) {
+        result.appendChild(
+          el(
+            "p",
+            { class: "report-error", role: "alert" },
+            "Could not save this report on this phone. You can still copy or send this line.",
+          ),
+        );
+      }
       result.appendChild(renderLine(line));
       saveButton.textContent = "Save report";
       saveButton.removeAttribute("disabled");
-      if (refreshCount) {
+      if (saved && refreshCount) {
         await refreshCount();
       }
     });
@@ -452,8 +475,7 @@ window.CrosscheckReport = (() => {
         `Crosscheck does not measure signal; reports are what people in ${community.name} ` +
           "recorded on their own phones.",
       ].join("\n");
-      await copyText(text);
-      flash(evidenceButton, "Copy evidence");
+      flash(evidenceButton, "Copy evidence", await copyText(text));
     });
 
     const block = el("div", { class: "reports section" }, countLine, fold, evidenceButton);

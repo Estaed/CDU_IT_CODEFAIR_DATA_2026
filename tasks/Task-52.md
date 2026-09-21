@@ -1,6 +1,6 @@
 # Task-52: Tests for the audit fixes, written from the contract
 
-**Status: TODO**
+**Status: DONE** — verified 2026-09-22 (main loop: `tests/browser/test_audit_fixes.py` written from Task-51's table; it went red on the one row the code bee skipped and was not bent.)
 
 > **Execution:** agent `codex` (small tier) · effort `medium`
 > *Why:* 2026-09-22. The producer does not write its own measurement. Runs after Task-51, so it may run the browser suite.

@@ -1,6 +1,6 @@
 # Task-51: Defects from the 2026-09-22 audit, and the last map label rule
 
-**Status: TODO**
+**Status: DONE** — verified 2026-09-22 (main loop: gate green, 212 unit + 117 browser, HTML 982,131 bytes. Attempt 1 omitted row F14, caught by Task-52's independently written test; attempt 2 was that one line. Eye review of the map at 360 and 412 wide: no two labels overlap.)
 
 > **Execution:** agent `codex` (small tier) · effort `high`
 > *Why:* 2026-09-22. Eighteen small, fully specified fixes with exact strings across four app

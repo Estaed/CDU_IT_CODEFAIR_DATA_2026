@@ -63,12 +63,12 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-44: The pack's `headline` block: three counts for the home screen (fifth batch, added 2026-09-21)
 - [x] Task-45: Home screen, rows as questions, the summary sentence, inside words folded (fifth batch, added 2026-09-21)
 - [x] Task-46: Tests for the fifth batch, written from the contract, not from the code (fifth batch, added 2026-09-21)
-- [ ] Task-47: `headline()` reads the health-centre label from a named constant (sixth batch, added 2026-09-21)
-- [ ] Task-48: Map v3: three lenses, no clusters, regions that zoom, one screen; the degraded clause (sixth batch, added 2026-09-21)
-- [ ] Task-49: Tests for map v3 and the degraded clause, written from the contract (sixth batch, added 2026-09-21)
-- [ ] Task-50: Finding: the communities outside everyone's mobile reach (added 2026-09-21; runs after Task-48 lands, it reruns the pipeline)
-- [ ] Task-51: Defects from the 2026-09-22 audit, and the last map label rule (added 2026-09-22)
-- [ ] Task-52: Tests for the audit fixes, written from the contract (added 2026-09-22)
+- [x] Task-47: `headline()` reads the health-centre label from a named constant (sixth batch, added 2026-09-21)
+- [x] Task-48: Map v3: three lenses, no clusters, regions that zoom, one screen; the degraded clause (sixth batch, added 2026-09-21)
+- [x] Task-49: Tests for map v3 and the degraded clause, written from the contract (sixth batch, added 2026-09-21)
+- [x] Task-50: Finding: the communities outside everyone's mobile reach (added 2026-09-21; runs after Task-48 lands, it reruns the pipeline)
+- [x] Task-51: Defects from the 2026-09-22 audit, and the last map label rule (added 2026-09-22)
+- [x] Task-52: Tests for the audit fixes, written from the contract (added 2026-09-22)
 
 ## Later
 

@@ -1,6 +1,6 @@
 # Task-50: Finding: the communities outside everyone's mobile reach
 
-**Status: TODO**
+**Status: DONE** — verified 2026-09-22 (main loop: gate green; `data/out/tables/voice_unreachable.csv` has 17 rows, 1,140 people, 8 with a health centre, matching the main loop's own count from the pack; the first run wrote mojibake for the em dash into `figures.py`, fixed at the source with a test assertion on U+2014; `docs/FINDINGS.md` has no `â€` sequence.)
 
 > **Execution:** agent `codex` (small tier) · effort `medium`
 > *Why:* 2026-09-21. One table and one generated sentence from columns the pipeline already
