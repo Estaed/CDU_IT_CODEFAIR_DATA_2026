@@ -171,6 +171,7 @@ a.top-bar__title { color: inherit; text-decoration: none; }
   stroke-width: var(--size-focus-ring);
   stroke-linejoin: round;
 }
+.map__town-label[hidden], .map__label[hidden] { display: none; }
 .map__label--dim { opacity: 0.25; }
 
 .layer-chips { padding: var(--space-sm) var(--space-md) 0; }
@@ -192,7 +193,7 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 
 .map-controls__reset[hidden] { display: none; }
 
-.map__pt-shape, .map__ring, .map__rank, .map__label, .map__town-dot, .map__town-label {
+.map__pt-shape, .map__hit, .map__ring, .map__rank, .map__label, .map__town-dot, .map__town-label {
   transform-box: fill-box;
   transform-origin: center;
   transform: scale(calc(1 / var(--map-zoom, 1)));

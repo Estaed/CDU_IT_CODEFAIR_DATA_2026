@@ -309,6 +309,91 @@ def test_map_legend_fits_phone_viewport(browser):
     page.close()
 
 
+def test_visible_labels_follow_markers_without_tier_one_collisions(browser):
+    page, blocked, errors = _open_page(browser, "#/map", viewport=PHONE)
+
+    def violations() -> dict:
+        return page.evaluate(
+            """() => {
+                const visible = element => {
+                    const box = element.getBoundingClientRect();
+                    const style = getComputedStyle(element);
+                    return style.display !== 'none' && style.visibility !== 'hidden'
+                        && box.width > 0 && box.height > 0;
+                };
+                const box = element => {
+                    const value = element.getBoundingClientRect();
+                    return {left: value.left, top: value.top, right: value.right,
+                        bottom: value.bottom, width: value.width, height: value.height};
+                };
+                const centre = value => ({
+                    x: (value.left + value.right) / 2,
+                    y: (value.top + value.bottom) / 2,
+                });
+                const overlaps = (one, other) => one.left < other.right
+                    && one.right > other.left && one.top < other.bottom
+                    && one.bottom > other.top;
+                const markerBox = group => {
+                    const disc = group.querySelector('circle, .map__pt, .map__marker');
+                    return box(disc || group);
+                };
+                const groups = [...document.querySelectorAll('g.map__community[data-id]')];
+                const towns = [...document.querySelectorAll('.map__town[data-for]')];
+                const markerFor = id => groups.find(group => group.dataset.id === id)
+                    || towns.find(town => town.dataset.for === id);
+                const labels = [...document.querySelectorAll('.map__label[data-for]')]
+                    .filter(visible);
+                const tierOne = groups.filter(group => group.dataset.tier === '1');
+                const alignment = [];
+                const collisions = [];
+                for (const label of labels) {
+                    const id = label.dataset.for;
+                    const marker = markerFor(id);
+                    if (!marker) continue;
+                    const labelBox = box(label);
+                    const markerBoxValue = markerBox(marker);
+                    const labelCentre = centre(labelBox);
+                    const markerCentre = centre(markerBoxValue);
+                    const distance = Math.hypot(
+                        labelCentre.x - markerCentre.x,
+                        labelCentre.y - markerCentre.y,
+                    );
+                    if (distance > 40 + labelBox.width / 2) {
+                        alignment.push({label: id, marker: marker.dataset.id || id, distance});
+                    }
+                    for (const other of tierOne) {
+                        if (other === marker) continue;
+                        const disc = markerBox(other);
+                        if (overlaps(labelBox, disc)) {
+                            collisions.push({
+                                label: id,
+                                marker: other.dataset.id,
+                            });
+                        }
+                    }
+                }
+                return {alignment, collisions};
+            }"""
+        )
+
+    assert violations() == {"alignment": [], "collisions": []}
+
+    page.goto(f"{DIST_INDEX}#/map?region=top-end")
+    page.wait_for_load_state()
+    page.wait_for_timeout(500)
+    assert violations() == {"alignment": [], "collisions": []}
+
+    page.goto(f"{DIST_INDEX}#/map?selected=426")
+    page.wait_for_load_state()
+    wadeye = page.locator('.map__label[data-for="426"]')
+    assert wadeye.count() == 1
+    expect(wadeye).to_be_visible()
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
 def test_selection_card_and_open_link(browser):
     page, blocked, errors = _open_page(browser, "#/map")
     expect(page.locator("p.map-card__hint")).to_have_text("Tap a community.")

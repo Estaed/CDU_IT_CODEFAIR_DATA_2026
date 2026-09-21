@@ -41,6 +41,7 @@ PACK_COMMAND = "PYTHONUTF8=1 .venv/Scripts/python -m pipeline.pack"
 THRESHOLDS_CSV = ROOT / "pipeline/thresholds.csv"
 PROVENANCE_MD = ROOT / "data/out/PROVENANCE.md"
 FINDINGS_MD = ROOT / "docs/FINDINGS.md"
+FINDING_SEPARATOR = " — "
 TOKENS_PATH = ROOT / "design/ds/design/tokens.json"
 BOUNDARY_RAW = ROOT / "data/raw" / outline.RAW_NAME
 FIGURES_DIR = ROOT / "data/out/figures"
@@ -168,6 +169,7 @@ PUBLISHER_SUMMARY_COLUMNS = (
     "date",
 )
 RELIABILITY_WORDS_COLUMNS = ("word", "count", "population", "mean_p_wrong", "top_driver_pairs")
+VOICE_UNREACHABLE_COLUMNS = ("bushtel_id", "name", "region", "population", "health_centre")
 
 
 def _read_csv(path: Path) -> list[dict[str, str]]:
@@ -854,6 +856,7 @@ def write_findings_md(
 
     intervention_rows = _read_csv(TABLES_DIR / "intervention_counts.csv")
     top_intervention = max(intervention_rows, key=lambda row: int(row["count"]))
+    voice_unreachable = _read_csv(TABLES_DIR / "voice_unreachable.csv")
 
     reliability_word_rows = _read_csv(TABLES_DIR / "reliability_words.csv")
     words_line = ", ".join(f"{row['word']} {row['count']}" for row in reliability_word_rows)
@@ -909,6 +912,10 @@ def write_findings_md(
             f"covered for {covered_all} communities and agree not covered for {covered_none}; "
             f"{disagree_total} communities see disagreement — evidence: "
             f"data/out/tables/disagreement_patterns.csv — value: {covered_all} — run {today}.",
+            f"{voice_unreachable_sentence(rows)}{FINDING_SEPARATOR}evidence: "
+            f"data/out/tables/voice_unreachable.csv{FINDING_SEPARATOR}value: "
+            f"{len(voice_unreachable)}{FINDING_SEPARATOR}"
+            f"run {today}.",
             f"The measured publisher (National Audit) never records 'covered'; it records a "
             f"drive-test contradiction for {audit_summary['says_not_covered']} of 96 "
             f"communities — evidence: data/out/tables/publisher_lines_summary.csv — value: "
@@ -1070,6 +1077,45 @@ def write_verdict_counts(rows: list[dict[str, str]], out_csv: Path) -> None:
             writer.writerow([SERVICE_LABELS[service], "under 100", suppressed, "suppressed"])
 
 
+def write_voice_unreachable(rows: list[dict[str, str]], out_csv: Path) -> Path:
+    """The communities whose existing ``voice_sms`` verdict is ``fails``."""
+    selected = sorted(
+        (row for row in rows if row["voice_sms"] == "fails"),
+        key=lambda row: int(row["bushtel_id"]),
+    )
+    out_csv.parent.mkdir(parents=True, exist_ok=True)
+    with out_csv.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.writer(handle, lineterminator="\n")
+        writer.writerow(VOICE_UNREACHABLE_COLUMNS)
+        for row in selected:
+            writer.writerow(
+                [
+                    row["bushtel_id"],
+                    row["name"],
+                    row["nt_region"].title(),
+                    row["population_abs2021"],
+                    "Y" if row["svc_health_centre"] == "Y" else "N",
+                ]
+            )
+    return out_csv
+
+
+def voice_unreachable_sentence(rows: list[dict[str, str]]) -> str:
+    """Return the report sentence for the failing voice/SMS communities."""
+    unreachable = [row for row in rows if row["voice_sms"] == "fails"]
+    people = sum(int(row["population_abs2021"]) for row in unreachable)
+    clinics = sum(row["svc_health_centre"] == "Y" for row in unreachable)
+    total = len(rows)
+    count = len(unreachable)
+    return (
+        f"No public source records a mobile voice or SMS path in {count} of {total} communities "
+        f"({people:,} people; {clinics} of them have a health centre). A mobile call needs a "
+        f"path at both ends, so these communities are outside the mobile reach of the other "
+        f"{total - count} as well as unable to call out; landlines, payphones and satellite "
+        "phones are not in any source used here."
+    )
+
+
 def main() -> None:
     if not BOUNDARY_RAW.is_file():
         raise FileNotFoundError(
@@ -1095,6 +1141,7 @@ def main() -> None:
     write_disagreement_patterns(rows, TABLES_DIR / "disagreement_patterns.csv")
     write_verify_on_ground(rows, TABLES_DIR / "verify_on_the_ground.csv")
     write_verdict_counts(rows, TABLES_DIR / "verdict_counts.csv")
+    write_voice_unreachable(rows, TABLES_DIR / "voice_unreachable.csv")
     write_priority_table(rows, priority, TABLES_DIR / "priority.csv")
     write_top10(rows, priority, reliability, pack_agreement, TABLES_DIR / "top10.csv")
     write_intervention_counts(rows, priority, TABLES_DIR / "intervention_counts.csv")
@@ -1108,7 +1155,8 @@ def main() -> None:
     print(
         f"{TABLES_DIR.relative_to(ROOT).as_posix()}: disagreement_patterns.csv, "
         "verify_on_the_ground.csv, verdict_counts.csv, priority.csv, top10.csv, "
-        "intervention_counts.csv, publisher_lines_summary.csv, reliability_words.csv"
+        "intervention_counts.csv, publisher_lines_summary.csv, reliability_words.csv, "
+        "voice_unreachable.csv"
     )
     print(f"{FINDINGS_MD.relative_to(ROOT).as_posix()}: written")
 

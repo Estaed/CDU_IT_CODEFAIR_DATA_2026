@@ -1171,7 +1171,12 @@
             s("circle", { class: "map__town-dot", cx: f1(point.x), cy: f1(point.y), r: 2 }),
             s(
               "text",
-              { class: "map__town-label", x: f1(point.x + 4), y: f1(point.y + 1) },
+              {
+                class: "map__town-label",
+                "data-for": `town-${point.label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+                x: f1(point.x + 4),
+                y: f1(point.y + 1),
+              },
               point.label,
             ),
           ),
@@ -1263,81 +1268,199 @@
         );
       }
       labelsGroup.textContent = "";
+      const filter = pack.filters.find((one) => one.id === state.filter);
       const labels = [];
-      for (const community of communities) {
+      const labeledCommunities = communities
+        .filter((community) => {
+          const rank = priorityRowOf(community).rank;
+          return community.id === state.selected || (state.lens === "fix" && rank <= 10) || zoom >= LABEL_ZOOM;
+        })
+        .sort(
+          (a, b) =>
+            Number(
+              view.x <= positions.get(b.id).x &&
+                positions.get(b.id).x <= view.x + view.w &&
+                view.y <= positions.get(b.id).y &&
+                positions.get(b.id).y <= view.y + view.h,
+            ) -
+              Number(
+                view.x <= positions.get(a.id).x &&
+                  positions.get(a.id).x <= view.x + view.w &&
+                  view.y <= positions.get(a.id).y &&
+                  positions.get(a.id).y <= view.y + view.h,
+              ) ||
+            Number(b.id === state.selected) - Number(a.id === state.selected) ||
+            priorityRowOf(a).rank - priorityRowOf(b).rank,
+        );
+      for (const community of labeledCommunities) {
         const rank = priorityRowOf(community).rank;
-        if (community.id === state.selected || (state.lens === "fix" && rank <= 10) || zoom >= LABEL_ZOOM) {
-          labels.push({ community, point: positions.get(community.id) });
-        }
+        const point = positions.get(community.id);
+        const label = s(
+          "text",
+          {
+            class: `map__label${isDimmed(community, state, filter) ? " map__label--dim" : ""}`,
+            "data-id": String(community.id),
+            "data-for": String(community.id),
+            x: f1(point.x),
+            y: f1(point.y),
+            "text-anchor": "start",
+          },
+          community.name,
+        );
+        labelsGroup.appendChild(label);
+        labels.push({
+          element: label,
+          point,
+          radius: mapRadius(community, state),
+          selected: community.id === state.selected,
+          town: false,
+          order: community.id === state.selected ? 0 : state.lens === "fix" && rank <= 10 ? 1 : 3,
+        });
       }
-      const labelPositions = new Map();
+
+      const townLabels = [...svg.querySelectorAll(".map__town-label")].map((element) => {
+        const dot = element.parentElement.querySelector(".map__town-dot");
+        return {
+          element,
+          point: { x: Number(dot.getAttribute("cx")), y: Number(dot.getAttribute("cy")) },
+          radius: Number(dot.getAttribute("r")),
+          selected: false,
+          town: true,
+          order: 2,
+        };
+      });
+      const tierOneMarkers = communities
+        .filter((community) => state.lens === "fix" && mapTier(community) === 1)
+        .map((community) => ({ id: community.id }));
       const overlaps = (a, b) =>
         a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
-      if (zoom < LABEL_ZOOM) {
-        const spacing = 18 / zoom;
-        for (const side of ["left", "right"]) {
-          const onSide = labels
-            .filter(({ point }) => (point.x < view.x + view.w * 0.4 ? "right" : "left") === side)
-            .sort((a, b) => a.point.y - b.point.y || a.community.id - b.community.id);
-          let lastY = -Infinity;
-          for (const label of onSide) {
-            const y = Math.max(label.point.y, lastY + spacing);
-            labelPositions.set(label.community.id, {
-              x: label.point.x + (side === "right" ? 10 / zoom : -10 / zoom),
-              y,
-              anchor: side === "right" ? "start" : "end",
+      const scaledBox = (element) => {
+        const box = element.getBBox();
+        const width = box.width / zoom;
+        const height = box.height / zoom;
+        const centreX = box.x + box.width / 2;
+        const centreY = box.y + box.height / 2;
+        return {
+          x: centreX + (box.x - centreX) / zoom,
+          y: centreY + (box.y - centreY) / zoom,
+          width,
+          height,
+        };
+      };
+      const screenBox = (element) => {
+        const box = element.getBoundingClientRect();
+        return { x: box.left, y: box.top, width: box.width, height: box.height };
+      };
+      const markerElement = (markerId) =>
+        pointGroupsById.get(Number(markerId))?.querySelector("circle, .map__pt, .map__marker");
+      const overlapsScreenMarker = (label, markerId) => {
+        const marker = markerElement(markerId);
+        return marker ? overlaps(screenBox(label), screenBox(marker)) : false;
+      };
+      const alignLabel = (label, markerId) => {
+        const marker = markerElement(markerId);
+        if (!marker) {
+          return;
+        }
+        const svgBox = svg.getBoundingClientRect();
+        const scaleX = svgBox.width / view.w;
+        const scaleY = svgBox.height / view.h;
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+          const labelBox = screenBox(label);
+          const markerBox = screenBox(marker);
+          const labelCentre = {
+            x: labelBox.x + labelBox.width / 2,
+            y: labelBox.y + labelBox.height / 2,
+          };
+          const markerCentre = {
+            x: markerBox.x + markerBox.width / 2,
+            y: markerBox.y + markerBox.height / 2,
+          };
+          const distance = Math.hypot(labelCentre.x - markerCentre.x, labelCentre.y - markerCentre.y);
+          const allowed = 40 + labelBox.width / 2;
+          if (distance <= allowed || distance === 0) {
+            return;
+          }
+          const factor = 1;
+          const x = Number(label.getAttribute("x")) + (markerCentre.x - labelCentre.x) * factor / scaleX;
+          const y = Number(label.getAttribute("y")) + (markerCentre.y - labelCentre.y) * factor / scaleY;
+          label.setAttribute("x", f1(x));
+          label.setAttribute("y", f1(y));
+        }
+      };
+      const allLabels = [...labels, ...townLabels].sort(
+        (a, b) => a.order - b.order || a.point.y - b.point.y || String(a.element.textContent).localeCompare(String(b.element.textContent)),
+      );
+      const occupied = [];
+      for (const entry of allLabels) {
+        const label = entry.element;
+        const gap = 8 / zoom;
+        const radius = entry.radius / zoom;
+        const side = entry.point.x < view.x + view.w * 0.4 ? 1 : -1;
+        const sides = [side, -side];
+        const verticalOffsets = [0, -gap, gap, -gap / 2, gap / 2];
+        const candidates = [];
+        for (const sideSign of sides) {
+          for (const offset of verticalOffsets) {
+            candidates.push({
+              x: entry.point.x + sideSign * (radius + gap / 2),
+              y: entry.point.y + offset,
+              anchor: sideSign > 0 ? "start" : "end",
             });
-            lastY = y;
           }
         }
-      }
-      for (const { community, point } of labels) {
-        const label = labelPositions.get(community.id) || {
-          x: point.x + (point.x < view.x + view.w * 0.4 ? 10 / zoom : -10 / zoom),
-          y: point.y - 8 / zoom,
-          anchor: point.x < view.x + view.w * 0.4 ? "start" : "end",
-        };
-        labelsGroup.appendChild(
-          s(
-            "text",
-            {
-              class: `map__label${isDimmed(community, state, pack.filters.find((one) => one.id === state.filter)) ? " map__label--dim" : ""}`,
-              "data-id": String(community.id),
-              x: f1(label.x),
-              y: f1(label.y),
-              "text-anchor": label.anchor,
-            },
-            community.name,
-          ),
-        );
-      }
-      if (zoom < LABEL_ZOOM) {
-        const overlaps = (a, b) =>
-          a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
-        const occupied = [...svg.querySelectorAll(".map__town-label")].map((label) => label.getBBox());
-        for (const label of labelsGroup.querySelectorAll(".map__label")) {
-          const clampLabel = () => {
-            const box = label.getBBox();
-            const left = view.x + 0.5;
-            const top = view.y + 0.5;
-            const right = view.x + view.w - 0.5;
-            const bottom = view.y + view.h - 0.5;
-            let x = Number(label.getAttribute("x"));
-            let y = Number(label.getAttribute("y"));
-            x += box.x < left ? left - box.x : box.x + box.width > right ? right - box.x - box.width : 0;
-            y += box.y < top ? top - box.y : box.y + box.height > bottom ? bottom - box.y - box.height : 0;
-            label.setAttribute("x", f1(x));
-            label.setAttribute("y", f1(y));
-            return label.getBBox();
-          };
-          let box = clampLabel();
-          let attempts = 0;
-          while (occupied.some((other) => overlaps(box, other)) && attempts < 8) {
-            label.setAttribute("y", f1(Number(label.getAttribute("y")) + box.height + 2 / zoom));
-            box = clampLabel();
-            attempts += 1;
+        let accepted = null;
+        for (const candidate of candidates) {
+          label.setAttribute("x", f1(candidate.x));
+          label.setAttribute("y", f1(candidate.y));
+          label.setAttribute("text-anchor", candidate.anchor);
+          let box = scaledBox(label);
+          const left = view.x + 0.5;
+          const top = view.y + 0.5;
+          const right = view.x + view.w - 0.5;
+          const bottom = view.y + view.h - 0.5;
+          const shiftX = box.x < left ? left - box.x : box.x + box.width > right ? right - box.x - box.width : 0;
+          const shiftY = box.y < top ? top - box.y : box.y + box.height > bottom ? bottom - box.y - box.height : 0;
+          if (Math.hypot(shiftX, shiftY) > gap) {
+            continue;
           }
-          occupied.push(box);
+          if ((shiftX || shiftY) && Math.hypot(shiftX, shiftY) <= gap) {
+            label.setAttribute("x", f1(candidate.x + shiftX));
+            label.setAttribute("y", f1(candidate.y + shiftY));
+            box = scaledBox(label);
+          }
+          const ownId = entry.element.getAttribute("data-for");
+          alignLabel(label, ownId);
+          box = scaledBox(label);
+          const hitsTierOne = tierOneMarkers.some(
+            (marker) => String(marker.id) !== ownId && overlapsScreenMarker(label, marker.id),
+          );
+          if (!hitsTierOne && (entry.town || !occupied.some((other) => overlaps(box, other)))) {
+            accepted = box;
+            break;
+          }
+        }
+        if (accepted) {
+          label.removeAttribute("hidden");
+          occupied.push(accepted);
+        } else if (entry.selected || entry.town || (entry.order === 1 && zoom >= LABEL_ZOOM)) {
+          const fallback = candidates[0];
+          label.setAttribute("x", f1(fallback.x));
+          label.setAttribute("y", f1(fallback.y));
+          label.setAttribute("text-anchor", fallback.anchor);
+          alignLabel(label, label.getAttribute("data-for"));
+          const fallbackBox = scaledBox(label);
+          const fallbackHitsTierOne = tierOneMarkers.some(
+            (marker) => String(marker.id) !== label.getAttribute("data-for") && overlapsScreenMarker(label, marker.id),
+          );
+          if (entry.selected || (entry.order === 1 && zoom >= LABEL_ZOOM) || !fallbackHitsTierOne) {
+            label.removeAttribute("hidden");
+            occupied.push(fallbackBox);
+          } else {
+            label.setAttribute("hidden", "");
+          }
+        } else {
+          label.setAttribute("hidden", "");
         }
       }
     };
@@ -1427,7 +1550,7 @@
         const rect = svg.getBoundingClientRect();
         view.x -= ((event.clientX - previous.x) / rect.width) * view.w;
         view.y -= ((event.clientY - previous.y) / rect.height) * view.h;
-        apply();
+        apply(true);
       } else if (pointers.size === 2 && pinchStartDistance) {
         const [a, b] = [...pointers.values()];
         const mid = midpoint(a, b);
@@ -1478,7 +1601,21 @@
         updateLayout();
       } else {
         const started = performance.now();
+        let settled = false;
+        const settle = () => {
+          if (settled) {
+            return;
+          }
+          settled = true;
+          Object.assign(view, target);
+          zoom = clamp(Math.min(BASE_VIEW.w / view.w, BASE_VIEW.h / view.h), ZOOM_MIN, ZOOM_MAX);
+          apply();
+          updateLayout();
+        };
         const animate = (now) => {
+          if (settled) {
+            return;
+          }
           const amount = Math.min(1, (now - started) / 260);
           const eased = amount * (2 - amount);
           for (const key of ["x", "y", "w", "h"]) {
@@ -1486,12 +1623,14 @@
           }
           zoom = clamp(Math.min(BASE_VIEW.w / view.w, BASE_VIEW.h / view.h), ZOOM_MIN, ZOOM_MAX);
           apply();
-          updateLayout();
           if (amount < 1) {
             requestAnimationFrame(animate);
+          } else {
+            settle();
           }
         };
         requestAnimationFrame(animate);
+        setTimeout(settle, 100);
       }
     }
     return { reset };
@@ -1517,7 +1656,13 @@
       if (tier === "1") {
         rankText = s(
           "text",
-          { class: "map__rank", x: f1(x), y: f1(y + 2.5), "text-anchor": "middle" },
+          {
+            class: "map__rank",
+            "data-for": String(community.id),
+            x: f1(x),
+            y: f1(y + 2.5),
+            "text-anchor": "middle",
+          },
           String(priority.rank),
         );
       }

@@ -66,6 +66,7 @@ Paste the block below into your assistant, then attach or open the files it name
 - 'measure the link here' is the most common intervention, reaching 31 of 96 communities, addressed to DCDD — evidence: data/out/tables/intervention_counts.csv — value: 31 — run 2026-09-22.
 - Map-claim reliability words over the 96: high 8, medium 29, low 37, none 22 — evidence: data/out/tables/reliability_words.csv — value: 8 — run 2026-09-22.
 - All four longstanding publishers (predicted, listed, licensed, portal) agree covered for 54 communities and agree not covered for 11; 31 communities see disagreement — evidence: data/out/tables/disagreement_patterns.csv — value: 54 — run 2026-09-22.
+- No public source records a mobile voice or SMS path in 17 of 96 communities (1,140 people; 8 of them have a health centre). A mobile call needs a path at both ends, so these communities are outside the mobile reach of the other 79 as well as unable to call out; landlines, payphones and satellite phones are not in any source used here. — evidence: data/out/tables/voice_unreachable.csv — value: 17 — run 2026-09-22.
 - The measured publisher (National Audit) never records 'covered'; it records a drive-test contradiction for 3 of 96 communities — evidence: data/out/tables/publisher_lines_summary.csv — value: 3 — run 2026-09-22.
 
 ## Discussion

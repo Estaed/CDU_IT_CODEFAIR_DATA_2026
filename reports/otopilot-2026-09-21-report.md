@@ -55,3 +55,31 @@ Quota, measured 23:30: Claude 5-hour 80 % (resets in 1 h 07), weekly 31 %. Codex
 orchestrator narrows its own turns (one wake-up per chain) because its own window is the
 tighter one.
 
+### Checkpoint 2, 00:12 ACST (2026-09-22): map v3 green and committed, push held
+
+Attempt 2 chain (refinement bee, test-fix bee, gate by the orchestrator): **gate exit 0**, 211
+unit + 99 browser, HTML 973,211 bytes, pack 506,433. Committed locally. Eye review of
+`reports/shots/2026-09-21-map-v3-fix.png`: the map now fills the screen, ranks are legible, the
+legend sits above the fold, the selection card works. One factual defect no test caught: the
+label "Wurrumiyanga" is drawn about 150 px from its own point, over another label, and
+tier-1 markers 2 and 6 sit under labels. A name beside the wrong point is an error of fact, so
+the push is held until it is fixed.
+
+Chain 3, launched 00:12, one wake-up: label-adjacency fix (app bee), a DOM-measured label test
+written from the contract (test bee), Task-50 (the unreachable-communities finding; it reruns
+the pipeline, so it runs serially here), then the gate by the orchestrator.
+
+### Checkpoint 3, 00:57 ACST (2026-09-22): chain 3 back, gate RED on one test, two real defects
+
+| Item | Result |
+|---|---|
+| Label adjacency (app bee, attempt 1) | rest view fixed (labels 15 to 17 units from their markers; Wurrumiyanga and Milingimbi hidden for lack of room). Region view RED: offsets are in view-box units, so at `region=top-end` label 397 is 72.5 px and 362 is 99.6 px from its marker (limit 40 px + half width) |
+| Label test (test bee) | written from the contract, caught the defect above; not bent |
+| Task-50 (finding) | numbers right (17 of 96, 1,140 people, 8 with a health centre, 79 others); the generated line carries mojibake for the em dash, typed into `figures.py` |
+| Gate (orchestrator) | exit 1: 212 unit green, browser 99 of 100 |
+
+Quota after the 5-hour resets: Claude 0 % / weekly 31 %; Codex 0 % / weekly 42 %. Verdict GO.
+Chain 4 launched: the mojibake fix at its source (one separator helper, a test assertion on
+U+2014), the on-screen label offset fix, then the gate. One attempt each; a red here goes to
+`BACKLOG.md` and the run moves on to the audit.
+

@@ -84,6 +84,48 @@ def test_verdict_counts_telehealth_matches_spike(built):
     assert telehealth == EXPECTED_TELEHEALTH_COUNTS
 
 
+def test_voice_unreachable_table_and_sentence_from_hand_built_rows(tmp_path):
+    rows = [
+        {
+            "bushtel_id": "3",
+            "name": "Working",
+            "nt_region": "TOP END",
+            "population_abs2021": "20",
+            "svc_health_centre": "N",
+            "voice_sms": "works",
+        },
+        {
+            "bushtel_id": "2",
+            "name": "Failing clinic",
+            "nt_region": "CENTRAL",
+            "population_abs2021": "100",
+            "svc_health_centre": "Y",
+            "voice_sms": "fails",
+        },
+        {
+            "bushtel_id": "1",
+            "name": "Failing no clinic",
+            "nt_region": "TOP END",
+            "population_abs2021": "40",
+            "svc_health_centre": "N",
+            "voice_sms": "fails",
+        },
+    ]
+    path = figures.write_voice_unreachable(rows, tmp_path / "voice_unreachable.csv")
+    with path.open(encoding="utf-8", newline="") as handle:
+        written = list(csv.DictReader(handle))
+
+    assert list(written[0]) == list(figures.VOICE_UNREACHABLE_COLUMNS)
+    assert [row["bushtel_id"] for row in written] == ["1", "2"]
+    assert figures.voice_unreachable_sentence(rows) == (
+        "No public source records a mobile voice or SMS path in 2 of 3 communities "
+        "(140 people; 1 of them have a health centre). A mobile call needs a path at both "
+        "ends, so these communities are outside the mobile reach of the other 1 as well as "
+        "unable to call out; landlines, payphones and satellite phones are not in any source "
+        "used here."
+    )
+
+
 def test_no_hex_literal_in_figures_module():
     source = (ROOT / "pipeline/figures.py").read_text(encoding="utf-8")
     assert not re.search(r"#[0-9a-fA-F]{3,6}", source)
@@ -219,6 +261,10 @@ def test_findings_md_carries_top10_row1_numbers_and_pooled_auc(built):
     ) as handle:
         pooled = next(row for row in csv.DictReader(handle) if row["fold"] == "pooled")
     assert pooled["auc"] in text
+    voice_line = next(line for line in text.splitlines() if "voice_unreachable.csv" in line)
+    assert "—" in voice_line
+    assert "â" not in voice_line
+    assert "€" not in voice_line
 
 
 def test_findings_md_sections_present(built):
