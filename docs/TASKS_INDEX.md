@@ -63,6 +63,9 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-44: The pack's `headline` block: three counts for the home screen (fifth batch, added 2026-09-21)
 - [x] Task-45: Home screen, rows as questions, the summary sentence, inside words folded (fifth batch, added 2026-09-21)
 - [x] Task-46: Tests for the fifth batch, written from the contract, not from the code (fifth batch, added 2026-09-21)
+- [ ] Task-47: `headline()` reads the health-centre label from a named constant (sixth batch, added 2026-09-21)
+- [ ] Task-48: Map v3: three lenses, no clusters, regions that zoom, one screen; the degraded clause (sixth batch, added 2026-09-21)
+- [ ] Task-49: Tests for map v3 and the degraded clause, written from the contract (sixth batch, added 2026-09-21)
 
 ## Execution routing
 
@@ -127,6 +130,9 @@ advisory only.
 | Task-44 | codex (luna) | no | medium | none | 32 |
 | Task-46 | codex (luna) | no | high | none (contract only; runs nothing) | 32 (beside Task-44) |
 | Task-45 | codex (luna) | no | high | Task-44 | 33 |
+| Task-47 | codex (small tier) | no | low | Task-44 | 34 |
+| Task-48 | codex (top bee tier) | no | high | Task-45 | 34 (the only lane that builds) |
+| Task-49 | codex (small tier) | no | high | none (contract only; runs nothing) | 34 |
 
 Fifth batch (2026-09-21) execution note: PRD 4.2 fifth batch, the ten-second hand-over test. Codex
 pool clear (11 % / 33 %), so every lane is a Codex bee; the main loop (Fable) wrote the specs, runs

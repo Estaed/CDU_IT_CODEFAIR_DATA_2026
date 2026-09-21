@@ -334,6 +334,33 @@ Crosscheck is a diagnosis, not a fix, and says so.
   when the link stops, the one sentence, three taps on Wadeye. The report and the slides use
   the same sentence.
 
+**v1 changes, sixth batch, decided 2026-09-21 late (Tarik: "harita güzel değil, daha okunabilir
+dinamik bir şey yap, önceki harita kurallarını umursamadan, tamamen özgürsün"; design by Eko).**
+What was wrong, seen at 360 × 780: numbered clusters hid the points, town names sat under
+markers, 58 of 96 points were the same amber half disc so the default view said nothing, and
+the map ran past the screen with its legend out of sight. The map's earlier rules (zoom
+clusters, filters that remove points, one colouring) are replaced by this section.
+
+- *Three lenses* (Task-48), one segmented control, `#/map?lens=`: **Fix first** (default; point
+  size by priority rank, the top ten numbered and named), **Services** (the four verdict glyphs
+  for the chosen service, as before), **Sources** (agree, disagree, and the three places where a
+  drive test found no signal inside claimed coverage). The map answers the same three
+  questions as the home screen's three buttons.
+- *No clusters.* All 96 points are always drawn. Points that overlap at rest are nudged apart
+  by a pure, deterministic relaxation (layout, as clustering was) and return to their true
+  place as the zoom grows.
+- *Regions zoom.* Chips for `All NT` and the five regions; a tap tweens the view box to that
+  region and dims the rest. *Filters highlight*: a filter dims what it excludes instead of
+  removing it. Filters and coverage layers share one closed fold, `Highlight and layers`.
+- *One screen.* The map's height is capped so the legend is visible under it at 360 × 780
+  without scrolling; a selection card under the legend carries the community's summary
+  sentence, its fix-first line, the four badges and `Open <name>`; the list below follows
+  the lens. Labels carry a halo; motion respects `prefers-reduced-motion`.
+- *Two fixes from the fifth batch* (Task-47, Task-48): the `degraded` summary clause now says
+  why it is unproven in the pack's own words (`It could work over Telstra 4G if latency is
+  under 100 ms. No measurement exists here.`) instead of quoting the satellite figure beside
+  "all sources say covered"; `headline()` reads the health-centre label from a named constant.
+
 Considered and dropped on 2026-09-21: bringing back `Changes since the previous snapshot` as a
 before/after button (no real second snapshot exists to show, and inventing one is synthetic
 data; the pitch says in one sentence that a rerun after a publisher's update flips the row);
@@ -576,4 +603,5 @@ D5. **National scope** — only if the NT is finished early; the brief allows it
 | 2026-09-17 (evening) | Task-40 measured: the pack reached 510,477 of 512,000 bytes, K 31, and the 10 % loss median read 1.65 × K against 1.6; the 10 % median budget becomes 1.8 (the one binding row; 50 % and 70 % sit at half their budgets). Two intervention rules added before `monitor`: `verify on the ground` (a drive-test non-alignment within 5 km) and `measure the link here` (a clinic whose telehealth verdict is the unmeasured 4G assumption), because 46 of 96 fell through to `monitor`, Nauiyu at rank 1 among them. The addressee lives once per intervention in a pack header | Tarik (both recommended options), on Eko's proposal with the worker's measurement |
 | 2026-09-17 (evening) | Priority weights approved as written in `pipeline/priority_weights.csv` (0.20 / 0.20 / 0.20 / 0.15 / 0.10 / 0.10 / −0.10 / 0 / 0); the report prints the CSV and the sensitivity table beside it | Tarik ("tamam yap") |
 | 2026-09-21 | Fifth batch (§4.2): the app opens on a home screen with one sentence, three pack figures and three buttons; service rows read as questions; one summary sentence per community assembled from pack strings; inside words renamed or folded; `Fix first` tab label. No new feature, no new verdict. Goal: the ten-second hand-over test, three of three. The before/after button, service pings, per-service reports and renamed verdict words were considered and dropped | Tarik ("hepsini yapalim"), on Eko's proposal |
+| 2026-09-21 (late) | Sixth batch (§4.2): map redesigned on Tarik's free hand. Three lenses (Fix first default, Services, Sources), no clusters (deterministic declutter), region chips that zoom, filters that dim, height capped so the legend shows, a selection card with the summary sentence. Earlier map rules (Task-29 clusters, removing filters) are superseded. The `degraded` summary clause quotes the pack's assumption, not the satellite figure | Tarik ("tamamen özgürsün"), design by Eko |
 
