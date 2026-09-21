@@ -2,7 +2,7 @@
 
 // The app renders the pack and routes; it computes no verdict (CLAUDE.md Part 2, layer rule 4).
 (() => {
-  const DEFAULT_HASH = "#/community/426";
+  const DEFAULT_HASH = "#/";
   const DEFAULT_ID = 426;
   // Task-41, 2026-09-17: Priority is the fourth tab and sits second, because the analyst's
   // sixty seconds (PRD §2) start with the ranked list (CLAUDE.md Blueprint, "Entry points").
@@ -13,6 +13,21 @@
     school_video_meeting: "School video meeting",
     mygov_text: "myGov and banking",
     voice_sms: "Voice and SMS",
+  };
+
+  const SERVICE_QUESTION = {
+    telehealth_video: "see a doctor by video",
+    school_video_meeting: "join a school lesson by video",
+    mygov_text: "use myGov and banking",
+    voice_sms: "call and text",
+  };
+
+  const KIND_LABEL = {
+    predicted: "carrier's prediction",
+    listed: "government list",
+    licensed: "licence register",
+    portal: "community portal",
+    measured: "drive test",
   };
 
   // Task-41, 2026-09-17: the five feature names pipeline/reliability.py emits as the two drivers
@@ -199,7 +214,7 @@
             "div",
             { class: "publisher-row__top" },
             h("span", { class: "publisher-row__name" }, publisher.publisher),
-            h("span", { class: "kind-chip" }, publisher.kind),
+            h("span", { class: "kind-chip" }, KIND_LABEL[publisher.kind] || publisher.kind),
             h("span", { class: "says" }, SAYS_LABEL[publisher.says_covered] || publisher.says_covered),
           ),
           h("div", { class: "publisher-row__detail" }, figures(publisher.detail)),
@@ -216,8 +231,8 @@
     const { covered, available, note } = community.agreement;
     const summary =
       note === "Sources agree"
-        ? `${available} of ${available} sources agree`
-        : `Sources disagree: ${covered} of ${available} say covered`;
+        ? `Do the sources agree? Yes, ${available} of ${available}`
+        : `Do the sources agree? No: ${covered} of ${available} say covered`;
     return h(
       "details",
       { class: "sources-fold section" },
@@ -239,7 +254,7 @@
   // assumption if any, and the sources -- so the closed row costs one line of height (item 3,
   // item 7). `service-row__button` is kept as a second class only to reuse
   // `design/screens/screens.css`'s existing block/padding/border rule for that selector.
-  const renderServiceRow = (service) => {
+  const renderServiceRow = (service, path) => {
     const button = h(
       "button",
       { type: "button", class: "service-row service-row__button", "aria-expanded": "false" },
@@ -254,7 +269,11 @@
             { class: `service-row__glyph service-row__glyph--${service.verdict}`, "aria-hidden": "true" },
             VERDICTS[service.verdict].glyph,
           ),
-          h("span", { class: "service-row__name" }, SERVICE_LABEL[service.service] || service.service),
+          h(
+            "span",
+            { class: "service-row__name" },
+            SERVICE_QUESTION[service.service] || SERVICE_LABEL[service.service] || service.service,
+          ),
         ),
         renderBadge(service.verdict, "service-row__badge"),
       ),
@@ -280,6 +299,16 @@
         ),
       );
     }
+    detailChildren.push(
+      h(
+        "p",
+        { class: "service-row__path" },
+        "Best available path: ",
+        figures(path.note),
+        ` · ${path.rule} `,
+        h("span", { class: "fig fig--xs" }, path.date),
+      ),
+    );
     const detail = h("div", { class: "service-row__detail", hidden: "" }, detailChildren);
     button.addEventListener("click", () => {
       const expanded = button.getAttribute("aria-expanded") === "true";
@@ -289,23 +318,16 @@
     return [button, detail];
   };
 
-  // Task-34, 2026-09-16: `.services` is one card, not a `.section` (no title, no legend --
-  // item 3, item 6): the four answers, closed, are what a reader came for.
+  // Task-45, 2026-09-21: the card asks what the connection allows; its path note belongs in
+  // each opened row so the summary sentence can answer the screen's first question.
   const renderServices = (community) => {
     const card = h(
       "div",
       { class: "services" },
-      h(
-        "div",
-        { class: "section__note" },
-        "Best available path: ",
-        figures(community.path.note),
-        ` · ${community.path.rule} `,
-        h("span", { class: "fig fig--xs" }, community.path.date),
-      ),
+      h("div", { class: "services__question" }, "Can people here…"),
     );
     for (const service of community.services) {
-      for (const node of renderServiceRow(service)) {
+      for (const node of renderServiceRow(service, community.path)) {
         card.appendChild(node);
       }
     }
@@ -437,8 +459,8 @@
       renderFreshness(community),
     );
 
-  // Task-34, 2026-09-16: the two-action row under the sources fold (item 5, item 7).
-  // Task-35: `?report` in the hash opens the form under the row, so the route survives a reload.
+  // Task-45, 2026-09-21: the compact two-action row comes before the sources fold so it stays
+  // inside the first phone viewport. Task-35: `?report` in the hash opens its form.
   const renderActionsRow = (community) => {
     const row = h(
       "div",
@@ -503,12 +525,15 @@
       source.setAttribute("title", entry.note);
     }
     return h(
-      "p",
+      "details",
       { class: "reliability-line" },
-      "Map claim reliability: ",
-      h("span", { class: "reliability-line__word" }, reliability.word),
-      ` · ${reliabilityTail(reliability)}`,
-      source,
+      h(
+        "summary",
+        {},
+        "How far to trust the coverage map here: ",
+        h("span", { class: "reliability-line__word" }, reliability.word),
+      ),
+      h("p", { class: "reliability-line__body" }, reliabilityTail(reliability), " ", source),
     );
   };
 
@@ -713,6 +738,35 @@
     ];
   };
 
+  const summaryReason = (reason) => {
+    const text = String(reason);
+    return /[.!?]$/.test(text.trim()) ? text : `${text}.`;
+  };
+
+  const renderCommunitySummary = (community) => {
+    const { covered, available } = community.agreement;
+    const coverage =
+      available === 0
+        ? `No source makes a coverage claim about ${community.name}.`
+        : covered === available
+          ? `All \`${available}\` sources say ${community.name} has mobile coverage.`
+          : covered === 0
+            ? `None of \`${available}\` sources says ${community.name} has mobile coverage.`
+            : `\`${covered}\` of \`${available}\` sources say ${community.name} has mobile coverage; they disagree.`;
+    const telehealth = community.services.find((service) => service.service === "telehealth_video");
+    let health;
+    if (telehealth.verdict === "works") {
+      health = "A video call with a doctor should work here.";
+    } else if (telehealth.verdict === "degraded") {
+      health = `A video call with a doctor is not proven to work here: ${summaryReason(telehealth.reason)}`;
+    } else if (telehealth.verdict === "fails") {
+      health = `A video call with a doctor will not work here: ${summaryReason(telehealth.reason)}`;
+    } else {
+      health = "No health centre is recorded here, so a doctor's video call is not assessed.";
+    }
+    return h("p", { class: "community-summary" }, figures(coverage), " ", figures(health));
+  };
+
   const renderCommunity = (id) => {
     const community =
       pack.communities.find((c) => c.id === id) ||
@@ -724,9 +778,10 @@
     // Task-34, 2026-09-16: no intro line, no verdict legend (item 3); the four rows, closed,
     // are the whole answer, and everything past them folds behind a summary (item 6, item 7).
     main.appendChild(renderHeader(community));
+    main.appendChild(renderCommunitySummary(community));
     main.appendChild(renderServices(community));
-    main.appendChild(renderSourcesFold(community));
     main.appendChild(renderActionsRow(community));
+    main.appendChild(renderSourcesFold(community));
     // Task-41, 2026-09-17: where it ranks and whether the coverage claim holds, under the
     // sources fold and below the actions row -- above that row they would push it past
     // Task-34's 780 px fold budget, the same reason the reports block sits here.
@@ -1148,6 +1203,7 @@
       h("h2", { class: "section__title" }, "What the connection allows"),
       renderServiceRow(
         community.services.find((service) => service.service === "telehealth_video"),
+        community.path,
       ),
       h(
         "div",
@@ -1644,6 +1700,57 @@
     saveFile();
   };
 
+  const renderHome = () => {
+    const headline = pack.headline;
+    const communities = headline ? headline.communities : pack.count;
+    const figure = (value) => h("span", { class: "fig" }, String(value));
+    const actions = h(
+      "nav",
+      { class: "home__actions", "aria-label": "Start here" },
+      h("a", { class: "button button--primary", href: "#/community/426" }, "Find a community"),
+      h("a", { class: "button button--secondary", href: "#/priority" }, "What to fix first"),
+      h("a", { class: "button button--secondary", href: "#/map" }, "See the map"),
+    );
+    const children = [
+      h("h1", { class: "home__question" }, "Coverage maps say there is signal. Can the clinic run a video call?"),
+      h(
+        "p",
+        { class: "home__lead" },
+        "Crosscheck puts every public source about ",
+        figure(communities),
+        " remote NT communities side by side: what the connection there allows, where the sources disagree, and what to fix first. It works with no network.",
+      ),
+    ];
+    if (headline) {
+      children.push(
+        h(
+          "ul",
+          { class: "home__figures" },
+          h("li", { class: "home__figure" }, figure(headline.communities), " communities"),
+          h(
+            "li",
+            { class: "home__figure" },
+            figure(headline.telehealth_works),
+            " of ",
+            figure(headline.with_clinic),
+            " clinics where a video call is known to work",
+          ),
+          h("li", { class: "home__figure" }, figure(headline.sources_disagree), " where the sources disagree"),
+        ),
+      );
+    }
+    children.push(
+      actions,
+      h(
+        "p",
+        { class: "home__note" },
+        "A diagnosis, not a fix: every figure is from a published source, and the app measures nothing.",
+      ),
+    );
+    main.textContent = "";
+    main.appendChild(h("section", { class: "home" }, children));
+  };
+
   const renderShare = () => {
     const sizes = Object.fromEntries(
       document
@@ -1658,6 +1765,18 @@
     saveButton.addEventListener("click", saveFile);
     main.textContent = "";
     const transfer = h("div", { class: "transfer" });
+    const transferFold = h(
+      "details",
+      { class: "transfer-fold" },
+      h("summary", {}, "Update another phone by camera"),
+      transfer,
+    );
+    transfer.addEventListener("click", () => {
+      transferFold.open = true;
+    });
+    if (new URLSearchParams(location.hash.split("?")[1] || "").has("transfer")) {
+      transferFold.open = true;
+    }
     main.appendChild(
       h(
         "div",
@@ -1692,7 +1811,7 @@
             "Crosscheck shows what published sources say about a community's connectivity and what that allows. It does not measure signal. Every value shows its source and date.",
           ),
         ),
-        transfer,
+        transferFold,
       ),
     );
     // The camera loop and the camera read live in transfer.js (layer rule 8); this screen only
@@ -1712,7 +1831,13 @@
     }
   };
 
-  const screenOf = (hash) => SCREENS.find((screen) => hash.startsWith(screen)) || SCREENS[0];
+  const screenOf = (hash) => {
+    const path = hash.split("?")[0];
+    if (path === "#/") {
+      return "#/";
+    }
+    return SCREENS.find((screen) => path.startsWith(screen)) || "#/";
+  };
 
   let lastPath = null;
 
@@ -1731,7 +1856,7 @@
     }
     let selected = null;
     for (const tab of tabs) {
-      const isSelected = tab.getAttribute("href").startsWith(screen);
+      const isSelected = screen !== "#/" && tab.getAttribute("href").startsWith(screen);
       tab.setAttribute("aria-selected", isSelected ? "true" : "false");
       if (isSelected) {
         selected = tab;
@@ -1740,7 +1865,9 @@
     if (selected) {
       selected.scrollIntoView({ inline: "nearest", block: "nearest" });
     }
-    if (screen === "#/priority") {
+    if (screen === "#/") {
+      renderHome();
+    } else if (screen === "#/priority") {
       const query = new URLSearchParams(hash.split("?")[1] || "");
       renderPriority(query.get("intervention") || PRIORITY_ALL);
     } else if (screen === "#/map") {

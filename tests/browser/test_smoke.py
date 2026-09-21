@@ -9,6 +9,7 @@ import pytest
 pytestmark = pytest.mark.browser
 
 ROOT = Path(__file__).resolve().parents[2]
+DIST_INDEX = (ROOT / "dist" / "index.html").resolve().as_uri()
 
 
 def test_offline_smoke(browser):
@@ -26,7 +27,7 @@ def test_offline_smoke(browser):
 
     page.route("**/*", handler)
     page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
-    page.goto((ROOT / "dist" / "index.html").resolve().as_uri())
+    page.goto(f"{DIST_INDEX}#/community/426")
     page.wait_for_load_state()
 
     assert blocked == []

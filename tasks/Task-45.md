@@ -1,6 +1,6 @@
 # Task-45: Home screen, rows as questions, the summary sentence, inside words folded
 
-**Status: TODO**
+**Status: DONE** — verified 2026-09-21 (main loop: gate green, 211 unit + 97 browser, HTML 968,648 bytes; layer-rule greps 5 and 7 print nothing; mutation: `is not proven to work here` changed to `is sure to work here` turns `test_community_summary_matches_every_pack_community` red, restored; eye review at 360 x 780 in `reports/shots/2026-09-21-*`: home and Wadeye both fit unscrolled. Not yet done: the emulator check and the ten-second hand-over test with people, which is the batch's real goal.)
 
 > **Execution:** agent `codex` (`gpt-5.6-luna`) · effort `high`
 > *Why:* 2026-09-21. Render-only changes in `app.js` against an exact DOM and text contract;

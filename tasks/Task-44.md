@@ -1,6 +1,6 @@
 # Task-44: The pack's `headline` block: three counts for the home screen
 
-**Status: TODO**
+**Status: DONE** — verified 2026-09-21 (main loop: gate green, 211 unit + 97 browser; pack 506,433 bytes, `headline` 96 / 70 / 1 / 33. The first run stopped on the contract's own check: `nodata` has three causes, so the clinic count was re-specified on the `present` list. Open note: the label is read as `PRESENT_SERVICES[0][1]`, an index, not a named constant.)
 
 > **Execution:** agent `codex` (`gpt-5.6-luna`) · effort `medium`
 > *Why:* 2026-09-21. One pure function over dicts the pack already builds, a complete spec, a
@@ -25,14 +25,16 @@ into the pipeline like the legend counts are (Blueprint, "Pushed down").
 
    ```
    {"communities": <len(communities)>,
-    "with_clinic": <count whose telehealth_video verdict is not "nodata">,
-    "telehealth_works": <count whose telehealth_video verdict is "works">,
+    "with_clinic": <count whose `present` list has an item named "Health centre">,
+    "telehealth_works": <count of those with a clinic whose telehealth_video verdict is "works">,
     "sources_disagree": <count whose agreement.note == "Sources disagree">}
    ```
 
-   Before relying on `nodata` as "no clinic": confirm in `pipeline/rules.py` that
-   `telehealth_video` returns `nodata` exactly when no health centre is recorded. If it can
-   return `nodata` for any other reason, stop and report; do not work around it.
+   Amended 2026-09-21 after the first run stopped, correctly: `telehealth_video` returns
+   `nodata` for three reasons, not only a missing clinic, so the clinic count reads the
+   `present` list. Use the same label string `pack.py` itself emits for the health centre
+   item (a shared constant, not a second literal); if `present` can be withheld or renamed
+   (OQ1 degradation), say so in the report.
 2. `build_pack` emits it under the key `headline`, placed after `legend`. Additive under
    `pack_version` 3: `PACK_VERSION` does not move (an app that does not know the key ignores it).
 3. Run `PYTHONUTF8=1 .venv/Scripts/python scripts/run_pipeline.py`. On today's frozen

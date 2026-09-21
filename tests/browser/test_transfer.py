@@ -73,6 +73,8 @@ def _open_page(context, hash_route: str = ""):
     page.on("pageerror", lambda exc: errors.append(str(exc)))
     page.goto(f"{DIST_INDEX}{hash_route}")
     page.wait_for_load_state()
+    if hash_route.startswith("#/share"):
+        page.locator("details.transfer-fold > summary").click()
     return page, blocked, errors
 
 

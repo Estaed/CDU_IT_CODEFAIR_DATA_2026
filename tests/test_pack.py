@@ -204,6 +204,18 @@ def test_committed_data_pack_file():
     assert path.stat().st_size <= 512_000
 
 
+def test_committed_data_pack_headline():
+    path = ROOT / "data/out/data_pack.json"
+    with path.open(encoding="utf-8") as f:
+        committed = json.load(f)
+    assert committed["headline"] == {
+        "communities": 96,
+        "with_clinic": 70,
+        "telehealth_works": 1,
+        "sources_disagree": 33,
+    }
+
+
 def test_filters_order_labels_and_counts(data_pack):
     filters = data_pack["filters"]
     ids_and_labels = [(entry["id"], entry["label"]) for entry in filters]
@@ -237,6 +249,47 @@ def test_legend_matches_telehealth_video_counts(data_pack):
         counts[service["verdict"]] += 1
     assert counts == {"works": 1, "degraded": 58, "fails": 11, "nodata": 26}
     assert data_pack["legend"] == counts
+
+
+def test_headline_counts_verdicts_agreement_notes_and_empty_input(data_pack):
+    clinic = [{"name": "Health centre"}, {"name": "School"}]
+
+    def community(verdict, note, present):
+        return {
+            "present": present,
+            "services": [{"service": "telehealth_video", "verdict": verdict}],
+            "agreement": {"note": note},
+        }
+
+    communities = [
+        community("works", "Sources agree", clinic),
+        community("degraded", "Sources disagree", clinic),
+        community("fails", "Sources agree", clinic),
+        # No clinic: not counted, whatever the verdict says.
+        community("nodata", "Sources disagree", [{"name": "School"}]),
+        community("works", "Sources agree", []),
+        # A clinic whose verdict is nodata for another reason still counts as a clinic.
+        community("nodata", "Sources agree", clinic),
+    ]
+
+    assert pack.headline(communities) == {
+        "communities": 6,
+        "with_clinic": 4,
+        "telehealth_works": 1,
+        "sources_disagree": 2,
+    }
+    assert pack.headline([]) == {
+        "communities": 0,
+        "with_clinic": 0,
+        "telehealth_works": 0,
+        "sources_disagree": 0,
+    }
+    assert data_pack["headline"] == {
+        "communities": 96,
+        "with_clinic": 70,
+        "telehealth_works": 1,
+        "sources_disagree": 33,
+    }
 
 
 def test_every_community_has_at_least_one_action(data_pack):

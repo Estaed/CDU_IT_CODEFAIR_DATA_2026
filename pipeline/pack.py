@@ -640,6 +640,31 @@ def legend(communities: list[dict]) -> dict[str, int]:
     return counts
 
 
+def headline(communities: list[dict]) -> dict[str, int]:
+    """The three home-screen counts, derived from the already-built communities."""
+    health_centre_label = PRESENT_SERVICES[0][1]
+    with_clinic = 0
+    telehealth_works = 0
+    sources_disagree = 0
+    for community in communities:
+        has_clinic = any(item["name"] == health_centre_label for item in community["present"])
+        if has_clinic:
+            with_clinic += 1
+            telehealth_works += sum(
+                service["verdict"] == "works"
+                for service in community["services"]
+                if service["service"] == "telehealth_video"
+            )
+        if community["agreement"]["note"] == "Sources disagree":
+            sources_disagree += 1
+    return {
+        "communities": len(communities),
+        "with_clinic": with_clinic,
+        "telehealth_works": telehealth_works,
+        "sources_disagree": sources_disagree,
+    }
+
+
 def build_pack(
     rows: list[dict[str, str]],
     thresholds: dict[str, dict],
@@ -674,6 +699,7 @@ def build_pack(
         "layers": map_layers,
         "filters": filters(rows),
         "legend": legend(communities),
+        "headline": headline(communities),
         "priority_components": priority_components(),
         "priority_interventions": priority_interventions(),
         "priority": ranking,

@@ -94,6 +94,10 @@ def test_sixty_seconds(context):
     expect(priority_line).to_contain_text(CHIP_WORD)
     reliability_line = page.locator(".reliability-line")
     expect(reliability_line).to_have_count(1)
+    assert reliability_line.evaluate("el => !el.open && !el.hasAttribute('open')")
+    summary = reliability_line.locator("summary").text_content()
+    assert summary.startswith("How far to trust the coverage map here: ")
+    assert summary.split()[-1] in RELIABILITY_WORDS
     word = reliability_line.locator(".reliability-line__word").text_content()
     assert word in RELIABILITY_WORDS, word
     expect(page.locator(".publisher-row")).to_have_count(5)
@@ -145,8 +149,8 @@ def test_tab_order_and_selected(context):
     page, blocked, errors = _open_page(context, "#/priority")
 
     tabs = page.locator("header.top-bar [role=tab]")
-    expect(tabs).to_have_text(["Community", "Priority", "Map", "Share"])
-    expect(page.locator("[role=tab][aria-selected=true]")).to_have_text("Priority")
+    expect(tabs).to_have_text(["Community", "Fix first", "Map", "Share"])
+    expect(page.locator("[role=tab][aria-selected=true]")).to_have_text("Fix first")
 
     assert errors == []
     assert blocked == []

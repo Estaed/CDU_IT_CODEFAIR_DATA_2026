@@ -1,6 +1,6 @@
 # Task-46: Tests for the fifth batch, written from the contract, not from the code
 
-**Status: TODO**
+**Status: DONE** — verified 2026-09-21 (main loop: 8 new browser tests and the `headline` unit test, written from the contracts without opening the new code; six first-run failures were test defects (Playwright API misuse, backticks left in an expected string, the old default route) and went back to a test bee; the main loop re-aligned the `headline` fixture after amending Task-44's contract.)
 
 > **Execution:** agent `codex` (`gpt-5.6-luna`) · effort `high`
 > *Why:* 2026-09-21. House rule: whoever writes the code does not write its test. This bee
@@ -30,8 +30,10 @@ and the neighbouring files (`_open_page`, the request blocker, the `PHONE` viewp
 
 ### New: `tests/test_pack.py`
 
-`headline()` per Task-44 §1: hand-built community dicts (only the keys the function reads)
-covering each verdict and both agreement notes give the expected four counts; an empty list
+`headline()` per Task-44 §1: hand-built community dicts (only the keys the function reads:
+`present`, `services`, `agreement`; a clinic is a `present` item named `Health centre`, and
+`telehealth_works` counts only communities with one) covering each verdict, both agreement
+notes and a `nodata` verdict in a community that has a clinic give the expected four counts; an empty list
 gives four zeros; and the built pack (however the file's other tests load it) carries
 `headline` equal to `{"communities": 96, "with_clinic": 70, "telehealth_works": 1,
 "sources_disagree": 33}`.

@@ -191,6 +191,10 @@ component key is given in the first column. Every class is defined once in `scre
   lines it adds to the community screen -- the priority line and the map-claim reliability
   line -- sit under the sources fold, below the two-action row, so Task-34's one-screen
   budget at 360 x 780 is unchanged.
+- **Home, Task-45 (2026-09-21, PRD §4.2 fifth batch).** The home screen has no screen file:
+  PRD §4.2 is its source of truth and it reuses `button`, `fig` and the type scale. The second
+  tab reads `Fix first`, and the community rows are phrased as questions with the best-path
+  note folded into each row's detail.
 - **Map height at 768.** The mirror's map is `width: 100%; height: auto` on a 300 × 480 view box,
   so inside the 640px content column it would be 1024px tall and the selected label would scale
   with it. Decided 2026-09-13: `screens.css` caps the map at `--size-viewport-min-height` and

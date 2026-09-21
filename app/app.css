@@ -5,6 +5,19 @@
    to beat it; a.button's higher specificity settles it regardless of source order. */
 a.button { text-decoration: none; }
 
+a.top-bar__title { color: inherit; text-decoration: none; }
+
+/* Task-45 home, 2026-09-21: the hand-over screen uses the existing type scale and button
+   components; these rules only provide its compact page rhythm. */
+.home { display: grid; gap: var(--space-sm); padding: var(--space-md); }
+.home__question { margin: 0; font: var(--text-title-lg); color: var(--text-heading); }
+.home__lead, .home__note { margin: 0; font: var(--text-body-md); color: var(--text-body); }
+.home__figures { display: grid; gap: var(--space-xxs); margin: 0; padding: 0; list-style: none; font: var(--text-body-sm); color: var(--text-body); }
+.home__figure { margin: 0; }
+.home__actions { display: grid; gap: var(--space-xs); margin-top: var(--space-xs); }
+.home__actions .button { width: 100%; }
+.home__note { font: var(--text-caption); color: var(--text-secondary); }
+
 /* The reference community.html carries a static search-input with no result list markup:
    these rules add the live results dropdown DESIGN.md's result-row describes (line 282). */
 
@@ -302,6 +315,7 @@ a.button { text-decoration: none; }
   overflow: hidden;
 }
 .services .section__note { padding-top: var(--space-xs); border-bottom: var(--size-hairline) solid var(--border-hairline); }
+.services__question { padding: var(--space-sm) var(--space-md); border-bottom: var(--size-hairline) solid var(--border-hairline); font: var(--text-title-md); color: var(--text-heading); }
 /* The card already carries its own bottom border; the last row does not need a second one.
    `:last-of-type` (by tag, not class) reaches the last row's button through the detail panels
    interleaved between rows. */
@@ -329,6 +343,11 @@ a.button { text-decoration: none; }
    that it no longer sits inside the button's own padded box. */
 .service-row__detail { padding-bottom: var(--space-sm); }
 .service-row__reason { padding: 0 var(--space-md); }
+.service-row__path { margin: var(--space-sm) var(--space-md) 0; font: var(--text-body-sm); color: var(--text-secondary); }
+.community-summary { margin: var(--space-sm) var(--space-md) 0; font: var(--text-body-md); color: var(--text-body); }
+
+.transfer-fold { margin-top: var(--space-md); }
+.transfer-fold > summary { padding: var(--space-sm) var(--space-md); font: var(--text-title-md); color: var(--text-heading); cursor: pointer; }
 
 /* The two-action row: Report here, then the Share fold (item 5). `width: 100%` is of `.actions`
    (edge to edge, unlike `.services`, which insets itself with margin), so the button's own
@@ -351,6 +370,13 @@ a.button { text-decoration: none; }
   cursor: pointer;
 }
 .report-button:active { background: var(--surface-block); }
+
+/* The two actions stay in the phone's first screen after the summary sentence is added. */
+.actions.section { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-xs); padding: var(--space-sm) var(--space-md); }
+.actions.section > .report-button { width: 100%; margin: 0; }
+.actions.section > .share-fold { margin: 0; padding: 0; border-top: 0; }
+.actions.section > .share-fold > summary { padding: var(--space-xs) var(--space-sm); }
+.actions.section > .report-form { grid-column: 1 / -1; }
 
 /* Who to ask's own list: the base reset `.actions` gives it in screens.css, reused here under
    its own name so it never collides with the two-action row above, which the fold test reads
@@ -490,3 +516,6 @@ a.button { text-decoration: none; }
   font: var(--text-body-sm);
   color: var(--text-body);
 }
+
+.reliability-line > summary { cursor: pointer; color: var(--text-body); }
+.reliability-line__body { margin: var(--space-xs) 0 0; padding: 0 var(--space-md); font: var(--text-body-sm); color: var(--text-body); }

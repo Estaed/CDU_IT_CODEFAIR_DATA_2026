@@ -60,9 +60,9 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-40: Priority score, intervention and addressee; the LEO sentence; MBSP sites (fourth batch, added 2026-09-17)
 - [x] Task-41: Priority tab, the reliability line, the analyst's sixty seconds; pack version 3 (fourth batch, added 2026-09-17)
 - [x] Task-43: Findings pack: figures, tables and docs/FINDINGS.md for the report (added 2026-09-17 evening)
-- [ ] Task-44: The pack's `headline` block: three counts for the home screen (fifth batch, added 2026-09-21)
-- [ ] Task-45: Home screen, rows as questions, the summary sentence, inside words folded (fifth batch, added 2026-09-21)
-- [ ] Task-46: Tests for the fifth batch, written from the contract, not from the code (fifth batch, added 2026-09-21)
+- [x] Task-44: The pack's `headline` block: three counts for the home screen (fifth batch, added 2026-09-21)
+- [x] Task-45: Home screen, rows as questions, the summary sentence, inside words folded (fifth batch, added 2026-09-21)
+- [x] Task-46: Tests for the fifth batch, written from the contract, not from the code (fifth batch, added 2026-09-21)
 
 ## Execution routing
 

@@ -195,16 +195,22 @@ def test_use_my_location_refused(browser):
 def test_folds_in_order(browser):
     page, blocked, errors = _open_page(browser, "#/community/426")
 
-    expect(page.locator("main details > summary")).to_have_text(
-        [
-            "4 of 4 sources agree",
-            "Share",
-            # Task-35, 2026-09-16: Report here's paste-in fold, below the actions row.
-            "Add reports",
-            "What exists here",
-            "Who to ask",
-        ]
-    )
+    summaries = page.locator("main details > summary").all_text_contents()
+    assert {
+        "Do the sources agree? Yes, 4 of 4",
+        "Share",
+        # Task-35, 2026-09-16: Report here's paste-in fold, below the actions row.
+        "Add reports",
+        "What exists here",
+        "Who to ask",
+    }.issubset(summaries)
+    reliability = [
+        text
+        for text in summaries
+        if text.startswith("How far to trust the coverage map here: ")
+    ]
+    assert len(reliability) == 1
+    assert reliability[0].split()[-1] in {"high", "medium", "low", "none"}
 
     assert errors == []
     assert blocked == []

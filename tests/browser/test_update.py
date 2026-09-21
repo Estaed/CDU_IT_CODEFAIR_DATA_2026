@@ -45,6 +45,8 @@ def _open_page(context, hash_route: str = ""):
     page.on("pageerror", lambda exc: errors.append(str(exc)))
     page.goto(f"{DIST_INDEX}{hash_route}")
     page.wait_for_load_state()
+    if hash_route.startswith("#/share"):
+        page.locator("details.transfer-fold > summary").click()
     return page, blocked, errors
 
 
@@ -61,7 +63,7 @@ def test_no_stored_pack_shows_no_update_chip(context):
 
 
 def test_stored_pack_newer_renders_after_reload_and_use_built_in_reverts(context):
-    page, blocked, errors = _open_page(context)
+    page, blocked, errors = _open_page(context, "#/community/426")
 
     original_name = page.locator(".community-header__name").text_content()
 
