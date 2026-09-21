@@ -145,3 +145,12 @@ label drift) and one class of defect only an eye caught (a label far from its po
 then became a DOM-measured test; (3) the top bee tier cost 37 points of the Codex 5-hour
 window for round 1 and its result needed the same rework a small-tier bee's would have.
 
+### Correction, 05:11 ACST
+
+The wake lock was held for the whole run: its process printed `held`, slept its six hours and
+printed `released` at 05:11, exit 0. At closeout (02:29) the orchestrator looked for that
+process with a command-line filter, found nothing, and wrongly concluded it had died at the
+background tool's ten-minute limit. The filter did not match; the process was alive. "Not
+found" was reported as "gone". Next run: record the process id when the lock is taken and
+stop it by id.
+
