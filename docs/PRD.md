@@ -361,6 +361,8 @@ clusters, filters that remove points, one colouring) are replaced by this sectio
   under 100 ms. No measurement exists here.`) instead of quoting the satellite figure beside
   "all sources say covered"; `headline()` reads the health-centre label from a named constant.
 
+Considered and dropped on 2026-09-21 (late): a screen that answers "can these two communities talk to each other" (Tarik's scenario). A mobile call is decided by the weaker end, which the two community screens already show; a video call between two satellite ends is a new rule (the latency adds up), and 96 × 96 pairs do not fit the pack. The scenario's one real finding goes to `docs/FINDINGS.md` instead (Task-50): 17 communities are outside everyone's mobile reach.
+
 Considered and dropped on 2026-09-21: bringing back `Changes since the previous snapshot` as a
 before/after button (no real second snapshot exists to show, and inventing one is synthetic
 data; the pitch says in one sentence that a rerun after a publisher's update flips the row);

@@ -66,6 +66,7 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [ ] Task-47: `headline()` reads the health-centre label from a named constant (sixth batch, added 2026-09-21)
 - [ ] Task-48: Map v3: three lenses, no clusters, regions that zoom, one screen; the degraded clause (sixth batch, added 2026-09-21)
 - [ ] Task-49: Tests for map v3 and the degraded clause, written from the contract (sixth batch, added 2026-09-21)
+- [ ] Task-50: Finding: the communities outside everyone's mobile reach (added 2026-09-21; runs after Task-48 lands, it reruns the pipeline)
 
 ## Later
 
@@ -142,6 +143,7 @@ advisory only.
 | Task-47 | codex (small tier) | no | low | Task-44 | 34 |
 | Task-48 | codex (top bee tier) | no | high | Task-45 | 34 (the only lane that builds) |
 | Task-49 | codex (small tier) | no | high | none (contract only; runs nothing) | 34 |
+| Task-50 | codex (small tier) | no | medium | Task-43 (serial after Task-48: both write `data/out/`) | 35 |
 
 Fifth batch (2026-09-21) execution note: PRD 4.2 fifth batch, the ten-second hand-over test. Codex
 pool clear (11 % / 33 %), so every lane is a Codex bee; the main loop (Fable) wrote the specs, runs
