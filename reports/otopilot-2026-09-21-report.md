@@ -116,3 +116,32 @@ the browser suite because it runs after), then the gate by the orchestrator. A f
 attempt at writing the task files failed on a shell quoting error; nothing was written, the
 files were then written with the Write tool.
 
+### Checkpoint 6 and closeout, 02:29 ACST
+
+| Task | Attempts | Result | Commit |
+|---|---|---|---|
+| Task-47 named constant | 1 | green | 730c480 |
+| Task-48 map v3 | 4 rounds (1 top tier, 3 small tier) | green; eye review at 360 and 412 wide and in the emulator | 730c480 |
+| Task-49 map tests | 1 + two correction rounds | green | 730c480 |
+| Task-50 mobile-reach finding | 2 (mojibake in the first) | green | 730c480 |
+| Task-51 audit fixes | 2 (row F14 skipped in the first, caught by Task-52) | green | 730c480 |
+| Task-52 audit tests | 1 | green | 730c480 |
+
+Final gate by the orchestrator: exit 0, 212 unit + 117 browser, `dist/index.html` 982,131
+bytes, pack 506,433 bytes. Pushed to `main` (611a4f0..730c480); Pages workflow queued at push.
+Nothing went to `BACKLOG.md`: no task was red twice.
+
+Stopped here on the third stop rule: what the last eye review still finds is taste
+("Maningrida" sits left of its marker 6, between 6 and 7; the rule holds, the reading is
+merely less comfortable than a right-hand label).
+
+**Awaiting the operator's eye:** the live map on a real phone; the ten-second hand-over test
+with three people (the fifth batch's actual pass mark, still not run).
+
+What the night showed about the process, for the next run: (1) three of the four map rounds
+were spec gaps the orchestrator could have seen by sketching the screen budget first (height
+cap, label rule); (2) the separately written tests caught two real omissions (F14, region
+label drift) and one class of defect only an eye caught (a label far from its point), which
+then became a DOM-measured test; (3) the top bee tier cost 37 points of the Codex 5-hour
+window for round 1 and its result needed the same rework a small-tier bee's would have.
+

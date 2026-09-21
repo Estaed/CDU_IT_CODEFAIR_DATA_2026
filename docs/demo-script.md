@@ -26,14 +26,15 @@ who should act. It measures nothing itself; every figure carries its source and 
 3. **Phone in flight mode, open the app (3 s).** The home screen shows the same sentence and
    three numbers. Read one: "A video call is known to work in 1 of 70 clinics."
 4. **Tap `Find a community` → Wadeye (7 s).** Read the summary line aloud: "All four sources
-   say Wadeye has mobile coverage. A video call with a doctor is not proven to work here:
-   664.9 ms on satellite against the 100 ms it needs." Tap the row: the two figures and
-   their sources.
+   say Wadeye has mobile coverage. A video call with a doctor is not proven to work here. It
+   could work over Telstra 4G if latency is under 100 ms. No measurement exists here." Tap
+   the row: the satellite fallback is 664.9 ms against the 100 ms required, with sources.
 5. **Tap `Fix first` (7 s).** "96 communities, ranked, each with what to do and who should do
    it. This is the list the department can act on. When a publisher updates its data we
    rerun the pipeline and the row changes: the same tool checks whether the money worked."
 
-If there is time: the map, then `Update another phone by camera` on Share as the last thing,
+If there is time: the map (`Fix first` lens: the ten numbered points are where to act; `Sources`
+lens: three red rings where a drive test found no signal inside claimed coverage), then `Update another phone by camera` on Share as the last thing,
 never the first.
 
 ## Words to use and to avoid
