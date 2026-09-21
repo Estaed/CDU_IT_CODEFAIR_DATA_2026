@@ -55,8 +55,10 @@ PER_COMMUNITY_SOURCES = ("BushTel profile",)
 BUSHTEL_TEXT_ALLOWED = False
 BUSHTEL_TEXT_FIELDS = ("wifi_comment", "road_access_comment", "stand_comment")
 
+HEALTH_CENTRE_LABEL = "Health centre"
+
 PRESENT_SERVICES = (
-    ("svc_health_centre", "Health centre"),
+    ("svc_health_centre", HEALTH_CENTRE_LABEL),
     ("svc_school", "School"),
     ("svc_store", "Store"),
     ("svc_police", "Police"),
@@ -642,12 +644,11 @@ def legend(communities: list[dict]) -> dict[str, int]:
 
 def headline(communities: list[dict]) -> dict[str, int]:
     """The three home-screen counts, derived from the already-built communities."""
-    health_centre_label = PRESENT_SERVICES[0][1]
     with_clinic = 0
     telehealth_works = 0
     sources_disagree = 0
     for community in communities:
-        has_clinic = any(item["name"] == health_centre_label for item in community["present"])
+        has_clinic = any(item["name"] == HEALTH_CENTRE_LABEL for item in community["present"])
         if has_clinic:
             with_clinic += 1
             telehealth_works += sum(

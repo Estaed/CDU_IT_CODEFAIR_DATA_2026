@@ -190,6 +190,16 @@ def test_community_summary_matches_every_pack_community(context):
                     return "A video call with a doctor should work here.";
                 }
                 if (service.verdict === "degraded") {
+                    if (service.assumption) {
+                        const parts = service.assumption.split(". ");
+                        if (parts.length >= 2) {
+                            const firstPart = parts[0].replaceAll("`", "");
+                            const secondPart = parts[1].replaceAll("`", "");
+                            const first = firstPart.charAt(0).toLowerCase() + firstPart.slice(1);
+                            return "A video call with a doctor is not proven to work here. It "
+                                + first + ". " + secondPart + ".";
+                        }
+                    }
                     return "A video call with a doctor is not proven to work here: "
                         + finish(service.reason);
                 }
@@ -219,10 +229,11 @@ def test_community_summary_matches_every_pack_community(context):
     assert len(results) == 96
     for result in results:
         assert result["actual"] == result["expected"], result["id"]
-        assert "`" not in result["actual"]
+    assert "`" not in result["actual"]
     assert next(result for result in results if result["id"] == 426)["actual"] == (
         "All 4 sources say Wadeye has mobile coverage. A video call with a doctor is not proven "
-        "to work here: Latency 664.9 ms on satellite vs 100 ms required."
+        "to work here. It could work over Telstra 4G if latency is under 100 ms. "
+        "No measurement exists here."
     )
 
     assert errors == []

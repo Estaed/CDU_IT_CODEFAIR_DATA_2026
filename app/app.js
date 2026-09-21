@@ -731,8 +731,7 @@
       h(
         "div",
         { class: "search" },
-        input,
-        current ? h("div", { class: "search__tools" }, renderLocate(current)) : null,
+        current ? h("div", { class: "search__tools" }, input, renderLocate(current)) : input,
       ),
       results,
     ];
@@ -758,7 +757,14 @@
     if (telehealth.verdict === "works") {
       health = "A video call with a doctor should work here.";
     } else if (telehealth.verdict === "degraded") {
-      health = `A video call with a doctor is not proven to work here: ${summaryReason(telehealth.reason)}`;
+      const assumption = telehealth.assumption ? telehealth.assumption.split(". ") : [];
+      if (assumption.length >= 2) {
+        const first = assumption[0];
+        const a1 = `${first.charAt(0).toLowerCase()}${first.slice(1)}`;
+        health = `A video call with a doctor is not proven to work here. It ${a1}. ${assumption[1]}.`;
+      } else {
+        health = `A video call with a doctor is not proven to work here: ${summaryReason(telehealth.reason)}`;
+      }
     } else if (telehealth.verdict === "fails") {
       health = `A video call with a doctor will not work here: ${summaryReason(telehealth.reason)}`;
     } else {
@@ -819,241 +825,153 @@
 
   const f1 = (n) => n.toFixed(1);
 
-  // Task-33: generalised from the telehealth-only lookup so the map's service selector can
-  // recolour points, clusters and the legend by any of the pack's four services.
   const serviceVerdict = (community, serviceId) =>
     community.services.find((service) => service.service === serviceId).verdict;
 
-  // Task-29: deterministic grouping of the points visible under the active filter into zoom
-  // clusters. Pure (no DOM, no pack), so it is unit-testable from the browser test as
-  // window.__map.cluster below and produces identical output for identical input every call.
-  const CLUSTER_RADIUS = 12;
-  const CLUSTER_MAX_ZOOM = 5;
-
-  // Walk ascending y, then x, then id; each unassigned point takes every other unassigned point
-  // within CLUSTER_RADIUS / zoom (Euclidean, view-box units) into its own group; two or more
-  // members become a cluster at the centroid, one member stays a single (Task-29 Execution
-  // Guide). No clustering at zoom 5 or more.
-  const cluster = (points, zoom) => {
-    if (zoom >= CLUSTER_MAX_ZOOM) {
-      return { clusters: [], singles: [...points] };
-    }
-    const radius = CLUSTER_RADIUS / zoom;
-    const sorted = [...points].sort((a, b) => a.y - b.y || a.x - b.x || a.id - b.id);
-    const assigned = new Set();
-    const clusters = [];
-    const singles = [];
-    for (const seed of sorted) {
-      if (assigned.has(seed.id)) {
-        continue;
-      }
-      const members = [seed];
-      assigned.add(seed.id);
-      for (const other of sorted) {
-        if (assigned.has(other.id)) {
-          continue;
-        }
-        if (Math.hypot(seed.x - other.x, seed.y - other.y) <= radius) {
-          members.push(other);
-          assigned.add(other.id);
-        }
-      }
-      if (members.length === 1) {
-        singles.push(seed);
-        continue;
-      }
-      const verdicts = { works: 0, degraded: 0, fails: 0, nodata: 0 };
-      for (const member of members) {
-        verdicts[member.verdict] = (verdicts[member.verdict] || 0) + 1;
-      }
-      clusters.push({
-        id: members
-          .map((m) => m.id)
-          .sort((a, b) => a - b)
-          .join("-"),
-        x: members.reduce((sum, m) => sum + m.x, 0) / members.length,
-        y: members.reduce((sum, m) => sum + m.y, 0) / members.length,
-        count: members.length,
-        verdicts,
-        members: members.map((m) => m.id).sort((a, b) => a - b),
-        minX: Math.min(...members.map((m) => m.x)),
-        maxX: Math.max(...members.map((m) => m.x)),
-        minY: Math.min(...members.map((m) => m.y)),
-        maxY: Math.max(...members.map((m) => m.y)),
-      });
-    }
-    return { clusters, singles };
-  };
-
-  // Exposed for the browser test, following the existing window.__statement pattern.
-  window.__map = { cluster };
-
-  // Task-33: the default service, both for the hash (omitted when selected) and for renderMap's
-  // fallback when the query carries none.
+  const MAP_LENSES = ["fix", "service", "sources"];
+  const DEFAULT_LENS = "fix";
   const DEFAULT_SERVICE = "telehealth_video";
+  const DEFAULT_FILTER = "all";
+  const REGION_SLUGS = [...new Set(pack.communities.map((community) => community.region))].map(
+    (name) => ({ name, slug: name.toLowerCase().replaceAll(" ", "-") }),
+  );
 
-  // renderMap rebuilds the whole panel, including details.map-layers, on every hash change (a
-  // filter, a selection, a layer toggle or a service change all go through the hash). Whether
-  // that fold is open is not part of the hash contract, so it would silently re-close after
-  // every chip click without this: the one piece of render state renderMap reads back in.
-  let layersFoldOpen = false;
-
-  // ``layersRaw`` is the hash's own ``layers`` value (or null when absent): threaded through
-  // unchanged so selecting a point or switching a filter never clobbers a carrier toggle state.
-  // ``serviceId`` is threaded the same way (Task-33) so it too survives a filter or selection
-  // change; the default is omitted so a plain link still reproduces it.
-  const mapHash = (filterId, selectedId, layersRaw, serviceId) => {
-    let hash = `#/map?filter=${filterId}`;
-    if (selectedId !== null && selectedId !== undefined) {
-      hash += `&selected=${selectedId}`;
-    }
-    if (layersRaw !== null && layersRaw !== undefined) {
-      hash += `&layers=${layersRaw}`;
-    }
-    if (serviceId && serviceId !== DEFAULT_SERVICE) {
-      hash += `&service=${serviceId}`;
-    }
-    return hash;
-  };
-
-  // Task-33: one shape, four fill states (Tarik, 2026-09-16: "üçgen kare falan sevmedim"),
-  // departed from the triangle/square/dash set of design/screens/assets/build.mjs and recorded
-  // in design/screens/README.md. Radius stays that build's own figure (5, hit r = 16, ring r =
-  // 9); fill and stroke colours are the verdict text tokens through app.css, which overrides
-  // screens.css's now-stale .map__pt--* rules rather than editing them (layer rule 5).
-  const renderPoint = (community, isSelected, filterId, layersRaw, serviceId) => {
-    const { x, y } = community;
-    const size = 5;
-    const verdict = serviceVerdict(community, serviceId);
-    const shapes = [
-      s("circle", { class: `map__pt map__pt--${verdict}`, cx: f1(x), cy: f1(y), r: size }),
-    ];
-    if (verdict === "degraded") {
-      // The left half-disc: an arc from the top point to the bottom point, sweep 0, closed back
-      // to the start -- geometry derived from ``size``, not a token (layer rule 5's "SVG
-      // geometry inside the pack is data, not CSS" applies the same way to on-the-fly shapes).
-      shapes.push(
-        s("path", {
-          class: "map__pt-half",
-          d: `M${f1(x)},${f1(y - size)} A${size},${size} 0 0 0 ${f1(x)},${f1(y + size)} Z`,
-        }),
-      );
-    } else if (verdict === "nodata") {
-      shapes[0].setAttribute("stroke-dasharray", `${f1(size)} ${f1(size / 2)}`);
-    }
-    // Wrapped in one group so the counter-scale transform (app.css) applies to the circle and
-    // the degraded half-path together, anchored at the circle's own bounding box -- the half
-    // path's own bbox is off-centre, but the union with the full circle it sits inside is not.
-    const shape = s("g", { class: "map__pt-shape" }, ...shapes);
-    const group = s(
-      "g",
-      {
-        class: `map__pt-group map__community${isSelected ? " map__community--selected" : ""}`,
-        tabindex: "0",
-      },
-      s("title", {}, `${community.name} · ${VERDICTS[verdict].word}`),
-      s("circle", { class: "map__hit", cx: f1(x), cy: f1(y), r: 16 }),
-      shape,
+  const sourceState = (community) => {
+    const measured = community.publishers.some(
+      (publisher) => publisher.kind === "measured" && publisher.says_covered === "not-covered",
     );
-    if (isSelected) {
-      const right = x > 200;
-      group.appendChild(s("circle", { class: "map__ring", cx: f1(x), cy: f1(y), r: 9 }));
-      group.appendChild(
-        s(
-          "text",
+    if (measured) {
+      return "measured";
+    }
+    return community.agreement.note === "Sources disagree" ? "disagree" : "agree";
+  };
+
+  const priorityRowOf = (community) =>
+    pack.priority.find((row) => row.id === community.id) || community.priority;
+
+  const mapTier = (community) => {
+    const rank = priorityRowOf(community).rank;
+    return rank <= 10 ? 1 : rank <= 30 ? 2 : 3;
+  };
+
+  const mapRadius = (community, state) => {
+    if (state.lens === "fix") {
+      return [11, 6, 3.5][mapTier(community) - 1];
+    }
+    if (state.lens === "service") {
+      return 6;
+    }
+    const source = sourceState(community);
+    return source === "measured" ? 8 : source === "disagree" ? 6 : 3.5;
+  };
+
+  const mapHash = (state) => {
+    const params = [];
+    if (state.lens && state.lens !== DEFAULT_LENS) {
+      params.push(`lens=${state.lens}`);
+    }
+    if (state.region) {
+      params.push(`region=${state.region}`);
+    }
+    if (state.filter && state.filter !== DEFAULT_FILTER) {
+      params.push(`filter=${state.filter}`);
+    }
+    if (state.selected !== null && state.selected !== undefined) {
+      params.push(`selected=${state.selected}`);
+    }
+    if (state.layers) {
+      params.push(`layers=${state.layers}`);
+    }
+    if (state.service && state.service !== DEFAULT_SERVICE) {
+      params.push(`service=${state.service}`);
+    }
+    return params.length ? `#/map?${params.join("&")}` : "#/map";
+  };
+
+  const DECLUTTER_DISTANCE = 6;
+  const DECLUTTER_LIMIT = 14;
+  const DECLUTTER_FULL_ZOOM = 8;
+
+  // A deterministic relaxation separates points by their display radii while keeping every
+  // point within the map's movement budget. The final offset is linearly withdrawn as the view
+  // approaches zoom 8, so the layout has no hidden state and identical calls return identical arrays.
+  const declutter = (points, zoom) => {
+    if (zoom >= DECLUTTER_FULL_ZOOM) {
+      return points.map((point) => ({ ...point }));
+    }
+    const placed = points.map((point) => ({ ...point }));
+    for (let pass = 0; pass < 1200; pass += 1) {
+      let separated = true;
+      for (let i = 0; i < placed.length; i += 1) {
+        for (let j = i + 1; j < placed.length; j += 1) {
+          let dx = placed[j].x - placed[i].x;
+          let dy = placed[j].y - placed[i].y;
+          let distance = Math.hypot(dx, dy);
+          const radius = (point) => Number.isFinite(Number(point.r)) ? Number(point.r) : 3;
+          const required = Math.max(DECLUTTER_DISTANCE, radius(placed[i]) + radius(placed[j]) + 1);
+          if (distance >= required) {
+            continue;
+          }
+          separated = false;
+          if (distance < 0.0001) {
+            const turn = ((Number(placed[i].id) * 37 + Number(placed[j].id) * 17) % 360) * Math.PI / 180;
+            dx = Math.cos(turn);
+            dy = Math.sin(turn);
+            distance = 1;
+          }
+          const push = (required - distance) / 2 + 0.002;
+          placed[i].x -= (dx / distance) * push;
+          placed[i].y -= (dy / distance) * push;
+          placed[j].x += (dx / distance) * push;
+          placed[j].y += (dy / distance) * push;
+        }
+      }
+      for (let i = 0; i < placed.length; i += 1) {
+        const dx = placed[i].x - points[i].x;
+        const dy = placed[i].y - points[i].y;
+        const distance = Math.hypot(dx, dy);
+        if (distance > DECLUTTER_LIMIT) {
+          placed[i].x = points[i].x + (dx / distance) * DECLUTTER_LIMIT;
+          placed[i].y = points[i].y + (dy / distance) * DECLUTTER_LIMIT;
+        }
+      }
+      if (separated) {
+        break;
+      }
+    }
+    const factor = Math.max(0, Math.min(1, (DECLUTTER_FULL_ZOOM - Math.max(1, zoom)) / 7));
+    return placed.map((point, index) => ({
+      ...points[index],
+      x: points[index].x + (point.x - points[index].x) * factor,
+      y: points[index].y + (point.y - points[index].y) * factor,
+    }));
+  };
+
+  window.__map = { declutter };
+
+  const renderMapLens = (state) =>
+    h(
+      "div",
+      { class: "map-lens", role: "tablist", "aria-label": "Map lens" },
+      [
+        ["fix", "Fix first"],
+        ["service", "Services"],
+        ["sources", "Sources"],
+      ].map(([id, label]) =>
+        h(
+          "a",
           {
-            class: "map__label",
-            x: f1(right ? x - 13 : x + 13),
-            y: f1(y + 4),
-            "text-anchor": right ? "end" : "start",
+            class: "map-lens__option",
+            role: "tab",
+            "aria-selected": state.lens === id ? "true" : "false",
+            href: mapHash({ ...state, lens: id }),
           },
-          community.name,
+          label,
         ),
-      );
-    }
-    const select = () => {
-      location.hash = mapHash(filterId, community.id, layersRaw, serviceId);
-    };
-    group.addEventListener("click", select);
-    group.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        select();
-      }
-    });
-    return group;
-  };
-
-  // Cluster marker geometry (Task-29 Execution Guide): a filled circle, the count as text, and a
-  // ring split into arcs by the members' telehealth verdict counts using stroke-dasharray on
-  // stacked circles, coloured with the same verdict tokens the points use. Counter-scaled the
-  // same way as the points (app.css), so it keeps a constant screen size at any zoom.
-  const CLUSTER_RING_R = 9;
-  const CLUSTER_VERDICT_ORDER = ["works", "degraded", "fails", "nodata"];
-
-  const clusterRingArcs = (cl) => {
-    const circumference = 2 * Math.PI * CLUSTER_RING_R;
-    let offset = 0;
-    const arcs = [];
-    for (const verdict of CLUSTER_VERDICT_ORDER) {
-      const count = cl.verdicts[verdict] || 0;
-      if (count === 0) {
-        continue;
-      }
-      const length = (count / cl.count) * circumference;
-      arcs.push(
-        s("circle", {
-          class: `map__cluster-arc map__cluster-arc--${verdict}`,
-          cx: f1(cl.x),
-          cy: f1(cl.y),
-          r: CLUSTER_RING_R,
-          "stroke-dasharray": `${length.toFixed(2)} ${(circumference - length).toFixed(2)}`,
-          "stroke-dashoffset": (-offset).toFixed(2),
-        }),
-      );
-      offset += length;
-    }
-    return arcs;
-  };
-
-  // ``onActivate`` is the zoom-to-bounding-box handler attachMapView owns; kept as a parameter
-  // so this stays a plain renderer with no closure over the view/zoom state.
-  const renderClusterMarker = (cl, onActivate) => {
-    const group = s(
-      "g",
-      {
-        class: "map__cluster",
-        role: "button",
-        tabindex: "0",
-        "aria-label": `${cl.count} communities`,
-        "data-id": cl.id,
-        "data-count": String(cl.count),
-        "data-works": String(cl.verdicts.works || 0),
-        "data-degraded": String(cl.verdicts.degraded || 0),
-        "data-fails": String(cl.verdicts.fails || 0),
-        "data-nodata": String(cl.verdicts.nodata || 0),
-      },
-      s("circle", { class: "map__hit", cx: f1(cl.x), cy: f1(cl.y), r: 16 }),
-      s("circle", { class: "map__cluster-fill", cx: f1(cl.x), cy: f1(cl.y), r: CLUSTER_RING_R }),
-      ...clusterRingArcs(cl),
-      s(
-        "text",
-        { class: "map__cluster-count", x: f1(cl.x), y: f1(cl.y + 3), "text-anchor": "middle" },
-        String(cl.count),
       ),
     );
-    const activate = () => onActivate(cl);
-    group.addEventListener("click", activate);
-    group.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        activate();
-      }
-    });
-    return group;
-  };
 
-  const renderFilterTabs = (active, selectedId, layersRaw, serviceId) => {
+  const renderFilterTabs = (active, state) => {
     const bar = h("div", { class: "tabs filter-tabs", role: "tablist", "aria-label": "Filters" });
     for (const filter of pack.filters) {
       const isActive = filter.id === active.id;
@@ -1064,41 +982,28 @@
         h("span", { class: "tab__count" }, String(filter.ids.length)),
       );
       tab.addEventListener("click", () => {
-        location.hash = mapHash(
-          filter.id,
-          filter.ids.includes(selectedId) ? selectedId : null,
-          layersRaw,
-          serviceId,
-        );
+        location.hash = mapHash({ ...state, filter: filter.id });
       });
       bar.appendChild(tab);
     }
     return bar;
   };
 
-  // Task-33: one option per pack service, in the pack's own order (never a hardcoded list --
-  // Part 2 layer rule 4, the app renders what the pack gives it). Above the filter tabs;
-  // changing it recolours the points and clusters and recounts the legend, but leaves the
-  // active filter and the selected community alone.
   const SERVICE_ORDER = pack.communities[0].services.map((service) => service.service);
 
-  const renderServiceSelector = (serviceId, filterId, selectedId, layersRaw) => {
+  const renderServiceSelector = (state) => {
     const select = h(
       "select",
       { class: "map-service", "aria-label": "Service shown on the map" },
       SERVICE_ORDER.map((id) => h("option", { value: id }, SERVICE_LABEL[id] || id)),
     );
-    select.value = serviceId;
+    select.value = state.service;
     select.addEventListener("change", () => {
-      location.hash = mapHash(filterId, selectedId, layersRaw, select.value);
+      location.hash = mapHash({ ...state, service: select.value });
     });
     return select;
   };
 
-  // Task-33: a tally over the verdicts the pack already carries for the chosen service, all 96
-  // communities regardless of the active filter (matching pipeline pack.legend's own scope for
-  // telehealth video) -- a count, not a verdict (layer rule 4, same precedent as the cluster
-  // ring's per-verdict tally above).
   const legendCounts = (serviceId) => {
     const counts = { works: 0, degraded: 0, fails: 0, nodata: 0 };
     for (const community of pack.communities) {
@@ -1107,119 +1012,145 @@
     return counts;
   };
 
-  const renderLegend = (shownCount, serviceId) => {
-    const all = h("span", { class: "fig fig--xs" }, String(pack.count));
+  const renderLegend = (state) => {
+    let items;
+    if (state.lens === "fix") {
+      const counts = [0, 0, 0];
+      for (const community of pack.communities) {
+        const rank = priorityRowOf(community).rank;
+        counts[rank <= 10 ? 0 : rank <= 30 ? 1 : 2] += 1;
+      }
+      items = [
+        ["map-legend__glyph--fix-one", "●", "Top 10", counts[0]],
+        ["map-legend__glyph--fix-two", "●", "11 to 30", counts[1]],
+        ["map-legend__glyph--fix-three", "●", "The rest", counts[2]],
+      ];
+    } else if (state.lens === "service") {
+      items = Object.entries(legendCounts(state.service)).map(([verdict, count]) => [
+        `map-legend__glyph--${verdict}`,
+        VERDICTS[verdict].glyph,
+        VERDICTS[verdict].word,
+        count,
+      ]);
+    } else {
+      const counts = { measured: 0, disagree: 0, agree: 0 };
+      for (const community of pack.communities) {
+        counts[sourceState(community)] += 1;
+      }
+      items = [
+        ["map-legend__glyph--source-measured", "○", "Drive test found no signal", counts.measured],
+        ["map-legend__glyph--source-disagree", "●", "Sources disagree", counts.disagree],
+        ["map-legend__glyph--source-agree", "●", "Sources agree", counts.agree],
+      ];
+    }
     return h(
       "div",
       { class: "map-legend" },
-      h(
-        "div",
-        { class: "map-legend__row" },
-        Object.entries(legendCounts(serviceId)).map(([verdict, count]) =>
-          h(
-            "span",
-            { class: "map-legend__item" },
-            h(
-              "span",
-              { class: `map-legend__glyph--${verdict}`, "aria-hidden": "true" },
-              VERDICTS[verdict].glyph,
-            ),
-            `${VERDICTS[verdict].word} `,
-            h("span", { class: "map-legend__count" }, String(count)),
-          ),
+      items.map(([className, glyph, label, count]) =>
+        h(
+          "span",
+          { class: "map-legend__item" },
+          h("span", { class: className, "aria-hidden": "true" }, glyph),
+          `${label} `,
+          h("span", { class: "fig map-legend__count" }, "(" + count + ")"),
         ),
-      ),
-      h(
-        "div",
-        { class: "map-legend__subject" },
-        `${SERVICE_LABEL[serviceId] || serviceId} · all `,
-        all,
-        " communities",
-      ),
-      // pack.filters carries no definition text yet, so the line stops at the counts.
-      h(
-        "div",
-        { class: "map-legend__subject" },
-        "Showing ",
-        h("span", { class: "fig fig--xs" }, String(shownCount)),
-        " of ",
-        h("span", { class: "fig fig--xs" }, String(pack.count)),
       ),
     );
   };
 
-  // Task-33: worst-first list under the legend, Fails then Degraded then No data then Works,
-  // then by name -- a sort over verdicts the pack already carries, not a verdict itself (Part 2
-  // "Pushed down", the same allowance the zoom clusters already use).
   const MAP_LIST_ORDER = ["fails", "degraded", "nodata", "works"];
 
-  const renderMapList = (shown, serviceId) => {
-    const rows = [...shown].sort((a, b) => {
-      const rank = (c) => MAP_LIST_ORDER.indexOf(serviceVerdict(c, serviceId));
-      return rank(a) - rank(b) || a.name.localeCompare(b.name);
+  const isDimmed = (community, state, filter) =>
+    !filter.ids.includes(community.id) ||
+    (state.region && community.region.toLowerCase().replaceAll(" ", "-") !== state.region);
+
+  const renderMapList = (state, filter) => {
+    const rows = [...pack.communities].sort((a, b) => {
+      const dim = Number(isDimmed(a, state, filter)) - Number(isDimmed(b, state, filter));
+      if (dim) {
+        return dim;
+      }
+      if (state.lens === "fix") {
+        return priorityRowOf(a).rank - priorityRowOf(b).rank;
+      }
+      if (state.lens === "service") {
+        return (
+          MAP_LIST_ORDER.indexOf(serviceVerdict(a, state.service)) -
+            MAP_LIST_ORDER.indexOf(serviceVerdict(b, state.service)) ||
+          a.name.localeCompare(b.name)
+        );
+      }
+      const order = { measured: 0, disagree: 1, agree: 2 };
+      return order[sourceState(a)] - order[sourceState(b)] || a.name.localeCompare(b.name);
     });
     return h(
       "ol",
-      { class: "actions map-list" },
+      { class: "map-list" },
       rows.map((community) => {
-        const verdict = serviceVerdict(community, serviceId);
-        const item = h(
+        let tail;
+        if (state.lens === "fix") {
+          const priority = priorityRowOf(community);
+          tail = `#${priority.rank} · ${interventionOf(priority.i).word}`;
+        } else if (state.lens === "service") {
+          tail = VERDICTS[serviceVerdict(community, state.service)].word;
+        } else {
+          tail = `${community.agreement.covered} of ${community.agreement.available} say covered`;
+        }
+        return h(
           "li",
-          { class: "service-row" },
+          { class: `map-list__item${isDimmed(community, state, filter) ? " map-list__item--dim" : ""}` },
           h(
-            "button",
-            { type: "button", class: "service-row__button map-list__row" },
-            h(
-              "span",
-              { class: "service-row__top" },
-              h(
-                "span",
-                { class: "service-row__label" },
-                h(
-                  "span",
-                  { class: `service-row__glyph--${verdict}`, "aria-hidden": "true" },
-                  VERDICTS[verdict].glyph,
-                ),
-                community.name,
-              ),
-              h("span", {}, VERDICTS[verdict].word),
-            ),
+            "a",
+            { class: "map-list__row", href: mapHash({ ...state, selected: community.id }) },
+            h("span", { class: "map-list__name" }, community.name),
+            h("span", { class: "map-list__value" }, tail),
           ),
         );
-        item.querySelector("button").addEventListener("click", () => {
-          location.hash = `#/community/${community.id}`;
-        });
-        return item;
       }),
     );
   };
 
-  const renderMapPanel = (community) => [
-    renderHeader(community, "h2"),
-    renderPublishers(community),
-    h(
-      "section",
-      { class: "section" },
-      h("h2", { class: "section__title" }, "What the connection allows"),
-      renderServiceRow(
-        community.services.find((service) => service.service === "telehealth_video"),
-        community.path,
+  const renderMapCard = (community) => {
+    const card = h("section", { class: "map-card" });
+    if (!community) {
+      card.appendChild(h("p", { class: "map-card__hint" }, "Tap a community."));
+      return card;
+    }
+    const priority = priorityRowOf(community);
+    card.appendChild(h("h2", { class: "map-card__name" }, community.name));
+    card.appendChild(renderCommunitySummary(community));
+    card.appendChild(
+      h(
+        "p",
+        { class: "map-card__fix" },
+        `Fix first #${priority.rank} of ${pack.priority.length} · ${interventionOf(priority.i).word}`,
       ),
+    );
+    card.appendChild(
       h(
         "div",
-        { class: "link-row" },
-        h("a", { class: "text-link", href: `#/community/${community.id}` }, `Open ${community.name}`),
+        { class: "map-card__badges" },
+        community.services.map((service) =>
+          h(
+            "span",
+            { class: "map-card__badge" },
+            h("span", { class: "map-card__service" }, SMS_LABEL[service.service] || service.service),
+            renderBadge(service.verdict),
+          ),
+        ),
       ),
-    ),
-  ];
+    );
+    card.appendChild(
+      h("a", { class: "button button--primary", href: `#/community/${community.id}` }, `Open ${community.name}`),
+    );
+    return card;
+  };
 
   // Map layers (Task-21, Part 2 "Map layer" seam): the pack's own order already draws area
   // (coverage) layers first, then line (region) layers, then point (town) layers -- exactly
   // the Execution Guide's draw order -- so the app never hand-orders layer ids.
   const slugOf = (layer) => (layer.id.startsWith("cov-") ? layer.id.slice(4) : layer.id);
 
-  // Task-33: "Layers off by default" widens hiding from area layers only to every area or line
-  // (region-border) layer; town points stay visible always (contract item 4).
   const isToggleLayer = (layer) => layer.kind === "area" || layer.kind === "line";
 
   const renderLayerGroup = (layer, visibleSlugs) => {
@@ -1250,12 +1181,7 @@
     return g;
   };
 
-  // One chip per area (coverage) layer plus the SA3 region layer (Task-33 contract item 4); its
-  // slug (the layer id with any "cov-" prefix dropped) is what the hash's "layers" query
-  // carries, e.g. "&layers=telstra,optus". Every layer here starts hidden (renderMap's default
-  // visibleSlugs is empty), so the "all off" state -- not "all on" as before Task-33 -- is what
-  // the hash omits.
-  const renderLayerChips = (toggleLayers, visibleSlugs, filterId, selectedId, layersRaw, serviceId) => {
+  const renderLayerChips = (toggleLayers, visibleSlugs, state) => {
     const bar = h("div", { class: "chips layer-chips" });
     for (const layer of toggleLayers) {
       const slug = slugOf(layer);
@@ -1279,7 +1205,7 @@
         const nextRaw = next.size === 0
           ? null
           : allSlugs.filter((one) => next.has(one)).join(",");
-        location.hash = mapHash(filterId, selectedId, nextRaw, serviceId);
+        location.hash = mapHash({ ...state, layers: nextRaw });
       });
       bar.appendChild(chip);
     }
@@ -1298,87 +1224,136 @@
   // Community labels appear once zoomed at least this far in (Task-21 Execution Guide).
   const LABEL_ZOOM = 3;
 
-  // Zoom (wheel, pinch) and pan (one-pointer drag) over the map's viewBox, plus the labels
-  // that appear once zoomed in far enough and the Task-29 point clusters. Point/ring/label
-  // geometry stays a constant screen size at any zoom through the CSS transform keyed on the
-  // --map-zoom custom property this sets (app.css), rather than by rebuilding every point's own
-  // radius on each zoom step.
-  const attachMapView = (svg, shownCommunities, selectedId, pointGroupsById, serviceId) => {
+  const regionView = (regionSlug) => {
+    if (!regionSlug) {
+      return { ...BASE_VIEW };
+    }
+    const points = pack.communities.filter(
+      (community) => community.region.toLowerCase().replaceAll(" ", "-") === regionSlug,
+    );
+    const minX = Math.min(...points.map((point) => point.x)) - 12;
+    const maxX = Math.max(...points.map((point) => point.x)) + 12;
+    const minY = Math.min(...points.map((point) => point.y)) - 12;
+    const maxY = Math.max(...points.map((point) => point.y)) + 12;
+    return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+  };
+
+  const attachMapView = (svg, communities, state, pointGroupsById, labelsGroup, resetButton) => {
     const view = { ...BASE_VIEW };
     let zoom = ZOOM_MIN;
-    const labelsGroup = s("g", { class: "map__zoom-labels" });
-    svg.appendChild(labelsGroup);
-    const clustersLayer = s("g", { class: "map__clusters" });
-    svg.appendChild(clustersLayer);
+    const truePoints = communities.map((community) => ({
+      id: community.id,
+      x: community.x,
+      y: community.y,
+      r: mapRadius(community, state),
+    }));
+    const restingPoints = declutter(truePoints, 1);
 
-    // Task-29: recompute clusters (and, since they depend on which points are clustered, the
-    // zoom labels too) for the current zoom. Never called from a pan-only move; see the
-    // scheduling below.
-    const updateClustering = () => {
-      const level = clamp(Math.round(zoom), ZOOM_MIN, ZOOM_MAX);
-      const candidates = shownCommunities
-        .filter((community) => community.id !== selectedId)
-        .map((community) => ({
-          id: community.id,
-          x: community.x,
-          y: community.y,
-          verdict: serviceVerdict(community, serviceId),
-        }));
-      const { clusters } = cluster(candidates, zoom);
-      const clusteredIds = new Set();
-      for (const group of clusters) {
-        for (const id of group.members) {
-          clusteredIds.add(id);
-        }
-      }
-      for (const [id, group] of pointGroupsById) {
-        if (id !== selectedId && clusteredIds.has(id)) {
-          group.setAttribute("hidden", "");
-        } else {
-          group.removeAttribute("hidden");
-        }
-      }
-      clustersLayer.textContent = "";
-      for (const group of clusters) {
-        clustersLayer.appendChild(renderClusterMarker(group, zoomToCluster));
+    const updateLayout = () => {
+      const factor = Math.max(0, Math.min(1, (DECLUTTER_FULL_ZOOM - zoom) / 7));
+      const positions = new Map();
+      for (let i = 0; i < communities.length; i += 1) {
+        const community = communities[i];
+        const x = community.x + (restingPoints[i].x - community.x) * factor;
+        const y = community.y + (restingPoints[i].y - community.y) * factor;
+        positions.set(community.id, { x, y });
+        pointGroupsById.get(community.id).setAttribute(
+          "transform",
+          `translate(${f1(x - community.x)} ${f1(y - community.y)})`,
+        );
       }
       labelsGroup.textContent = "";
-      if (level >= LABEL_ZOOM) {
-        for (const community of shownCommunities) {
-          if (community.id === selectedId || clusteredIds.has(community.id)) {
-            continue; // selected already carries its own label; clustered members draw none
+      const labels = [];
+      for (const community of communities) {
+        const rank = priorityRowOf(community).rank;
+        if (community.id === state.selected || (state.lens === "fix" && rank <= 10) || zoom >= LABEL_ZOOM) {
+          labels.push({ community, point: positions.get(community.id) });
+        }
+      }
+      const labelPositions = new Map();
+      const overlaps = (a, b) =>
+        a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+      if (zoom < LABEL_ZOOM) {
+        const spacing = 18 / zoom;
+        for (const side of ["left", "right"]) {
+          const onSide = labels
+            .filter(({ point }) => (point.x < view.x + view.w * 0.4 ? "right" : "left") === side)
+            .sort((a, b) => a.point.y - b.point.y || a.community.id - b.community.id);
+          let lastY = -Infinity;
+          for (const label of onSide) {
+            const y = Math.max(label.point.y, lastY + spacing);
+            labelPositions.set(label.community.id, {
+              x: label.point.x + (side === "right" ? 10 / zoom : -10 / zoom),
+              y,
+              anchor: side === "right" ? "start" : "end",
+            });
+            lastY = y;
           }
-          labelsGroup.appendChild(
-            s(
-              "text",
-              {
-                class: "map__label",
-                x: f1(community.x),
-                y: f1(community.y - 8),
-                "text-anchor": "middle",
-              },
-              community.name,
-            ),
-          );
+        }
+      }
+      for (const { community, point } of labels) {
+        const label = labelPositions.get(community.id) || {
+          x: point.x + (point.x < view.x + view.w * 0.4 ? 10 / zoom : -10 / zoom),
+          y: point.y - 8 / zoom,
+          anchor: point.x < view.x + view.w * 0.4 ? "start" : "end",
+        };
+        labelsGroup.appendChild(
+          s(
+            "text",
+            {
+              class: `map__label${isDimmed(community, state, pack.filters.find((one) => one.id === state.filter)) ? " map__label--dim" : ""}`,
+              "data-id": String(community.id),
+              x: f1(label.x),
+              y: f1(label.y),
+              "text-anchor": label.anchor,
+            },
+            community.name,
+          ),
+        );
+      }
+      if (zoom < LABEL_ZOOM) {
+        const overlaps = (a, b) =>
+          a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+        const occupied = [...svg.querySelectorAll(".map__town-label")].map((label) => label.getBBox());
+        for (const label of labelsGroup.querySelectorAll(".map__label")) {
+          const clampLabel = () => {
+            const box = label.getBBox();
+            const left = view.x + 0.5;
+            const top = view.y + 0.5;
+            const right = view.x + view.w - 0.5;
+            const bottom = view.y + view.h - 0.5;
+            let x = Number(label.getAttribute("x"));
+            let y = Number(label.getAttribute("y"));
+            x += box.x < left ? left - box.x : box.x + box.width > right ? right - box.x - box.width : 0;
+            y += box.y < top ? top - box.y : box.y + box.height > bottom ? bottom - box.y - box.height : 0;
+            label.setAttribute("x", f1(x));
+            label.setAttribute("y", f1(y));
+            return label.getBBox();
+          };
+          let box = clampLabel();
+          let attempts = 0;
+          while (occupied.some((other) => overlaps(box, other)) && attempts < 8) {
+            label.setAttribute("y", f1(Number(label.getAttribute("y")) + box.height + 2 / zoom));
+            box = clampLabel();
+            attempts += 1;
+          }
+          occupied.push(box);
         }
       }
     };
 
-    // Coalesces every zoom change within one frame into a single recompute (wheel and pinch can
-    // fire many times before the next paint); a plain click (reset, tap-to-cluster) recomputes
-    // immediately instead, since it is a single discrete change, not a rapid stream.
-    let clusterFrame = null;
-    const scheduleClusterUpdate = () => {
-      if (clusterFrame !== null) {
+    let layoutFrame = null;
+    const scheduleLayout = () => {
+      if (layoutFrame !== null) {
         return;
       }
-      clusterFrame = requestAnimationFrame(() => {
-        clusterFrame = null;
-        updateClustering();
+      layoutFrame = requestAnimationFrame(() => {
+        layoutFrame = null;
+        updateLayout();
       });
     };
 
-    const apply = () => {
+    const apply = (layout = false) => {
       svg.setAttribute(
         "viewBox",
         `${vnum(view.x)} ${vnum(view.y)} ${vnum(view.w)} ${vnum(view.h)}`,
@@ -1386,29 +1361,10 @@
       const level = clamp(Math.round(zoom), ZOOM_MIN, ZOOM_MAX);
       svg.setAttribute("data-zoom", String(level));
       svg.style.setProperty("--map-zoom", String(zoom));
-    };
-
-    // Tap or Enter on a cluster (Task-29 Execution Guide): the viewBox becomes the bounding box
-    // of its members with 20 percent padding, clamped to zoom 1-8 and to the map bounds.
-    const zoomToCluster = (group) => {
-      const paddedW = Math.max(group.maxX - group.minX, 0.001) * 1.2;
-      const paddedH = Math.max(group.maxY - group.minY, 0.001) * 1.2;
-      const targetZoom = clamp(
-        Math.min(BASE_VIEW.w / paddedW, BASE_VIEW.h / paddedH),
-        ZOOM_MIN,
-        ZOOM_MAX,
-      );
-      const newW = BASE_VIEW.w / targetZoom;
-      const newH = BASE_VIEW.h / targetZoom;
-      const cx = (group.minX + group.maxX) / 2;
-      const cy = (group.minY + group.maxY) / 2;
-      view.x = clamp(cx - newW / 2, BASE_VIEW.x, BASE_VIEW.x + BASE_VIEW.w - newW);
-      view.y = clamp(cy - newH / 2, BASE_VIEW.y, BASE_VIEW.y + BASE_VIEW.h - newH);
-      view.w = newW;
-      view.h = newH;
-      zoom = targetZoom;
-      apply();
-      updateClustering();
+      resetButton.hidden = zoom === ZOOM_MIN && !state.region;
+      if (layout) {
+        scheduleLayout();
+      }
     };
 
     const toSvgPoint = (clientX, clientY) => {
@@ -1430,8 +1386,7 @@
       view.w = newW;
       view.h = newH;
       zoom = newZoom;
-      apply();
-      scheduleClusterUpdate();
+      apply(true);
     };
 
     svg.classList.add("map--zoomable");
@@ -1498,101 +1453,225 @@
     svg.addEventListener("pointerleave", endPointer);
 
     const reset = () => {
+      if (state.region) {
+        location.hash = mapHash({ ...state, region: null });
+        return;
+      }
       view.x = BASE_VIEW.x;
       view.y = BASE_VIEW.y;
       view.w = BASE_VIEW.w;
       view.h = BASE_VIEW.h;
       zoom = ZOOM_MIN;
       apply();
-      updateClustering();
+      updateLayout();
     };
 
     apply();
-    updateClustering();
+    updateLayout();
+    if (state.region) {
+      const target = regionView(state.region);
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduced) {
+        Object.assign(view, target);
+        zoom = clamp(Math.min(BASE_VIEW.w / view.w, BASE_VIEW.h / view.h), ZOOM_MIN, ZOOM_MAX);
+        apply();
+        updateLayout();
+      } else {
+        const started = performance.now();
+        const animate = (now) => {
+          const amount = Math.min(1, (now - started) / 260);
+          const eased = amount * (2 - amount);
+          for (const key of ["x", "y", "w", "h"]) {
+            view[key] = BASE_VIEW[key] + (target[key] - BASE_VIEW[key]) * eased;
+          }
+          zoom = clamp(Math.min(BASE_VIEW.w / view.w, BASE_VIEW.h / view.h), ZOOM_MIN, ZOOM_MAX);
+          apply();
+          updateLayout();
+          if (amount < 1) {
+            requestAnimationFrame(animate);
+          }
+        };
+        requestAnimationFrame(animate);
+      }
+    }
     return { reset };
   };
 
-  const renderMap = (filterId, selectedId, layersRaw, serviceId) => {
-    const filter = pack.filters.find((f) => f.id === filterId) || pack.filters[0];
-    const shown = pack.communities.filter((c) => filter.ids.includes(c.id));
-    const selected = pack.communities.find((c) => c.id === selectedId) || null;
-    const service = SERVICE_ORDER.includes(serviceId) ? serviceId : DEFAULT_SERVICE;
-    // The selected point is drawn last so its ring and label sit above its neighbours.
-    const ordered = [
-      ...shown.filter((c) => c !== selected),
-      ...shown.filter((c) => c === selected),
-    ];
-    // Task-33: area (coverage) and line (region-border) layers are both toggled through the
-    // same chip row and both start hidden; town points are never in this list (contract item 4).
+  const renderPoint = (community, state, filter) => {
+    const { x, y } = community;
+    const priority = priorityRowOf(community);
+    const tier = String(mapTier(community));
+    const attributes = {
+      class: `map__pt-group map__community${isDimmed(community, state, filter) ? " map__community--dim" : ""}${community.id === state.selected ? " map__community--selected" : ""}`,
+      tabindex: "0",
+      "data-id": String(community.id),
+    };
+    let title;
+    let shapes;
+    let rankText = null;
+    if (state.lens === "fix") {
+      attributes["data-tier"] = tier;
+      const size = mapRadius(community, state);
+      title = `${community.name} · priority ${priority.rank}`;
+      shapes = [s("circle", { class: "map__pt map__pt--fix", cx: f1(x), cy: f1(y), r: size })];
+      if (tier === "1") {
+        rankText = s(
+          "text",
+          { class: "map__rank", x: f1(x), y: f1(y + 2.5), "text-anchor": "middle" },
+          String(priority.rank),
+        );
+      }
+    } else if (state.lens === "service") {
+      const verdict = serviceVerdict(community, state.service);
+      const size = mapRadius(community, state);
+      title = `${community.name} · ${VERDICTS[verdict].word}`;
+      shapes = [s("circle", { class: `map__pt map__pt--${verdict}`, cx: f1(x), cy: f1(y), r: size })];
+      if (verdict === "degraded") {
+        shapes.push(
+          s("path", {
+            class: "map__pt-half",
+            d: `M${f1(x)},${f1(y - size)} A${size},${size} 0 0 0 ${f1(x)},${f1(y + size)} Z`,
+          }),
+        );
+      } else if (verdict === "nodata") {
+        shapes[0].setAttribute("stroke-dasharray", `${f1(size)} ${f1(size / 2)}`);
+      }
+    } else {
+      const source = sourceState(community);
+      attributes["data-sources"] = source;
+      const size = mapRadius(community, state);
+      title = `${community.name} · ${source}`;
+      shapes = [s("circle", { class: `map__pt map__pt--source-${source}`, cx: f1(x), cy: f1(y), r: size })];
+    }
+    const group = s(
+      "g",
+      attributes,
+      s("title", {}, title),
+      s("circle", { class: "map__hit", cx: f1(x), cy: f1(y), r: 16 }),
+      s("g", { class: "map__pt-shape" }, ...shapes),
+    );
+    if (rankText) {
+      group.appendChild(rankText);
+    }
+    if (community.id === state.selected) {
+      group.appendChild(s("circle", { class: "map__ring", cx: f1(x), cy: f1(y), r: 9 }));
+    }
+    const select = () => {
+      location.hash = mapHash({ ...state, selected: community.id });
+    };
+    group.addEventListener("click", select);
+    group.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        select();
+      }
+    });
+    return group;
+  };
+
+  const renderRegions = (state) =>
+    h(
+      "nav",
+      { class: "map-regions", "aria-label": "Map regions" },
+      [[null, "All NT"], ...REGION_SLUGS.map((region) => [region.slug, region.name])].map(
+        ([slug, label]) =>
+          h(
+            "a",
+            {
+              class: "chip",
+              "aria-pressed": state.region === slug || (!state.region && slug === null) ? "true" : "false",
+              href: mapHash({ ...state, region: slug }),
+            },
+            label,
+          ),
+      ),
+    );
+
+  const renderMap = (requested) => {
+    const filter = pack.filters.find((one) => one.id === requested.filter) ||
+      pack.filters.find((one) => one.id === DEFAULT_FILTER) || pack.filters[0];
+    const state = {
+      lens: MAP_LENSES.includes(requested.lens) ? requested.lens : DEFAULT_LENS,
+      region: REGION_SLUGS.some((region) => region.slug === requested.region) ? requested.region : null,
+      filter: filter.id,
+      selected: pack.communities.some((community) => community.id === requested.selected)
+        ? requested.selected
+        : null,
+      layers: requested.layers,
+      service: SERVICE_ORDER.includes(requested.service) ? requested.service : DEFAULT_SERVICE,
+    };
+    const selected = pack.communities.find((community) => community.id === state.selected) || null;
     const toggleLayers = pack.layers.filter(isToggleLayer);
     const visibleSlugs =
-      layersRaw === null || layersRaw === undefined
+      !state.layers
         ? new Set()
-        : new Set(layersRaw.split(",").filter(Boolean));
-    // Kept by id so attachMapView can hide and show them again as clusters form and split
-    // (Task-29), without rebuilding the point markup on every zoom change.
-    const pointGroups = ordered.map((c) =>
-      renderPoint(c, c === selected, filter.id, layersRaw, service),
+        : new Set(state.layers.split(",").filter((slug) => toggleLayers.some((layer) => slugOf(layer) === slug)));
+    state.layers = visibleSlugs.size ? toggleLayers.map(slugOf).filter((slug) => visibleSlugs.has(slug)).join(",") : null;
+    const byRank = [...pack.communities].sort(
+      (a, b) => priorityRowOf(a).rank - priorityRowOf(b).rank,
     );
-    const pointGroupsById = new Map(ordered.map((c, i) => [c.id, pointGroups[i]]));
+    const ordered = [...byRank].sort(
+      (a, b) => mapTier(b) - mapTier(a) || priorityRowOf(a).rank - priorityRowOf(b).rank,
+    );
+    const pointGroups = ordered.map((community) => renderPoint(community, state, filter));
+    const pointGroupsById = new Map(ordered.map((community, index) => [community.id, pointGroups[index]]));
+    const labelsGroup = s("g", { class: "map__zoom-labels" });
     const svg = s(
       "svg",
       {
         class: "map",
         role: "img",
-        "aria-label": `Map of the Northern Territory, ${shown.length} of ${pack.count} communities shown`,
+        "aria-label": `Map of the Northern Territory, ${pack.count} communities`,
+        "data-lens": state.lens,
+        "data-zoom": "1",
         viewBox: "0 0 300 480",
+        preserveAspectRatio: "xMidYMid meet",
       },
-      // The land is the base terrain the layers and points sit on: painted first, not last
-      // (a deliberate departure from a literal reading of the Execution Guide's draw-order
-      // sentence -- its own opaque --map-land fill, drawn after the coverage layers, painted
-      // over every one of them; see this task's Status notes).
       s("g", { class: "map__land" }, s("path", { d: pack.outline })),
-      ...pack.layers.map((layer) => renderLayerGroup(layer, visibleSlugs)),
+      ...pack.layers.filter((layer) => layer.kind !== "point").map((layer) => renderLayerGroup(layer, visibleSlugs)),
       ...pointGroups,
+      ...pack.layers.filter((layer) => layer.kind === "point").map((layer) => renderLayerGroup(layer, visibleSlugs)),
+      labelsGroup,
     );
+    if (state.region) {
+      svg.setAttribute("data-region", state.region);
+    }
     main.textContent = "";
-    main.appendChild(
-      renderServiceSelector(service, filter.id, selected ? selected.id : null, layersRaw),
-    );
-    const bar = renderFilterTabs(filter, selected ? selected.id : null, layersRaw, service);
-    main.appendChild(bar);
-    const layersDetails = h(
-      "details",
-      { class: "section map-layers", open: layersFoldOpen ? "" : null },
-      h("summary", {}, "Layers"),
-      renderLayerChips(
-        toggleLayers,
-        visibleSlugs,
-        filter.id,
-        selected ? selected.id : null,
-        layersRaw,
-        service,
-      ),
-    );
-    layersDetails.addEventListener("toggle", () => {
-      layersFoldOpen = layersDetails.open;
-    });
-    main.appendChild(layersDetails);
-    main.appendChild(svg);
-    const mapView = attachMapView(svg, shown, selected ? selected.id : null, pointGroupsById, service);
+    main.appendChild(renderMapLens(state));
+    if (state.lens === "service") {
+      main.appendChild(renderServiceSelector(state));
+    }
     const resetButton = h(
       "button",
-      { type: "button", class: "button button--secondary map-controls__reset" },
+      { type: "button", class: "button button--secondary map-controls__reset", hidden: state.region ? null : "" },
       "Reset view",
     );
-    resetButton.addEventListener("click", () => mapView.reset());
-    main.appendChild(resetButton);
-    main.appendChild(renderLegend(shown.length, service));
-    main.appendChild(renderMapList(shown, service));
-    if (selected) {
-      for (const node of renderMapPanel(selected)) {
-        main.appendChild(node);
-      }
+    const regionTarget = state.region ? regionView(state.region) : null;
+    const frameAttributes = {
+      class: "map-frame" + (state.lens === "service" ? " map-frame--service" : "") + (regionTarget ? " map-frame--region" : ""),
+    };
+    if (regionTarget) {
+      frameAttributes.style = "--map-region-ratio: " + regionTarget.w + " / " + regionTarget.h;
     }
-    const activeTab = bar.querySelector("[aria-selected=true]");
-    activeTab.scrollIntoView({ inline: "nearest", block: "nearest" });
-    watchOverflow(bar);
+    const frame = h("div", frameAttributes, svg, resetButton);
+    main.appendChild(frame);
+    const mapView = attachMapView(svg, ordered, state, pointGroupsById, labelsGroup, resetButton);
+    resetButton.addEventListener("click", () => mapView.reset());
+    main.appendChild(renderLegend(state));
+    main.appendChild(renderMapCard(selected));
+    const regions = renderRegions(state);
+    main.appendChild(regions);
+    const activeRegion = regions.querySelector('[aria-pressed="true"]');
+    regions.scrollLeft = activeRegion.offsetLeft - (regions.clientWidth - activeRegion.offsetWidth) / 2;
+    const more = h(
+      "details",
+      { class: "map-more", open: filter.id !== DEFAULT_FILTER || state.layers ? "" : null },
+      h("summary", {}, "Highlight and layers"),
+      renderFilterTabs(filter, state),
+      renderLayerChips(toggleLayers, visibleSlugs, state),
+    );
+    main.appendChild(more);
+    main.appendChild(renderMapList(state, filter));
   };
 
   // Task-41, 2026-09-17: the Priority tab. `pack.priority` is already in rank order and already
@@ -1873,13 +1952,14 @@
     } else if (screen === "#/map") {
       const query = new URLSearchParams(hash.split("?")[1] || "");
       const selectedParam = query.get("selected");
-      const layersParam = query.has("layers") ? query.get("layers") : null;
-      renderMap(
-        query.get("filter") || "all",
-        selectedParam ? Number(selectedParam) : null,
-        layersParam,
-        query.get("service") || DEFAULT_SERVICE,
-      );
+      renderMap({
+        lens: query.get("lens") || DEFAULT_LENS,
+        region: query.get("region"),
+        filter: query.get("filter") || DEFAULT_FILTER,
+        selected: selectedParam ? Number(selectedParam) : null,
+        layers: query.has("layers") ? query.get("layers") : null,
+        service: query.get("service") || DEFAULT_SERVICE,
+      });
     } else if (screen === "#/share") {
       renderShare();
     } else {

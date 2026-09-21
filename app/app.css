@@ -102,21 +102,52 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 
 .transfer__note { margin: 0; font: var(--text-body-sm); color: var(--text-secondary); }
 
-/* Task-21 map second pass: layer groups, the carrier coverage toggle chips, and the zoom/pan
-   controls. New classes only, tokens only (layer rule 5); the map/community/label styling
-   screens.css already owns is untouched -- these rules only add what it does not carry. */
+/* Task-48 map: one compact frame, three lenses, region focus and highlight-only filters. */
+
+.map-lens {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: var(--space-sm) var(--space-md) 0;
+  padding: var(--space-xxs);
+  background: var(--surface-block);
+  border-radius: var(--radius-md);
+}
+
+.map-lens__option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--size-touch);
+  padding: 0 var(--space-xs);
+  border-radius: var(--radius-sm);
+  font: var(--text-tab);
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.map-lens__option[aria-selected="true"] { color: var(--text-heading); background: var(--surface-page); }
+
+.map-frame {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  height: min(62vh, var(--size-viewport-min-height));
+  margin-top: var(--space-xs);
+}
+
+.map-frame--service { height: min(59vh, var(--size-viewport-min-height)); }
+.map-frame--region { height: auto; aspect-ratio: var(--map-region-ratio); max-height: min(62vh, var(--size-viewport-min-height)); }
+
+.map-frame .map {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+}
 
 .map--zoomable { touch-action: none; }
 
-/* Task-33: the HTML `[hidden]{display:none}` UA rule does not reach an SVG `<g>` in this
-   engine -- confirmed by measuring the element's own bounding box, not just reading its
-   `hidden` attribute back: with the attribute set but no rule below, cov-telstra/optus/tpg and
-   regions-sa3 still had a non-zero on-screen rect at first load. `.map__layer` is the only
-   toggled group (towns is never hidden), so this rule cannot hide anything the contract wants
-   visible. The same measurement on `.map__community[hidden]` (Task-29's clustered members,
-   hidden the same way, in `attachMapView`) found the identical gap: 52 of 96 points still had a
-   non-zero rect at zoom 1, drawn underneath their cluster bubble. */
-.map__layer[hidden], .map__community[hidden] { display: none; }
+.map__layer[hidden] { display: none; }
 
 .map__layer--area .map__layer-shape { stroke: none; fill-opacity: var(--layer-fill-opacity); }
 
@@ -134,50 +165,54 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 .map__town-dot { fill: var(--layer-towns); }
 .map__town-label { font: var(--text-label); fill: var(--layer-towns); }
 
+.map__town-label, .map__label, .map__rank {
+  paint-order: stroke;
+  stroke: var(--surface-page);
+  stroke-width: var(--size-focus-ring);
+  stroke-linejoin: round;
+}
+.map__label--dim { opacity: 0.25; }
+
 .layer-chips { padding: var(--space-sm) var(--space-md) 0; }
 
 .layer-chip { border: none; cursor: pointer; }
 
 .layer-chip[aria-pressed="false"] { opacity: 0.5; }
 
-.map-controls__reset { width: auto; margin: var(--space-sm) auto var(--space-sm); }
+.map-controls__reset {
+  position: absolute;
+  right: var(--space-sm);
+  top: var(--space-sm);
+  width: auto;
+  height: var(--size-chip);
+  min-height: var(--size-chip);
+  padding: 0 var(--space-sm);
+  font: var(--text-caption);
+}
 
-/* Point markers, the selection ring, every community label, the town markers and (since
-   Task-29) the cluster fill/ring/count counter-scale against the viewBox zoom (--map-zoom, set
-   by app.js) around their own centre, so they read at a constant screen size instead of growing
-   as the map zooms in (Task-21 Execution Guide). */
-.map__pt-shape, .map__ring, .map__label, .map__town-dot, .map__town-label,
-.map__cluster-fill, .map__cluster-arc, .map__cluster-count {
+.map-controls__reset[hidden] { display: none; }
+
+.map__pt-shape, .map__ring, .map__rank, .map__label, .map__town-dot, .map__town-label {
   transform-box: fill-box;
   transform-origin: center;
   transform: scale(calc(1 / var(--map-zoom, 1)));
 }
 
-/* Task-29 map clustering: close points merge into one bubble at CLUSTER_RADIUS / zoom
-   (app.js), so overlapping markers in the Top End read at every zoom. New classes only, tokens
-   only (layer rule 5); .map__hit above already gives the cluster its tap target. */
+.map__community { cursor: pointer; transition: opacity 180ms ease, transform 180ms ease; }
+.map__community--dim { opacity: 0.2; }
+.map__community--selected { opacity: 1; }
 
-.map__cluster { cursor: pointer; }
+.map__pt--fix, .map__pt--source-disagree { fill: var(--text-heading); }
+.map__pt--source-agree { fill: var(--text-secondary); }
+.map__pt--source-measured { fill: var(--surface-page); stroke: var(--verdict-fails-text); stroke-width: var(--size-focus-ring); vector-effect: non-scaling-stroke; }
+.map__rank { font: var(--text-figure-xs); font-weight: var(--weight-semibold); fill: var(--surface-page); stroke: none; pointer-events: none; }
 
-.map__cluster-fill {
-  fill: var(--surface-page);
-  stroke: var(--border-hairline);
-  stroke-width: var(--size-hairline);
-  vector-effect: non-scaling-stroke;
+.map__community--selected .map__ring { animation: map-pulse 2.4s ease-in-out infinite; }
+
+@keyframes map-pulse {
+  0%, 100% { opacity: 0.45; transform: scale(calc(1 / var(--map-zoom, 1))); }
+  50% { opacity: 1; transform: scale(calc(1.35 / var(--map-zoom, 1))); }
 }
-
-.map__cluster-arc {
-  fill: none;
-  stroke-width: var(--size-focus-ring);
-  vector-effect: non-scaling-stroke;
-}
-
-.map__cluster-arc--works { stroke: var(--verdict-works-text); }
-.map__cluster-arc--degraded { stroke: var(--verdict-degraded-text); }
-.map__cluster-arc--fails { stroke: var(--verdict-fails-text); }
-.map__cluster-arc--nodata { stroke: var(--verdict-nodata-text); }
-
-.map__cluster-count { font: var(--text-label); fill: var(--text-heading); }
 
 /* Task-33 map, third pass: one shape (a circle) in four fill states, overriding
    screens.css's now-stale .map__pt--degraded/--fails/--nodata (triangle/square/dash) rules
@@ -212,10 +247,54 @@ a.top-bar__title { color: inherit; text-decoration: none; }
   border-radius: var(--radius-md);
 }
 
-/* The worst-first list under the legend; .actions already resets list style, margin and
-   padding, and .service-row / .service-row__button / .service-row__top / .service-row__label /
-   .service-row__glyph--* are the community screen's own row styling, reused as-is. */
-.map-list { margin-top: var(--space-sm); }
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xxs) var(--space-sm);
+  padding-top: var(--space-xs);
+  padding-bottom: var(--space-xs);
+}
+
+.map-legend__glyph--fix-one { color: var(--text-heading); font: var(--text-title-md); }
+.map-legend__glyph--fix-two { color: var(--text-heading); font: var(--text-body-sm); }
+.map-legend__glyph--fix-three { color: var(--text-secondary); font: var(--text-caption); }
+.map-legend__glyph--source-measured { color: var(--verdict-fails-text); }
+.map-legend__glyph--source-disagree { color: var(--text-heading); }
+.map-legend__glyph--source-agree { color: var(--text-secondary); }
+
+.map-card {
+  margin: 0 var(--space-md) var(--space-sm);
+  padding: var(--space-sm);
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+}
+
+.map-card__hint, .map-card__fix { margin: 0; font: var(--text-body-sm); color: var(--text-secondary); }
+.map-card__name { margin: 0; font: var(--text-title-md); color: var(--text-heading); }
+.map-card .community-summary { margin: var(--space-xs) 0; }
+.map-card__badges { display: grid; gap: var(--space-xs); margin: var(--space-sm) 0; }
+.map-card__badge { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); }
+.map-card__service { font: var(--text-body-sm); color: var(--text-body); }
+
+.map-regions { display: flex; gap: var(--space-xs); padding: 0 var(--space-md) var(--space-sm); overflow-x: auto; }
+.map-regions .chip { flex: 0 0 auto; text-decoration: none; }
+.map-regions .chip[aria-pressed="false"] { opacity: 0.5; }
+
+.map-more { border-top: var(--size-hairline) solid var(--border-hairline); border-bottom: var(--size-hairline) solid var(--border-hairline); }
+.map-more > summary { padding: var(--space-sm) var(--space-md); font: var(--text-title-sm); color: var(--text-heading); cursor: pointer; }
+.map-more .filter-tabs { margin-bottom: var(--space-sm); }
+
+.map-list { list-style: none; margin: 0; padding: 0; }
+.map-list__item { border-bottom: var(--size-hairline) solid var(--border-hairline-soft); }
+.map-list__item--dim { opacity: 0.45; }
+.map-list__row { display: flex; align-items: center; gap: var(--space-sm); min-height: var(--size-touch); padding: var(--space-xs) var(--space-md); color: var(--text-heading); text-decoration: none; }
+.map-list__name { flex: 1 1 auto; min-width: 0; }
+.map-list__value { flex: 0 0 auto; max-width: 52%; text-align: right; font: var(--text-caption); color: var(--text-secondary); }
+
+@media (prefers-reduced-motion: reduce) {
+  .map__community { transition: none; }
+  .map__community--selected .map__ring { animation: none; }
+}
 
 /* Task-24: the update chip beside the existing offline chip. New classes only, tokens only
    (layer rule 5); .chip is screens.css's own base (padding, radius, background), reused here
@@ -269,8 +348,10 @@ a.top-bar__title { color: inherit; text-decoration: none; }
   mask-image: linear-gradient(to right, transparent, black var(--space-xxl), black calc(100% - var(--space-xxl)), transparent);
 }
 
-/* One search bar: the location button sits under it. */
-.search__tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); margin-top: var(--space-xs); }
+/* One search bar: the location button stays beside it on the phone. */
+.search__tools { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--space-xs); }
+.search__tools .search-input { flex: 1 1 auto; min-width: 0; width: auto; }
+.search__tools .locate-button { flex: 0 0 auto; }
 
 .locate-button {
   display: inline-flex;

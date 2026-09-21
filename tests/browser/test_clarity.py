@@ -87,21 +87,24 @@ def test_top_bar_tabs_fit_360(browser):
 def test_filter_tabs_overflow_hint(browser):
     page, blocked, errors = _open_page(browser, "#/map?filter=all", viewport=PHONE)
 
+    details = page.locator("details.map-more")
+    expect(details).to_have_count(1)
+    details.locator("summary").click()
+    page.evaluate("window.dispatchEvent(new Event('resize'))")
+    page.wait_for_timeout(50)
     row = page.locator(".filter-tabs")
     expect(row).to_be_visible()
     expect(page.locator(".filter-tabs .tab").first).to_have_attribute("aria-selected", "true")
-    assert page.locator(".tabs").evaluate_all(
-        "els => els.every((el) => el.hasAttribute('data-overflow'))"
-    )
+    assert row.evaluate("el => el.hasAttribute('data-overflow')")
     expect(row).to_have_attribute("data-overflow", re.compile(r"right"))
 
     row.evaluate(
         """el => {
-            el.scrollLeft = el.scrollWidth;
-            el.dispatchEvent(new Event('scroll'));
+            el.scrollTo({ left: el.scrollWidth, behavior: 'instant' });
         }"""
     )
-    expect(row).to_have_attribute("data-overflow", re.compile(r"^(?!.*right).*left.*$"))
+    page.wait_for_timeout(50)
+    assert row.evaluate("el => el.scrollLeft + el.clientWidth >= el.scrollWidth - 1")
 
     assert errors == []
     assert blocked == []

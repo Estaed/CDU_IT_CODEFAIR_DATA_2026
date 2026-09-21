@@ -1,10 +1,7 @@
-"""Browser tests for the map screen (Task-08): points per filter, selection ring and label,
-selected panel, tap-to-select, open-community link, legend counts, offline and error-free."""
+"""Browser tests for the map v3 contract (Task-48 and Task-49)."""
 
 from __future__ import annotations
 
-import json
-import math
 import re
 from pathlib import Path
 
@@ -15,18 +12,15 @@ pytestmark = pytest.mark.browser
 
 ROOT = Path(__file__).resolve().parents[2]
 DIST_INDEX = (ROOT / "dist" / "index.html").resolve().as_uri()
-PACK = ROOT / "data" / "out" / "data_pack.json"
-
-FILTER_COUNTS = {
-    "all": 96,
-    "clinic-no-terrestrial": 12,
-    "carrier-yes-list-no": 14,
-    "licensed-no-map": 11,
-}
+PHONE = {"width": 360, "height": 780}
+VERDICT_NAMES = ("works", "degraded", "fails", "nodata")
+MAP_LIST_WORDS = ("Fails", "Degraded", "No data", "Works")
 
 
-def _open_page(browser, hash_route: str):
+def _open_page(browser, hash_route: str, viewport: dict | None = None):
     page = browser.new_page()
+    if viewport:
+        page.set_viewport_size(viewport)
     blocked: list[str] = []
     errors: list[str] = []
 
@@ -46,52 +40,162 @@ def _open_page(browser, hash_route: str):
     return page, blocked, errors
 
 
+def _pack(page) -> dict:
+    return page.evaluate("() => JSON.parse(document.getElementById('pack').textContent)")
+
+
+def _params(page) -> dict[str, str]:
+    return page.evaluate(
+        """() => Object.fromEntries(
+            new URLSearchParams(location.hash.split('?')[1] || '')
+        )"""
+    )
+
+
 def _legend_counts(page) -> list[str]:
-    return [text.strip() for text in page.locator(".map-legend__count").all_text_contents()]
+    return [
+        re.search(r"\d+", text).group()
+        for text in page.locator(".map-legend__count").all_text_contents()
+    ]
 
 
-def test_all_filter_renders_96(browser):
+def _filter_ids(pack: dict, filter_id: str) -> set[str]:
+    entry = next(one for one in pack["filters"] if one["id"] == filter_id)
+    return {str(community_id) for community_id in entry["ids"]}
+
+
+def _source_bucket(community: dict) -> str:
+    measured = next(
+        (line for line in community["publishers"] if line["kind"] == "measured"),
+        None,
+    )
+    if measured and measured["says_covered"] == "not-covered":
+        return "measured"
+    if community["agreement"]["note"] == "Sources disagree":
+        return "disagree"
+    return "agree"
+
+
+def _region_slug(label: str) -> str:
+    return label.lower().replace(" ", "-")
+
+
+def _open_layers_fold(page):
+    details = page.locator("details.map-more")
+    if not details.evaluate("el => el.open"):
+        details.locator("summary").click()
+
+
+def test_default_map_contract(browser):
     page, blocked, errors = _open_page(browser, "#/map")
+    pack = _pack(page)
 
-    expect(page.locator(".map__pt-group")).to_have_count(96)
-    expect(page.locator(".map__land path")).to_have_count(1)
-    expect(page.locator(".filter-tabs .tab")).to_have_count(4)
-    expect(page.locator(".filter-tabs .tab[aria-selected=true]")).to_have_text(re.compile("^All"))
-    expect(page.locator(".map__ring")).to_have_count(0)
+    expect(page.locator(".map-lens__option[aria-selected=true]")).to_have_text("Fix first")
+    expect(page.locator("svg.map[data-lens=fix]")).to_have_attribute("viewBox", "0 0 300 480")
+    expect(page.locator("g.map__community")).to_have_count(96)
+    expect(page.locator(".map__cluster")).to_have_count(0)
+    expect(page.locator("select")).to_have_count(0)
+
+    ranks = {str(row["id"]): row["rank"] for row in pack["priority"]}
+    expected_tiers = {
+        "1": sum(rank <= 10 for rank in ranks.values()),
+        "2": sum(11 <= rank <= 30 for rank in ranks.values()),
+        "3": sum(rank > 30 for rank in ranks.values()),
+    }
+    for tier, count in expected_tiers.items():
+        expect(page.locator(f'g.map__community[data-tier="{tier}"]')).to_have_count(count)
+
+    rank_labels = [int(text.strip()) for text in page.locator("text.map__rank").all_text_contents()]
+    assert rank_labels == list(range(1, 11))
+    legend = page.locator(".map-legend__item")
+    expect(legend).to_have_count(3)
+    for label, count in (("Top 10", 10), ("11 to 30", 20), ("The rest", 66)):
+        item = legend.filter(has_text=label)
+        expect(item).to_have_count(1)
+        assert str(count) in item.inner_text()
 
     assert errors == []
     assert blocked == []
     page.close()
 
 
-def test_filter_routes(browser):
+def test_filters_keep_all_points_and_dim_excluded_points(browser):
     page, blocked, errors = _open_page(browser, "#/map")
+    pack = _pack(page)
 
-    for filter_id, count in FILTER_COUNTS.items():
-        page.evaluate("(id) => { location.hash = `#/map?filter=${id}`; }", filter_id)
-        expect(page.locator(".map__community")).to_have_count(count)
+    for filter_id in ("all", "clinic-no-terrestrial", "carrier-yes-list-no", "licensed-no-map"):
+        page.evaluate("id => { location.hash = `#/map?filter=${id}`; }", filter_id)
+        page.wait_for_timeout(50)
+        expected_ids = _filter_ids(pack, filter_id)
+        expect(page.locator("g.map__community")).to_have_count(96)
+        expect(page.locator("g.map__community.map__community--dim")).to_have_count(
+            96 - len(expected_ids)
+        )
         active = page.locator(".filter-tabs .tab[aria-selected=true]")
         expect(active).to_have_count(1)
-        expect(active.locator(".tab__count")).to_have_text(str(count))
-        assert _legend_counts(page) == ["1", "58", "11", "26"]
-        subject = " ".join(page.locator(".map-legend__subject").last.inner_text().split())
-        assert subject == f"Showing {count} of 96"
+        expect(active.locator(".tab__count")).to_have_text(str(len(expected_ids)))
 
     assert errors == []
     assert blocked == []
     page.close()
 
 
-def test_licensed_no_map_verdicts(browser):
-    page, blocked, errors = _open_page(browser, "#/map?filter=licensed-no-map")
+def test_lenses_sources_and_service_match_pack(browser):
+    page, blocked, errors = _open_page(browser, "#/map?lens=sources")
+    pack = _pack(page)
+    communities = {str(one["id"]): one for one in pack["communities"]}
 
-    expect(page.locator(".map__pt-group")).to_have_count(11)
-    expect(page.locator(".map__pt-group .map__pt--fails")).to_have_count(6)
-    expect(page.locator(".map__pt-group .map__pt--nodata")).to_have_count(5)
-    # Task-33: both are circles now, coloured by stroke, not a triangle/square pair.
-    for verdict in ("fails", "nodata"):
-        tag = page.locator(f".map__pt--{verdict}").first.evaluate("el => el.tagName")
-        assert tag == "circle"
+    actual_sources = page.locator("g.map__community").evaluate_all(
+        """els => Object.fromEntries(
+            els.map(el => [el.getAttribute('data-id'), el.getAttribute('data-sources')])
+        )"""
+    )
+    expected_sources = {
+        community_id: _source_bucket(one) for community_id, one in communities.items()
+    }
+    assert actual_sources == expected_sources
+    source_counts = {
+        bucket: sum(value == bucket for value in expected_sources.values())
+        for bucket in ("measured", "disagree", "agree")
+    }
+    expect(page.locator(".map-lens__option[aria-selected=true]")).to_have_text("Sources")
+    for label, bucket in (
+        ("Drive test found no signal", "measured"),
+        ("Sources disagree", "disagree"),
+        ("Sources agree", "agree"),
+    ):
+        item = page.locator(".map-legend__item").filter(has_text=label)
+        expect(item).to_have_count(1)
+        assert str(source_counts[bucket]) in item.inner_text()
+
+    page.evaluate("""() => { location.hash = '#/map?lens=service'; }""")
+    page.wait_for_timeout(50)
+    expect(page.locator("select")).to_have_count(1)
+    service_id = page.locator("select").input_value()
+    expected_verdicts = {
+        verdict: sum(
+            next(
+                service for service in one["services"] if service["service"] == service_id
+            )["verdict"]
+            == verdict
+            for one in pack["communities"]
+        )
+        for verdict in VERDICT_NAMES
+    }
+    for verdict, count in expected_verdicts.items():
+        expect(page.locator(f".map__pt--{verdict}")).to_have_count(count)
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_lens_control_keeps_selected_and_filter(browser):
+    page, blocked, errors = _open_page(browser, "#/map?filter=clinic-no-terrestrial&selected=426")
+
+    page.get_by_role("tab", name="Sources", exact=True).click()
+    params = _params(page)
+    assert params == {"lens": "sources", "filter": "clinic-no-terrestrial", "selected": "426"}
 
     assert errors == []
     assert blocked == []
@@ -100,10 +204,15 @@ def test_licensed_no_map_verdicts(browser):
 
 def test_filter_tab_click_changes_route(browser):
     page, blocked, errors = _open_page(browser, "#/map")
+    _open_layers_fold(page)
+    pack = _pack(page)
 
     page.locator(".filter-tabs .tab").filter(has_text="Licensed mast").click()
-    expect(page).to_have_url(re.compile(r"#/map\?filter=licensed-no-map$"))
-    expect(page.locator(".map__community")).to_have_count(11)
+    expect(page.locator("g.map__community")).to_have_count(96)
+    assert _params(page)["filter"] == "licensed-no-map"
+    expect(page.locator("g.map__community.map__community--dim")).to_have_count(
+        96 - len(_filter_ids(pack, "licensed-no-map"))
+    )
 
     assert errors == []
     assert blocked == []
@@ -113,95 +222,305 @@ def test_filter_tab_click_changes_route(browser):
 def test_selected_baniyala(browser):
     page, blocked, errors = _open_page(browser, "#/map?selected=458")
 
-    expect(page.locator(".map__ring")).to_have_count(1)
-    expect(page.locator(".map__label")).to_have_text("Baniyala")
-    expect(page.locator(".community-header__name")).to_have_text("Baniyala")
-
-    headline = page.locator(".agreement__headline .fig")
-    expect(headline).to_have_count(2)
-    # 1 of 3, not the mock's 1 of 4: PRD decision 2026-09-13 (not-recorded is not a source)
-    assert headline.all_text_contents() == ["1", "3"]
-    expect(page.locator(".service-row .verdict-badge--fails")).to_have_count(1)
-    assert _legend_counts(page) == ["1", "58", "11", "26"]
-
-    page.locator(".text-link").click()
-    expect(page).to_have_url(re.compile(r"#/community/458$"))
-    expect(page.locator("h1.community-header__name")).to_have_text("Baniyala")
+    expect(page.locator('g.map__community[data-id="458"].map__community--selected')).to_have_count(1)
+    expect(page.locator(".map-card__name")).to_have_text("Baniyala")
+    expect(page.get_by_role("link", name="Open Baniyala", exact=True)).to_have_count(1)
 
     assert errors == []
     assert blocked == []
     page.close()
 
 
-def _isolated_community() -> dict:
-    """The community farthest from its nearest neighbour; its hit circle (r 16) must overlap no
-    other point's, so a real click lands on it and not on a neighbour drawn above it."""
-    communities = json.loads(PACK.read_text(encoding="utf-8"))["communities"]
+def test_click_point_selects_it_and_keeps_lens(browser):
+    page, blocked, errors = _open_page(browser, "#/map?lens=sources")
+    community = page.evaluate(
+        """() => {
+            const pack = JSON.parse(document.getElementById('pack').textContent);
+            const distance = (one, other) => Math.hypot(one.x - other.x, one.y - other.y);
+            return pack.communities.reduce((best, one) => {
+                const nearest = Math.min(...pack.communities
+                    .filter(other => other.id !== one.id)
+                    .map(other => distance(one, other)));
+                if (!best || nearest > best.nearest) return {id: one.id, nearest};
+                return best;
+            }, null);
+        }"""
+    )
+    page.locator(f'g.map__community[data-id="{community["id"]}"]').dispatch_event("click")
+    params = _params(page)
+    assert params["lens"] == "sources"
+    assert params["selected"] == str(community["id"])
+    expect(page.locator(".map-card__name")).to_be_visible()
 
-    def nearest(community: dict) -> float:
-        return min(
-            math.hypot(community["x"] - other["x"], community["y"] - other["y"])
-            for other in communities
-            if other is not community
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_regions_order_zoom_dimming_and_reset(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+    pack = _pack(page)
+    region_labels = []
+    for community in pack["communities"]:
+        if community["region"] not in region_labels:
+            region_labels.append(community["region"])
+    chips = page.locator(".map-regions a.chip")
+    expect(chips).to_have_count(6)
+    assert chips.all_text_contents() == ["All NT", *region_labels]
+
+    rest_view_box = page.locator("svg.map").get_attribute("viewBox")
+    selected_region = region_labels[0]
+    slug = _region_slug(selected_region)
+    chips.nth(1).click()
+    page.wait_for_timeout(500)
+    expect(page.locator("svg.map")).to_have_attribute("data-region", slug)
+    assert page.locator("svg.map").get_attribute("viewBox") != rest_view_box
+    expected_dimmed = {
+        str(community["id"])
+        for community in pack["communities"]
+        if community["region"] != selected_region
+    }
+    actual_dimmed = set(
+        page.locator("g.map__community.map__community--dim").evaluate_all(
+            "els => els.map(el => el.getAttribute('data-id'))"
+        )
+    )
+    assert actual_dimmed == expected_dimmed
+
+    page.get_by_role("button", name="Reset view", exact=True).click()
+    expect(page.locator("svg.map")).not_to_have_attribute("data-region", "")
+    assert "region" not in _params(page)
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_map_legend_fits_phone_viewport(browser):
+    page, blocked, errors = _open_page(browser, "#/map", viewport=PHONE)
+
+    box = page.locator("div.map-legend").bounding_box()
+    assert box is not None
+    assert box["y"] + box["height"] <= PHONE["height"]
+    assert page.evaluate("window.scrollY") == 0
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_selection_card_and_open_link(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+    expect(page.locator("p.map-card__hint")).to_have_text("Tap a community.")
+
+    page.goto(f"{DIST_INDEX}#/map?selected=426")
+    page.wait_for_load_state()
+    pack = _pack(page)
+    priority = next(one for one in pack["priority"] if str(one["id"]) == "426")
+    intervention = pack["priority_interventions"][priority["i"]]["word"]
+    expect(page.locator(".map-card__name")).to_have_text("Wadeye")
+    expect(page.locator(".community-summary")).to_have_text(
+        "All 4 sources say Wadeye has mobile coverage. A video call with a doctor is not proven "
+        "to work here. It could work over Telstra 4G if latency is under 100 ms. "
+        "No measurement exists here."
+    )
+    expect(page.locator(".map-card__fix")).to_have_text(
+        f"Fix first #{priority['rank']} of {len(pack['communities'])} · {intervention}"
+    )
+    expect(page.locator(".map-card .verdict-badge")).to_have_count(4)
+    open_link = page.get_by_role("link", name="Open Wadeye", exact=True)
+    expect(open_link).to_have_attribute("href", "#/community/426")
+    open_link.click()
+    expect(page).to_have_url(re.compile(r"#/community/426$"))
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_declutter_is_pure_bounded_and_separates_real_points(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+    result = page.evaluate(
+        """() => {
+            const pack = JSON.parse(document.getElementById('pack').textContent);
+            const points = pack.communities.map(({id, x, y}) => ({id, x, y}));
+            const a = window.__map.declutter(points, 1);
+            const b = window.__map.declutter(points, 1);
+            const zoom8 = window.__map.declutter(points, 8);
+            const displacement = a.map((one, index) => Math.hypot(
+                one.x - points[index].x,
+                one.y - points[index].y,
+            ));
+            let minimumDistance = Infinity;
+            for (let i = 0; i < a.length; i += 1) {
+                for (let j = i + 1; j < a.length; j += 1) {
+                    minimumDistance = Math.min(
+                        minimumDistance,
+                        Math.hypot(a[i].x - a[j].x, a[i].y - a[j].y),
+                    );
+                }
+            }
+            return {
+                points,
+                a,
+                b,
+                zoom8,
+                maxDisplacement: Math.max(...displacement),
+                minimumDistance,
+            };
+        }"""
+    )
+    assert result["a"] == result["b"]
+    assert [one["id"] for one in result["a"]] == [one["id"] for one in result["points"]]
+    assert result["maxDisplacement"] <= 14
+    assert result["zoom8"] == result["points"]
+    assert result["minimumDistance"] >= 6
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_map_more_fold_state(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+    details = page.locator("details.map-more")
+    assert details.evaluate("el => el.open") is False
+
+    page.goto(f"{DIST_INDEX}#/map?filter=clinic-no-terrestrial")
+    page.wait_for_load_state()
+    assert page.locator("details.map-more").evaluate("el => el.open") is True
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_map_list_order_and_filter_dimming(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+    pack = _pack(page)
+
+    def row_ids() -> list[str]:
+        return page.locator("ol.map-list > li").evaluate_all(
+            """els => els.map(el => {
+                const href = el.querySelector('a').getAttribute('href');
+                return new URLSearchParams(href.split('?')[1] || '').get('selected');
+            })"""
         )
 
-    best = max(communities, key=nearest)
-    assert nearest(best) > 32, "no community with a non-overlapping hit circle"
-    return best
+    expect(page.locator("ol.map-list > li")).to_have_count(96)
+    rank_one = str(next(one for one in pack["priority"] if one["rank"] == 1)["id"])
+    assert row_ids()[0] == rank_one
 
+    page.goto(f"{DIST_INDEX}#/map?lens=sources")
+    page.wait_for_load_state()
+    source_ids = row_ids()
+    expected_source_ids = [
+        str(community["id"])
+        for community in sorted(
+            pack["communities"],
+            key=lambda one: (
+                ("measured", "disagree", "agree").index(_source_bucket(one)),
+                one["name"],
+            ),
+        )
+    ]
+    assert source_ids == expected_source_ids
 
-def test_click_point_selects_it(browser):
-    community = _isolated_community()
-    page, blocked, errors = _open_page(browser, "#/map")
-
-    group = page.locator(".map__community").filter(has_text=community["name"])
-    expect(group).to_have_count(1)
-    group.click()
-    expect(page).to_have_url(re.compile(rf"#/map\?filter=all&selected={community['id']}$"))
-    expect(page.locator(".map__ring")).to_have_count(1)
-    expect(page.locator(".map__label")).to_have_text(community["name"])
+    page.goto(f"{DIST_INDEX}#/map?filter=clinic-no-terrestrial")
+    page.wait_for_load_state()
+    filtered_ids = row_ids()
+    active_ids = _filter_ids(pack, "clinic-no-terrestrial")
+    first_excluded = next(
+        (
+            index
+            for index, community_id in enumerate(filtered_ids)
+            if community_id not in active_ids
+        ),
+        None,
+    )
+    assert first_excluded is not None
+    assert all(community_id in active_ids for community_id in filtered_ids[:first_excluded])
+    assert all(community_id not in active_ids for community_id in filtered_ids[first_excluded:])
 
     assert errors == []
     assert blocked == []
     page.close()
 
 
-# --- Task-21: map layers, carrier toggles, zoom/pan, community labels ------------------------
+def test_service_selector_recolours_and_recounts(browser):
+    page, blocked, errors = _open_page(browser, "#/map?lens=service")
+    pack = _pack(page)
 
-PACK_LAYERS = json.loads(PACK.read_text(encoding="utf-8"))["layers"]
-AREA_LAYER_IDS = [layer["id"] for layer in PACK_LAYERS if layer["kind"] == "area"]
+    select = page.locator("select")
+    expect(select).to_have_value("telehealth_video")
+    select.select_option("voice_sms")
+    params = _params(page)
+    assert params["lens"] == "service"
+    assert params["service"] == "voice_sms"
+
+    expected = {
+        verdict: sum(
+            next(
+                service for service in community["services"] if service["service"] == "voice_sms"
+            )["verdict"]
+            == verdict
+            for community in pack["communities"]
+        )
+        for verdict in VERDICT_NAMES
+    }
+    assert _legend_counts(page) == [str(expected[verdict]) for verdict in VERDICT_NAMES]
+    for verdict in VERDICT_NAMES:
+        expect(page.locator(f".map__pt--{verdict}")).to_have_count(expected[verdict])
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_map_list_service_is_worst_first(browser):
+    page, blocked, errors = _open_page(browser, "#/map?lens=service&filter=clinic-no-terrestrial")
+
+    rows = page.locator("ol.map-list > li")
+    expect(rows).to_have_count(96)
+    ranks = []
+    for text in rows.all_text_contents():
+        stripped = text.strip()
+        ranks.append(next(index for index, word in enumerate(MAP_LIST_WORDS) if word in stripped))
+    assert ranks == sorted(ranks)
+
+    params = page.evaluate(
+        """() => {
+            const href = document.querySelector('ol.map-list > li a').getAttribute('href');
+            return Object.fromEntries(new URLSearchParams(href.split('?')[1] || ''));
+        }"""
+    )
+    assert params["lens"] == "service"
+    assert params["filter"] == "clinic-no-terrestrial"
+    assert params["selected"]
+
+    assert errors == []
+    assert blocked == []
+    page.close()
 
 
 def test_one_layer_group_per_pack_layer(browser):
     page, blocked, errors = _open_page(browser, "#/map")
-
-    for layer in PACK_LAYERS:
+    for layer in _pack(page)["layers"]:
         expect(page.locator(f'g[data-layer="{layer["id"]}"]')).to_have_count(1)
-    # The Task-08 filter behaviour and counts are unaffected by the new layer groups.
-    expect(page.locator(".map__community")).to_have_count(96)
+    expect(page.locator("g.map__community")).to_have_count(96)
 
     assert errors == []
     assert blocked == []
     page.close()
-
-
-def _open_layers_fold(page):
-    """Task-33: the layer chips now live behind details.map-layers, closed by default; a chip
-    is not actionable (native `display: none` on the fold's content) until it is opened."""
-    page.locator(".map-layers summary").click()
 
 
 def test_area_chip_toggles_hidden_on_its_group(browser):
     page, blocked, errors = _open_page(browser, "#/map")
     _open_layers_fold(page)
-
-    layer_id = AREA_LAYER_IDS[0]
-    label = next(layer["label"] for layer in PACK_LAYERS if layer["id"] == layer_id)
-    group = page.locator(f'g[data-layer="{layer_id}"]')
-    chip = page.locator(".layer-chip").filter(has_text=label)
+    area_layer = next(layer for layer in _pack(page)["layers"] if layer["kind"] == "area")
+    group = page.locator(f'g[data-layer="{area_layer["id"]}"]')
+    chip = page.locator(".layer-chip").filter(has_text=area_layer["label"])
     expect(chip).to_have_count(1)
-
-    # Task-33: layers off by default (contract item 4), reversed from Task-21's all-on default.
     expect(group).to_have_attribute("hidden", "")
     chip.click()
     expect(group).not_to_have_attribute("hidden", "")
@@ -215,16 +534,9 @@ def test_area_chip_toggles_hidden_on_its_group(browser):
 
 def test_area_layers_start_hidden(browser):
     page, blocked, errors = _open_page(browser, "#/map")
-
-    # `to_be_hidden()`, not just `to_have_attribute("hidden", "")`: the attribute alone does not
-    # prove the layer is off-screen -- the HTML `[hidden]{display:none}` UA rule does not reach
-    # an SVG `<g>` in this engine, so a build without `.map__layer[hidden]{display:none}` in
-    # app.css passed the attribute check while the coverage blobs and the SA3 borders were still
-    # painted on first load (the defect this test exists to catch).
-    for layer_id in AREA_LAYER_IDS:
-        expect(page.locator(f'g[data-layer="{layer_id}"]')).to_be_hidden()
-    expect(page.locator('g[data-layer="regions-sa3"]')).to_be_hidden()
-    # Towns are never toggled: no chip, always visible.
+    for layer in _pack(page)["layers"]:
+        if layer["kind"] == "area":
+            expect(page.locator(f'g[data-layer="{layer["id"]}"]')).to_be_hidden()
     expect(page.locator('g[data-layer="towns"]')).to_be_visible()
     expect(page.locator(".map__town")).to_have_count(5)
 
@@ -236,12 +548,10 @@ def test_area_layers_start_hidden(browser):
 def test_region_chip_shows_the_sa3_layer(browser):
     page, blocked, errors = _open_page(browser, "#/map")
     _open_layers_fold(page)
-
-    label = next(layer["label"] for layer in PACK_LAYERS if layer["id"] == "regions-sa3")
-    chip = page.locator(".layer-chip").filter(has_text=label)
+    layer = next(layer for layer in _pack(page)["layers"] if layer["id"] == "regions-sa3")
+    chip = page.locator(".layer-chip").filter(has_text=layer["label"])
     expect(chip).to_have_count(1)
     group = page.locator('g[data-layer="regions-sa3"]')
-
     chip.click()
     expect(group).not_to_have_attribute("hidden", "")
 
@@ -264,18 +574,11 @@ def test_layers_query_shows_only_the_named_layer(browser):
 
 def test_five_towns_with_names(browser):
     page, blocked, errors = _open_page(browser, "#/map")
-
-    towns_layer = next(layer for layer in PACK_LAYERS if layer["kind"] == "point")
+    towns_layer = next(layer for layer in _pack(page)["layers"] if layer["kind"] == "point")
     expected = {point["label"] for point in towns_layer["paths"]}
     markers = page.locator(".map__town")
     expect(markers).to_have_count(5)
-    assert set(markers.all_text_contents()) == expected == {
-        "Darwin",
-        "Katherine",
-        "Tennant Creek",
-        "Alice Springs",
-        "Nhulunbuy",
-    }
+    assert set(markers.all_text_contents()) == expected
 
     assert errors == []
     assert blocked == []
@@ -284,6 +587,7 @@ def test_five_towns_with_names(browser):
 
 def _wheel_zoom_in(page, ticks: int = 10):
     box = page.locator(".map").bounding_box()
+    assert box is not None
     cx = box["x"] + box["width"] / 2
     cy = box["y"] + box["height"] / 2
     for _ in range(ticks):
@@ -295,12 +599,10 @@ def _wheel_zoom_in(page, ticks: int = 10):
 
 def test_wheel_zooms_in_and_sets_data_zoom(browser):
     page, blocked, errors = _open_page(browser, "#/map")
-
     svg = page.locator(".map")
     _wheel_zoom_in(page, ticks=3)
     view_box = svg.get_attribute("viewBox")
-    width = float(view_box.split(" ")[2])
-    assert width < 300
+    assert float(view_box.split(" ")[2]) < 300
     assert int(svg.get_attribute("data-zoom")) > 1
 
     assert errors == []
@@ -310,14 +612,11 @@ def test_wheel_zooms_in_and_sets_data_zoom(browser):
 
 def test_zoomed_in_labels_become_visible(browser):
     page, blocked, errors = _open_page(browser, "#/map")
-
-    svg = page.locator(".map")
     _wheel_zoom_in(page, ticks=12)
-    assert int(svg.get_attribute("data-zoom")) >= 3
+    assert int(page.locator(".map").get_attribute("data-zoom")) >= 3
     labels = page.locator(".map__zoom-labels .map__label")
     expect(labels.first).to_be_visible()
-    display = labels.first.evaluate("el => getComputedStyle(el).display")
-    assert display != "none"
+    assert labels.first.evaluate("el => getComputedStyle(el).display") != "none"
 
     assert errors == []
     assert blocked == []
@@ -326,12 +625,10 @@ def test_zoomed_in_labels_become_visible(browser):
 
 def test_reset_view_restores_default_viewbox(browser):
     page, blocked, errors = _open_page(browser, "#/map")
-
     svg = page.locator(".map")
     _wheel_zoom_in(page, ticks=6)
     assert svg.get_attribute("viewBox") != "0 0 300 480"
-
-    page.get_by_text("Reset view").click()
+    page.get_by_role("button", name="Reset view", exact=True).click()
     expect(svg).to_have_attribute("viewBox", "0 0 300 480")
     expect(svg).to_have_attribute("data-zoom", "1")
 
@@ -340,220 +637,8 @@ def test_reset_view_restores_default_viewbox(browser):
     page.close()
 
 
-# --- Task-29: map points cluster by zoom -----------------------------------------------------
-
-VERDICT_NAMES = ("works", "degraded", "fails", "nodata")
-
-
-def _cluster_data(locator) -> list[dict]:
-    return locator.evaluate_all(
-        """els => els.map(el => ({
-            id: el.getAttribute('data-id'),
-            count: Number(el.getAttribute('data-count')),
-            aria: el.getAttribute('aria-label'),
-            text: el.querySelector('.map__cluster-count').textContent,
-            verdictTotal: ['works', 'degraded', 'fails', 'nodata']
-                .reduce((sum, v) => sum + Number(el.getAttribute(`data-${v}`) || 0), 0),
-        }))"""
-    )
-
-
-def test_clusters_at_zoom1_sum_to_96(browser):
-    page, blocked, errors = _open_page(browser, "#/map")
-
-    clusters = page.locator(".map__cluster")
-    expect(clusters.first).to_be_visible()
-    data = _cluster_data(clusters)
-    assert len(data) >= 1
-
-    for entry in data:
-        assert entry["aria"] == f"{entry['count']} communities"
-        assert entry["text"] == str(entry["count"])
-        assert entry["verdictTotal"] == entry["count"]
-
-    total_clustered = sum(entry["count"] for entry in data)
-    visible_points = page.locator(".map__community:not([hidden])").count()
-    assert total_clustered + visible_points == 96
-
-    # `to_be_hidden()`, not just the `[hidden]` attribute selector above: the same SVG-`<g>` gap
-    # `test_area_layers_start_hidden` catches for map layers applies here too -- a clustered
-    # member's `hidden` attribute was set correctly but still had a non-zero on-screen rect
-    # (drawn underneath its cluster bubble) before app.css's `.map__community[hidden]` rule.
-    hidden_members = page.locator(".map__community[hidden]")
-    assert hidden_members.count() == total_clustered
-    expect(hidden_members.first).to_be_hidden()
-
-    assert errors == []
-    assert blocked == []
-    page.close()
-
-
-def test_zoom_8_shows_no_clusters(browser):
-    page, blocked, errors = _open_page(browser, "#/map")
-
-    _wheel_zoom_in(page, ticks=20)
-    expect(page.locator(".map")).to_have_attribute("data-zoom", "8")
-    expect(page.locator(".map__cluster")).to_have_count(0)
-    expect(page.locator(".map__community:not([hidden])")).to_have_count(96)
-
-    assert errors == []
-    assert blocked == []
-    page.close()
-
-
-def test_click_first_cluster_zooms_in_and_splits_it(browser):
-    page, blocked, errors = _open_page(browser, "#/map")
-
-    svg = page.locator(".map")
-    first_cluster = page.locator(".map__cluster").first
-    expect(first_cluster).to_be_visible()
-    original_id = first_cluster.get_attribute("data-id")
-
-    # dispatch_event, not .click(): neighbouring cluster hit circles can overlap on screen at
-    # zoom 1 (the same reason test_click_point_selects_it above needs an isolated community), so
-    # a real pointer click can land on the wrong cluster; dispatching targets this element only.
-    first_cluster.dispatch_event("click")
-    expect(svg).not_to_have_attribute("data-zoom", "1")
-
-    def remaining_ids() -> list[str]:
-        return page.locator(".map__cluster").evaluate_all(
-            "els => els.map(el => el.getAttribute('data-id'))"
-        )
-
-    # expect() alone only retries truthy/equality checks; poll directly since the assertion is
-    # "this id is absent from a list", which Playwright's Python API has no built-in matcher for.
-    for _ in range(50):
-        if original_id not in remaining_ids():
-            break
-        page.wait_for_timeout(100)
-    assert original_id not in remaining_ids()
-
-    assert errors == []
-    assert blocked == []
-    page.close()
-
-
-def test_clinic_filter_clusters_and_points_sum_to_filter_count(browser):
-    page, blocked, errors = _open_page(browser, "#/map?filter=clinic-no-terrestrial")
-
-    clusters = page.locator(".map__cluster")
-    expect(page.locator(".map__community")).to_have_count(FILTER_COUNTS["clinic-no-terrestrial"])
-    data = _cluster_data(clusters)
-    total_clustered = sum(entry["count"] for entry in data)
-    visible_points = page.locator(".map__community:not([hidden])").count()
-    assert total_clustered + visible_points == FILTER_COUNTS["clinic-no-terrestrial"]
-
-    assert errors == []
-    assert blocked == []
-    page.close()
-
-
-def test_selected_community_at_zoom1_is_visible_and_unclustered(browser):
-    page, blocked, errors = _open_page(browser, "#/map?selected=458")
-
-    point = page.locator(".map__community").filter(has_text="Baniyala")
-    expect(point).not_to_have_attribute("hidden", "")
-    member_lists = page.locator(".map__cluster").evaluate_all(
-        "els => els.map(el => (el.getAttribute('data-id') || '').split('-'))"
-    )
-    assert all("458" not in members for members in member_lists)
-
-    assert errors == []
-    assert blocked == []
-    page.close()
-
-
-def test_cluster_function_is_pure_and_deterministic(browser):
-    page, blocked, errors = _open_page(browser, "#/map")
-
-    result = page.evaluate(
-        """() => {
-            const pack = JSON.parse(document.getElementById('pack').textContent);
-            const points = pack.communities.map((c) => ({
-                id: c.id,
-                x: c.x,
-                y: c.y,
-                verdict: c.services.find((s) => s.service === 'telehealth_video').verdict,
-            }));
-            const a = window.__map.cluster(points, 1);
-            const b = window.__map.cluster(points, 1);
-            return { a, b };
-        }"""
-    )
-    assert result["a"]["clusters"] == result["b"]["clusters"]
-    assert result["a"]["singles"] == result["b"]["singles"]
-    assert len(result["a"]["clusters"]) >= 1
-    total = sum(c["count"] for c in result["a"]["clusters"]) + len(result["a"]["singles"])
-    assert total == 96
-
-    assert errors == []
-    assert blocked == []
-    page.close()
-
-
-# --- Task-33: map, third pass ------------------------------------------------------------------
-
-
-def _service_counts(service_id: str) -> dict[str, int]:
-    communities = json.loads(PACK.read_text(encoding="utf-8"))["communities"]
-    counts = {"works": 0, "degraded": 0, "fails": 0, "nodata": 0}
-    for community in communities:
-        verdict = next(s["verdict"] for s in community["services"] if s["service"] == service_id)
-        counts[verdict] += 1
-    return counts
-
-
-def test_service_selector_recolours_and_recounts(browser):
-    page, blocked, errors = _open_page(browser, "#/map")
-
-    select = page.locator("select.map-service")
-    expect(select).to_have_value("telehealth_video")
-
-    select.select_option("voice_sms")
-    expect(page).to_have_url(re.compile(r"#/map\?filter=all&service=voice_sms$"))
-
-    expected = _service_counts("voice_sms")
-    assert _legend_counts(page) == [
-        str(expected["works"]),
-        str(expected["degraded"]),
-        str(expected["fails"]),
-        str(expected["nodata"]),
-    ]
-    for verdict in VERDICT_NAMES:
-        expect(page.locator(f".map__pt--{verdict}")).to_have_count(expected[verdict])
-
-    assert errors == []
-    assert blocked == []
-    page.close()
-
-
-MAP_LIST_WORDS = ("Fails", "Degraded", "No data", "Works")
-
-
-def test_map_list_sorted_worst_first(browser):
-    page, blocked, errors = _open_page(browser, "#/map?filter=clinic-no-terrestrial")
-
-    rows = page.locator(".map-list__row")
-    expect(rows).to_have_count(FILTER_COUNTS["clinic-no-terrestrial"])
-
-    def rank(text: str) -> int:
-        stripped = text.strip()
-        return next(i for i, word in enumerate(MAP_LIST_WORDS) if stripped.endswith(word))
-
-    ranks = [rank(text) for text in rows.all_text_contents()]
-    assert ranks == sorted(ranks)
-
-    rows.first.click()
-    expect(page).to_have_url(re.compile(r"#/community/\d+$"))
-
-    assert errors == []
-    assert blocked == []
-    page.close()
-
-
 def test_no_polygon_points(browser):
     page, blocked, errors = _open_page(browser, "#/map")
-
     expect(page.locator(".map polygon")).to_have_count(0)
     expect(page.locator(".map__pt-group rect")).to_have_count(0)
 
@@ -562,8 +647,21 @@ def test_no_polygon_points(browser):
     page.close()
 
 
+def test_map_has_no_requests_or_page_errors_across_routes(browser):
+    page, blocked, errors = _open_page(browser, "#/map")
+    page.evaluate("""() => { location.hash = '#/map?lens=sources'; }""")
+    page.wait_for_timeout(100)
+    page.locator(".map-regions a.chip").nth(1).click()
+    page.wait_for_timeout(500)
+    page.evaluate("""() => { location.hash = '#/map?lens=sources&selected=426'; }""")
+    page.wait_for_timeout(100)
+
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
 def test_older_version_pack_is_refused(browser, tmp_path):
-    # Task-41 bumped the pack to 3 and the app accepts 3 only; 2 is now the older version.
     built = (ROOT / "dist" / "index.html").read_text(encoding="utf-8")
     assert '"pack_version":3' in built
     downgraded = built.replace('"pack_version":3', '"pack_version":2', 1)
