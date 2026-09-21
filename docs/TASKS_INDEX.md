@@ -67,6 +67,15 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [ ] Task-48: Map v3: three lenses, no clusters, regions that zoom, one screen; the degraded clause (sixth batch, added 2026-09-21)
 - [ ] Task-49: Tests for map v3 and the degraded clause, written from the contract (sixth batch, added 2026-09-21)
 
+## Later
+
+Not written as task files yet (no id until the file exists; generate-tasks, one wave at a time):
+
+- The ten-second hand-over test with three people, recorded under `reports/` (Tarik; PRD §4.2 fifth batch's pass mark).
+- The report's "robust top list": which communities stay in the top ten under every row of the sensitivity table.
+- NT Government 2019 against 2022 lists as a real before/after finding for the report.
+- Per-service Report here (`CR2`): future work in the report, not built in v1.
+
 ## Execution routing
 
 Summary of each task's Execution and Lane blocks. `claude-worker` means an Agent-tool subagent
