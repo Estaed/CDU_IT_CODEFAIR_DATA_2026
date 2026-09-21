@@ -300,6 +300,49 @@ QR olayını sonra update ederiz").
   services; the pitch says plainly that "text-first services work wherever any link works" is
   the finding, not filler.
 
+**v1 changes, fifth batch, decided 2026-09-21 (Tarik, after showing the app to non-technical
+teammates: they liked the idea and could not say what the app was for, and Tarik had trouble
+explaining it himself).** The goal is one test: hand the phone over with no words, ask after
+ten seconds "what is this for", and three of three people answer in the sense of "the map says
+there is signal; this shows whether a doctor's video call works there, and what to fix first".
+Nothing here adds a feature or a verdict; it changes what is read first and in which words.
+Crosscheck is a diagnosis, not a fix, and says so.
+
+- *Home* (Task-44, Task-45): the app opens on `#/`, not on a community. One sentence
+  (`Coverage maps say there is signal. Can the clinic run a video call?`), one lead line
+  naming the 96 communities and the offline promise, three figures from the pack's new
+  `headline` block (communities; clinics where a video call is known to work, of those with a
+  clinic; communities where the sources disagree), and three buttons that are the story in
+  order: `Find a community`, `What to fix first`, `See the map`. The top-bar title links here.
+  No fifth tab.
+- *Rows as questions* (Task-45): the service card is headed `Can people here…` and the four row
+  labels are tasks (`see a doctor by video`, `join a school lesson by video`, `use myGov and
+  banking`, `call and text`). The four verdict words, glyphs and colours do not change; the
+  SMS, statement and evidence texts keep the formal service names.
+- *One summary sentence per community* (Task-45), above the rows, assembled in the app from
+  pack strings like the SMS text is: how many sources say covered, then the telehealth verdict
+  in plain words with the pack's own reason. It takes the place of the `Best available path`
+  note, which moves inside each row's detail, so the actions row stays inside the first
+  780 px. The pack is 5 KB under its cap; 96 new sentences would not fit, and need not.
+- *Inside words out of first sight* (Task-45): the tab reads `Fix first` (route unchanged);
+  the sources fold reads `Do the sources agree? …`; publisher kinds read as what they are
+  (`carrier's prediction`, `government list`, `licence register`, `community portal`, `drive
+  test`); the reliability line reads `How far to trust the coverage map here: <word>` with the
+  drivers behind it; on Share, the camera transfer sits under a closed `Update another phone
+  by camera` fold.
+- *The thirty-second demo* is a script in `docs/demo-script.md`, written by Eko: what stops
+  when the link stops, the one sentence, three taps on Wadeye. The report and the slides use
+  the same sentence.
+
+Considered and dropped on 2026-09-21: bringing back `Changes since the previous snapshot` as a
+before/after button (no real second snapshot exists to show, and inventing one is synthetic
+data; the pitch says in one sentence that a rerun after a publisher's update flips the row);
+pinging named services from the app (rejected 2026-09-16, still stands); a per-service Report
+here (`CR2`; the idea-arena test run of 2026-09-21 reached it independently as "task-based
+capture"; it is the right next step and is written into the report's future work, not built);
+renaming the verdict words to Yes / Barely / No (they are the report's and FINDINGS.md's
+vocabulary, and `Degraded` here means "not proven", which the summary sentence now says).
+
 Considered and dropped on 2026-09-17: a restart on a different idea (13 days to submission, one
 builder, the report not started; the pipeline already holds most of the inputs the priority
 score needs); dropping the myGov row (touches the table, the selector, the evidence text and
@@ -532,4 +575,5 @@ D5. **National scope** — only if the NT is finished early; the brief allows it
 | 2026-09-17 | Transfer loss budgets become a distribution over 20 fixed seeds (median within the old budgets, worst seed within 2.5 / 3.5 / 4.5 × K, omission within 2.0 × K). Task-38's fifth publisher line pushed K from 24 to 25 and the single-seed check went red; measured, 3 of 20 seeds were already over budget at K 24, so the old check was a seed, not a property | Tarik ("dağılım ölçütü"), on Eko's proposal with the worker's measurement |
 | 2026-09-17 (evening) | Task-40 measured: the pack reached 510,477 of 512,000 bytes, K 31, and the 10 % loss median read 1.65 × K against 1.6; the 10 % median budget becomes 1.8 (the one binding row; 50 % and 70 % sit at half their budgets). Two intervention rules added before `monitor`: `verify on the ground` (a drive-test non-alignment within 5 km) and `measure the link here` (a clinic whose telehealth verdict is the unmeasured 4G assumption), because 46 of 96 fell through to `monitor`, Nauiyu at rank 1 among them. The addressee lives once per intervention in a pack header | Tarik (both recommended options), on Eko's proposal with the worker's measurement |
 | 2026-09-17 (evening) | Priority weights approved as written in `pipeline/priority_weights.csv` (0.20 / 0.20 / 0.20 / 0.15 / 0.10 / 0.10 / −0.10 / 0 / 0); the report prints the CSV and the sensitivity table beside it | Tarik ("tamam yap") |
+| 2026-09-21 | Fifth batch (§4.2): the app opens on a home screen with one sentence, three pack figures and three buttons; service rows read as questions; one summary sentence per community assembled from pack strings; inside words renamed or folded; `Fix first` tab label. No new feature, no new verdict. Goal: the ten-second hand-over test, three of three. The before/after button, service pings, per-service reports and renamed verdict words were considered and dropped | Tarik ("hepsini yapalim"), on Eko's proposal |
 

@@ -60,6 +60,9 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-40: Priority score, intervention and addressee; the LEO sentence; MBSP sites (fourth batch, added 2026-09-17)
 - [x] Task-41: Priority tab, the reliability line, the analyst's sixty seconds; pack version 3 (fourth batch, added 2026-09-17)
 - [x] Task-43: Findings pack: figures, tables and docs/FINDINGS.md for the report (added 2026-09-17 evening)
+- [ ] Task-44: The pack's `headline` block: three counts for the home screen (fifth batch, added 2026-09-21)
+- [ ] Task-45: Home screen, rows as questions, the summary sentence, inside words folded (fifth batch, added 2026-09-21)
+- [ ] Task-46: Tests for the fifth batch, written from the contract, not from the code (fifth batch, added 2026-09-21)
 
 ## Execution routing
 
@@ -121,6 +124,14 @@ advisory only.
 | Task-40 | claude-worker (opus) | no | high | Task-38, Task-39 | 29 |
 | Task-41 | claude-worker (opus) | no | high | Task-40, Task-42 | 30 |
 | Task-43 | claude-worker | no | medium | Task-41 | 31 |
+| Task-44 | codex (luna) | no | medium | none | 32 |
+| Task-46 | codex (luna) | no | high | none (contract only; runs nothing) | 32 (beside Task-44) |
+| Task-45 | codex (luna) | no | high | Task-44 | 33 |
+
+Fifth batch (2026-09-21) execution note: PRD 4.2 fifth batch, the ten-second hand-over test. Codex
+pool clear (11 % / 33 %), so every lane is a Codex bee; the main loop (Fable) wrote the specs, runs
+the gate once all three land, does the eye review and writes `docs/demo-script.md`. Task-46 writes
+the tests for 44 and 45 from their contracts and never opens the new code.
 
 Fourth batch (2026-09-17) execution note: Tarik's decision after Eko's function-by-function
 review, PRD §4.2 fourth batch and §2 "the analyst's sixty seconds". Codex is at 100 % until
