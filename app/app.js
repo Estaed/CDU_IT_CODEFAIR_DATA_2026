@@ -472,12 +472,27 @@
       h("span", { class: "fig fig--xs" }, community.freshness.date),
     );
 
-  // Task-34, 2026-09-16: a stub (item 5). Task-35 owns what a tap here actually does; this
-  // only records the intent in the hash so the route survives a reload.
+  // Task-54: the same action opens and closes the form. Query state keeps the form reload-safe.
   const renderReportButton = (community) => {
-    const button = h("button", { type: "button", class: "report-button" }, "Report here");
+    const query = new URLSearchParams(location.hash.split("?")[1] || "");
+    const isOpen = query.has("report");
+    const button = h(
+      "button",
+      {
+        type: "button",
+        class: "report-button",
+        "aria-expanded": isOpen ? "true" : "false",
+      },
+      isOpen ? "Close report" : "Report here",
+    );
     button.addEventListener("click", () => {
-      location.hash = `#/community/${community.id}?report`;
+      if (isOpen) {
+        query.delete("report");
+      } else {
+        query.set("report", "");
+      }
+      const suffix = query.size ? `?${query}` : "";
+      location.hash = `#/community/${community.id}${suffix}`;
     });
     return button;
   };
@@ -1155,6 +1170,27 @@
     );
   };
 
+  const renderMapListHeading = (state, filter) => {
+    const highlighted = pack.communities.filter(
+      (community) => !isDimmed(community, state, filter),
+    ).length;
+    return h(
+      "header",
+      { class: "map-list-heading" },
+      h("h2", { class: "map-list-heading__title" }, "Communities"),
+      h(
+        "p",
+        { class: "map-list-heading__count" },
+        `${highlighted} highlighted of ${pack.count}`,
+      ),
+      h(
+        "p",
+        { class: "map-list-heading__note" },
+        "Highlighted communities are listed first; the rest stay faded.",
+      ),
+    );
+  };
+
   const renderMapCard = (community) => {
     const card = h("section", { class: "map-card" });
     if (!community) {
@@ -1695,7 +1731,13 @@
         setTimeout(settle, 100);
       }
     }
-    return { reset };
+    const zoomFromCentre = (factor) =>
+      zoomAt(factor, view.x + view.w / 2, view.y + view.h / 2);
+    return {
+      reset,
+      zoomIn: () => zoomFromCentre(1.2),
+      zoomOut: () => zoomFromCentre(1 / 1.2),
+    };
   };
 
   const renderPoint = (community, state, filter) => {
@@ -1853,6 +1895,22 @@
       { type: "button", class: "button button--secondary map-controls__reset", hidden: state.region ? null : "" },
       "Reset view",
     );
+    const zoomInButton = h(
+      "button",
+      { type: "button", class: "map-controls__zoom", "aria-label": "Zoom in" },
+      "+",
+    );
+    const zoomOutButton = h(
+      "button",
+      { type: "button", class: "map-controls__zoom", "aria-label": "Zoom out" },
+      "−",
+    );
+    const zoomControls = h(
+      "div",
+      { class: "map-controls", "aria-label": "Map zoom" },
+      zoomInButton,
+      zoomOutButton,
+    );
     const regionTarget = state.region ? regionView(state.region) : null;
     const frameAttributes = {
       class: "map-frame" + (regionTarget ? " map-frame--region" : ""),
@@ -1866,10 +1924,13 @@
       state.lens === "service" ? renderServiceSelector(state) : null,
       svg,
       resetButton,
+      zoomControls,
     );
     main.appendChild(frame);
     const mapView = attachMapView(svg, ordered, state, pointGroupsById, labelsGroup, resetButton);
     resetButton.addEventListener("click", () => mapView.reset());
+    zoomInButton.addEventListener("click", () => mapView.zoomIn());
+    zoomOutButton.addEventListener("click", () => mapView.zoomOut());
     const legend = renderLegend(state);
     if (filter.id !== DEFAULT_FILTER || state.region) {
       legend.appendChild(h("p", { class: "map-legend__note" }, "Faded points are outside this highlight."));
@@ -1884,10 +1945,27 @@
       "details",
       { class: "map-more", open: filter.id !== DEFAULT_FILTER || state.layers ? "" : null },
       h("summary", {}, "Highlight and layers"),
-      renderFilterTabs(filter, state),
-      renderLayerChips(toggleLayers, visibleSlugs, state),
+      h(
+        "section",
+        { class: "map-more__group" },
+        h("h2", { class: "map-more__group-title" }, "Highlight communities"),
+        h(
+          "p",
+          { class: "map-more__note" },
+          "Highlights affect both the map and the list.",
+        ),
+        renderFilterTabs(filter, state),
+      ),
+      h(
+        "section",
+        { class: "map-more__group" },
+        h("h2", { class: "map-more__group-title" }, "Map layers"),
+        h("p", { class: "map-more__note" }, "Layers change the map only."),
+        renderLayerChips(toggleLayers, visibleSlugs, state),
+      ),
     );
     main.appendChild(more);
+    main.appendChild(renderMapListHeading(state, filter));
     main.appendChild(renderMapList(state, filter));
   };
 

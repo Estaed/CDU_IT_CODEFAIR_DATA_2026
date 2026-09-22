@@ -119,9 +119,10 @@ a.top-bar__title { color: inherit; text-decoration: none; }
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: var(--space-sm) var(--space-md) 0;
-  padding: var(--space-xxs);
-  background: var(--surface-block);
-  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface-page);
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-pill);
 }
 
 .map-lens__option {
@@ -130,22 +131,28 @@ a.top-bar__title { color: inherit; text-decoration: none; }
   justify-content: center;
   min-height: var(--size-touch);
   padding: 0 var(--space-xs);
-  border-radius: var(--radius-sm);
   font: var(--text-tab);
   color: var(--text-secondary);
   text-decoration: none;
 }
 
-.map-lens__option[aria-current="page"] { color: var(--text-heading); background: var(--surface-page); }
+.map-lens__option + .map-lens__option { border-left: var(--size-hairline) solid var(--border-hairline); }
 
-.chip, .map-lens__option, .map-controls__reset { min-height: var(--size-touch); }
+.map-lens__option[aria-current="page"] { color: var(--text-heading); background: var(--surface-pressed); }
+
+.chip, .map-lens__option, .map-controls__reset, .map-controls__zoom { min-height: var(--size-touch); }
 
 .map-frame {
   position: relative;
+  isolation: isolate;
   display: grid;
   justify-items: center;
   height: min(62vh, var(--size-viewport-min-height));
-  margin-top: var(--space-xs);
+  margin: var(--space-xs) var(--space-md) 0;
+  overflow: hidden;
+  background: var(--surface-soft);
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-lg);
 }
 
 .map-frame--region { height: auto; aspect-ratio: var(--map-region-ratio); max-height: min(62vh, var(--size-viewport-min-height)); }
@@ -205,6 +212,33 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 
 .map-controls__reset[hidden] { display: none; }
 
+.map-controls {
+  position: absolute;
+  right: var(--space-sm);
+  bottom: var(--space-sm);
+  z-index: 1;
+  display: grid;
+  overflow: hidden;
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-md);
+}
+
+.map-controls__zoom {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-touch);
+  padding: 0;
+  border: 0;
+  font: var(--text-title-md);
+  color: var(--text-heading);
+  background: var(--surface-page);
+  cursor: pointer;
+}
+
+.map-controls__zoom + .map-controls__zoom { border-top: var(--size-hairline) solid var(--border-hairline); }
+.map-controls__zoom:active { background: var(--surface-pressed); }
+
 .map__pt-shape, .map__hit, .map__ring, .map__rank, .map__label, .map__town-dot, .map__town-label {
   transform-box: fill-box;
   transform-origin: center;
@@ -251,9 +285,10 @@ a.top-bar__title { color: inherit; text-decoration: none; }
   position: absolute;
   z-index: 1;
   top: var(--space-sm);
-  left: var(--space-md);
+  left: var(--space-sm);
   display: block;
-  width: calc(100% - 2 * var(--space-md));
+  width: calc(100% - 2 * var(--space-xxl));
+  max-width: calc(var(--size-design-width) - 2 * var(--space-lg));
   min-height: var(--size-control);
   margin: 0;
   padding: 0 var(--space-md);
@@ -304,7 +339,16 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 
 .map-more { border-top: var(--size-hairline) solid var(--border-hairline); border-bottom: var(--size-hairline) solid var(--border-hairline); }
 .map-more > summary { padding: var(--space-sm) var(--space-md); font: var(--text-title-sm); color: var(--text-heading); cursor: pointer; }
-.map-more .filter-tabs { margin-bottom: var(--space-sm); }
+.map-more__group { padding: var(--space-sm) var(--space-md); border-top: var(--size-hairline) solid var(--border-hairline-soft); }
+.map-more__group-title { margin: 0; font: var(--text-label); color: var(--text-heading); }
+.map-more__note { margin: var(--space-xxs) 0 var(--space-xs); font: var(--text-caption); color: var(--text-secondary); }
+.map-more .filter-tabs { margin: 0 calc(-1 * var(--space-md)); }
+.map-more .layer-chips { padding: 0; }
+
+.map-list-heading { padding: var(--space-sm) var(--space-md); border-bottom: var(--size-hairline) solid var(--border-hairline-soft); }
+.map-list-heading__title { margin: 0; font: var(--text-title-sm); color: var(--text-heading); }
+.map-list-heading__count { margin: var(--space-xxs) 0 0; font: var(--text-label); color: var(--text-body); }
+.map-list-heading__note { margin: var(--space-xxs) 0 0; font: var(--text-caption); color: var(--text-secondary); }
 
 .map-list { list-style: none; margin: 0; padding: 0; }
 .map-list__item { border-bottom: var(--size-hairline) solid var(--border-hairline-soft); }
@@ -346,7 +390,8 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 /* The three screen tabs get their own full-width row under the title, so none hides past the
    right edge at 360 (design/screens/README.md, "Tabs at 360", superseded 2026-09-16). */
 .top-bar__inner { flex-wrap: wrap; height: auto; min-height: var(--size-topbar); }
-.top-bar__title { flex: 1 1 auto; min-height: var(--size-touch); display: flex; align-items: center; }
+.top-bar__title { flex: 1 1 auto; min-height: var(--size-touch); display: flex; align-items: center; gap: var(--space-xs); font: var(--text-title-md); }
+.brand-mark { width: var(--size-badge); height: var(--size-badge); stroke-width: var(--size-focus-ring); }
 .top-bar__inner > .header-chips { order: 1; }
 .top-bar__inner > .tabs {
   order: 2;
@@ -546,7 +591,8 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 .report-line__qr { display: block; width: var(--size-qr); height: var(--size-qr); margin-top: var(--space-sm); background: var(--surface-page); }
 
 /* The count line and what sits with it: a sentence, a fold and one button. */
-.reports { display: grid; gap: var(--space-xs); }
+.reports { display: grid; gap: var(--space-xs); padding-bottom: var(--space-sm); }
+.community-reports__title { margin: 0; padding: var(--space-sm) var(--space-md) 0; font: var(--text-title-md); color: var(--text-heading); }
 .reports-line { margin: 0; padding: 0 var(--space-md); font: var(--text-body-sm); color: var(--text-body); }
 .reports-fold { padding: 0 var(--space-md); font: var(--text-body-sm); color: var(--text-body); }
 .reports-fold > summary { cursor: pointer; color: var(--text-secondary); }

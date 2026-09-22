@@ -132,6 +132,15 @@ component key is given in the first column. Every class is defined once in `scre
 
 ## Where the screens depart from a literal reading, and why
 
+- **2026-09-22 — map controls, brand cue and report grouping (Task-54):** PRD §4.2
+  eighth batch supersedes the large filled map-lens bar with a compact outlined segmented
+  control, gives the live map a bounded soft surface and visible zoom controls, and labels
+  highlight filters separately from map-only layers. The list still contains all 96 rows and
+  now states how many are highlighted. The top-left app link gains a decorative inline mark and
+  the Report here flow becomes a toggle with one clearly named saved/imported reports group.
+  The reference screens have no states for these later features; the eighth-batch PRD text is
+  their source of truth. No verdict, colour meaning or data changes.
+
 - **2026-09-22 — mobile shell, service cards and map composition (Task-53):** PRD §4.2
   seventh batch supersedes the original icon-free top-tab treatment at compact widths. The
   four top-level links become a persistent bottom navigation with monochrome inline SVG icons

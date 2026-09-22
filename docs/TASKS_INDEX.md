@@ -70,6 +70,7 @@ pitch (PRD §4.3). Task-10 hands them their figures; Task-11 leaves a slot in th
 - [x] Task-51: Defects from the 2026-09-22 audit, and the last map label rule (added 2026-09-22)
 - [x] Task-52: Tests for the audit fixes, written from the contract (added 2026-09-22)
 - [x] Task-53: Mobile shell, service cards and map composition (seventh batch, added 2026-09-22)
+- [x] Task-54: Map and report interaction polish (eighth batch, added 2026-09-22)
 
 ## Later
 
@@ -151,6 +152,7 @@ advisory only.
 | Task-51 | codex (small tier) | no | high | Task-48 | 36 |
 | Task-52 | codex (small tier) | no | medium | Task-51 | 37 |
 | Task-53 | codex (sol) | high | Task-51, Task-52 | 38 |
+| Task-54 | codex (sol) | high | Task-53 | 39 |
 
 Fifth batch (2026-09-21) execution note: PRD 4.2 fifth batch, the ten-second hand-over test. Codex
 pool clear (11 % / 33 %), so every lane is a Codex bee; the main loop (Fable) wrote the specs, runs

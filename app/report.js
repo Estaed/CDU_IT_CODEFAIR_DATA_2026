@@ -407,14 +407,14 @@ window.CrosscheckReport = (() => {
   const countText = (lines) => {
     const records = lines.map(parse).filter(Boolean);
     if (records.length === 0) {
-      return "Reports from here: none yet";
+      return "Saved on this phone: none yet";
     }
     const counts = statusIds.map(
       (id) =>
         `${records.filter((record) => record.status === id).length} ${STATUS_COUNT_LABEL[id]}`,
     );
     const latest = records.map((record) => record.time).sort().pop();
-    return `Reports from here: ${records.length} · ${counts.join(", ")} · latest ${prettyDate(latest)}`;
+    return `Saved on this phone: ${records.length} · ${counts.join(", ")} · latest ${prettyDate(latest)}`;
   };
 
   const lineCount = (text) =>
@@ -428,7 +428,7 @@ window.CrosscheckReport = (() => {
   // reads the pack's service words); this file appends the stored reports and the sentence
   // that says what the app does and does not know.
   const renderReports = (community, headerLines) => {
-    const countLine = el("p", { class: "reports-line" }, "Reports from here: none yet");
+    const countLine = el("p", { class: "reports-line" }, "Saved on this phone: none yet");
 
     const refresh = async () => {
       const lines = await window.CrosscheckStore.reportsFor(community.id);
@@ -456,7 +456,7 @@ window.CrosscheckReport = (() => {
     const fold = el(
       "details",
       { class: "reports-fold" },
-      el("summary", {}, "Add reports"),
+      el("summary", {}, "Import report lines from another phone"),
       textarea,
       importButton,
       importResult,
@@ -478,7 +478,14 @@ window.CrosscheckReport = (() => {
       flash(evidenceButton, "Copy evidence", await copyText(text));
     });
 
-    const block = el("div", { class: "reports section" }, countLine, fold, evidenceButton);
+    const block = el(
+      "section",
+      { class: "community-reports reports section", "aria-labelledby": "community-reports-title" },
+      el("h2", { class: "community-reports__title", id: "community-reports-title" }, "Community reports"),
+      countLine,
+      fold,
+      evidenceButton,
+    );
     refresh();
     return block;
   };

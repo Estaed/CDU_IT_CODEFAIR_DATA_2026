@@ -203,8 +203,8 @@ def test_folds_in_order(browser):
     assert {
         "Do the sources agree? Yes, 4 of 4",
         "Share",
-        # Task-35, 2026-09-16: Report here's paste-in fold, below the actions row.
-        "Add reports",
+            # Task-54, 2026-09-22: the clearly named import fold inside Community reports.
+            "Import report lines from another phone",
         "What exists here",
         "Who to ask",
     }.issubset(summaries)

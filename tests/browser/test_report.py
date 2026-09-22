@@ -201,7 +201,7 @@ def test_second_page_import_counts(context):
 
     count_line = page.locator(".reports-line").text_content()
     assert re.fullmatch(
-        r"Reports from here: 1 · 0 works, 1 slow, 0 no connection · latest "
+        r"Saved on this phone: 1 · 0 works, 1 slow, 0 no connection · latest "
         r"\d{1,2} [A-Z][a-z]{2} \d{4}",
         count_line,
     ), count_line

@@ -396,6 +396,32 @@ the service-card treatment from direction A and the map composition from directi
   and stay decorative (`aria-hidden`) beside visible text. The build and pack byte caps do not
   move.
 
+**v1 changes, eighth batch, decided 2026-09-22 (Tarik, after testing Task-53 on the live
+phone-sized app and reviewing current mobile map patterns).** This is a presentation and
+interaction pass over the existing map and Report here flows; no data, verdict, route or report
+line changes.
+
+- *Brand cue* (Task-54): the top-left Crosscheck link gains a small monochrome inline check mark
+  and uses the next title token so it reads as the app identity, not document body text. The
+  visible word remains `Crosscheck`; the mark is decorative and introduces no image request.
+- *Map controls* (Task-54): the three lenses remain equal navigation links but become one compact
+  outlined segmented control with a clear selected segment. The map sits in a bounded, soft
+  surface with visible zoom-in and zoom-out controls. The Services selector stays over the map
+  without taking height from it, but must not span across and conceal the whole northern edge.
+  All controls keep the touch-size minimum and the map remains an inline SVG with no tiles.
+- *Highlight, layers and list* (Task-54): the fold names its two jobs explicitly: filters
+  highlight communities and reorder the matching rows first; geographic layers change the map
+  only. A list heading reports the highlighted count out of 96 and states that the rest remain
+  faded. A layer toggle must not change the list count or dimming. The fold remains manually
+  openable and closable, and opens when a highlight filter is active.
+- *Report here* (Task-54): the action is a real toggle. A second tap closes the form and its label
+  changes between `Report here` and `Close report`, with `aria-expanded` matching. Saved and
+  imported evidence appears under one `Community reports` group. Copy says `Saved on this phone`
+  and `Import report lines from another phone`, so creating a local report cannot be confused
+  with importing one. The CR1 record, storage, evidence, SMS and QR contracts stay unchanged.
+- The redesign uses only existing tokens, inline SVG geometry and the current vanilla JavaScript.
+  It adds no library, map tile, request, pack field, verdict colour or new navigation route.
+
 Considered and dropped on 2026-09-17: a restart on a different idea (13 days to submission, one
 builder, the report not started; the pipeline already holds most of the inputs the priority
 score needs); dropping the myGov row (touches the table, the selector, the evidence text and
@@ -630,3 +656,4 @@ D5. **National scope** — only if the NT is finished early; the brief allows it
 | 2026-09-17 (evening) | Priority weights approved as written in `pipeline/priority_weights.csv` (0.20 / 0.20 / 0.20 / 0.15 / 0.10 / 0.10 / −0.10 / 0 / 0); the report prints the CSV and the sensitivity table beside it | Tarik ("tamam yap") |
 | 2026-09-21 | Fifth batch (§4.2): the app opens on a home screen with one sentence, three pack figures and three buttons; service rows read as questions; one summary sentence per community assembled from pack strings; inside words renamed or folded; `Fix first` tab label. No new feature, no new verdict. Goal: the ten-second hand-over test, three of three. The before/after button, service pings, per-service reports and renamed verdict words were considered and dropped | Tarik ("hepsini yapalim"), on Eko's proposal |
 | 2026-09-21 (late) | Sixth batch (§4.2): map redesigned on Tarik's free hand. Three lenses (Fix first default, Services, Sources), no clusters (deterministic declutter), region chips that zoom, filters that dim, height capped so the legend shows, a selection card with the summary sentence. Earlier map rules (Task-29 clusters, removing filters) are superseded. The `degraded` summary clause quotes the pack's assumption, not the satellite figure | Tarik ("tamamen özgürsün"), design by Eko |
+| 2026-09-22 | Eighth batch (§4.2): compact segmented map lenses, bounded map surface and visible zoom controls; list explains highlight counts while layers remain map-only; Crosscheck gains a small brand mark; Report here toggles and saved/imported reports are grouped and named by origin. Research basis: Apple and Android segmented-control guidance, Mapbox collision/filter patterns and Google map visual hierarchy | Tarik ("Task 54 oluştur, sana güveniyorum"), design by Eko |
