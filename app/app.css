@@ -603,7 +603,7 @@ a.top-bar__title { color: inherit; text-decoration: none; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: calc(100% - 2 * var(--space-md));
   height: var(--size-control);
   min-width: var(--size-touch);
   margin: 0 var(--space-md);

@@ -1,7 +1,7 @@
 # Task-54: Map and report interaction polish
 
 **Status: DONE** — verified 2026-09-22
-> **Verified against:** c560a7fcd0 AGENTS.md 23162b58b8 CLAUDE.md 9182dfb49e app/app.css f3e40429bb app/app.js c7a3644cb4 app/index.html d57fe9c691 app/report.js 6a0fb74825 design/screens/README.md 82ad3f61af docs/PRD.md f18f69619e docs/TASKS_INDEX.md b1b0a4fedb tasks/Task-54.md 86fa15a40b tests/browser/conftest.py 362d429ac5 tests/browser/test_audit_fixes.py 2112fb24da tests/browser/test_clarity.py 863807f5dc tests/browser/test_community.py 4633d67923 tests/browser/test_home.py 06e0b429bb tests/browser/test_map.py b76538feb4 tests/browser/test_mobile_ui.py c08ca3650b tests/browser/test_priority.py 1bd3f0655a tests/browser/test_qr.py 7dadaffee7 tests/browser/test_report.py 0d1cef83de tests/browser/test_scan.py 07d94e3f34 tests/browser/test_share.py 9d1f1c923c tests/browser/test_smoke.py f21de3fa35 tests/browser/test_statement.py dc498f1a20 tests/browser/test_task54.py 56c8600f8a tests/browser/test_transfer.py 83f4408165 tests/browser/test_update.py
+> **Verified against:** c560a7fcd0 AGENTS.md 23162b58b8 CLAUDE.md 7e54ca1d7c app/app.css f3e40429bb app/app.js c7a3644cb4 app/index.html d57fe9c691 app/report.js 6a0fb74825 design/screens/README.md 82ad3f61af docs/PRD.md f18f69619e docs/TASKS_INDEX.md 5dded9413d tasks/Task-54.md 86fa15a40b tests/browser/conftest.py 362d429ac5 tests/browser/test_audit_fixes.py 2112fb24da tests/browser/test_clarity.py 863807f5dc tests/browser/test_community.py 4633d67923 tests/browser/test_home.py 06e0b429bb tests/browser/test_map.py b76538feb4 tests/browser/test_mobile_ui.py c08ca3650b tests/browser/test_priority.py 1bd3f0655a tests/browser/test_qr.py 7dadaffee7 tests/browser/test_report.py 0d1cef83de tests/browser/test_scan.py 07d94e3f34 tests/browser/test_share.py 9d1f1c923c tests/browser/test_smoke.py f21de3fa35 tests/browser/test_statement.py dc498f1a20 tests/browser/test_task54.py 56c8600f8a tests/browser/test_transfer.py 83f4408165 tests/browser/test_update.py
 
 > **Execution:** agent `codex` (sol) · effort `high`
 > *Why:* This is one tightly coupled mobile interaction pass across the app shell, map runtime,
@@ -83,8 +83,9 @@ flow must distinguish creating evidence on this phone from importing evidence fr
   list ids, dimming states or count.
 - Report here now toggles its query and form, label and `aria-expanded`. Saved/imported evidence
   is one visible `Community reports` section; import alone remains folded, so the analyst's
-  one-click Copy evidence path remains visible.
-- Built HTML: 990,746 bytes, up 5,062 bytes from Task-53's 985,684; still 57,830 bytes below the
+  one-click Copy evidence path remains visible. The live 360 × 780 check also removed the
+  evidence button's horizontal overflow; document and viewport width now both read 360.
+- Built HTML: 990,774 bytes, up 5,090 bytes from Task-53's 985,684; still 57,802 bytes below the
   cap. The data pack is unchanged at 506,433 bytes.
 - Full gate: ruff green; 212 unit/integration tests passed; build and both size caps green;
   124 browser tests passed; `GATE GREEN`.
