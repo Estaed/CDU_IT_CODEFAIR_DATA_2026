@@ -1,4 +1,4 @@
-"""Browser tests for the clarity batch (Task-30): top bar tabs at 360 wide, scroll hints on tab
+"""Browser tests for the clarity batch (Task-30): mobile navigation, scroll hints on tab
 rows, one search bar, use my location, intro line, section order, verdict legend, facilities as
 text, collapsed footer sources, and the QR reading helpers."""
 
@@ -57,24 +57,25 @@ def _result_item(page, name: str):
 # 1. Top bar -----------------------------------------------------------------------------------
 
 
-def test_top_bar_tabs_fit_360(browser):
+def test_main_navigation_fits_bottom_at_360(browser):
     page, blocked, errors = _open_page(browser, "#/community/426", viewport=PHONE)
 
     header = page.locator("header.top-bar")
-    tabs = header.locator("[role=tab]")
-    # Task-41, 2026-09-17: a fourth tab, Priority, sits between Community and Map.
-    expect(tabs).to_have_count(4)
+    links = header.locator("nav[aria-label='Main navigation'] .tab")
+    expect(links).to_have_count(4)
     title = header.get_by_text("Crosscheck", exact=True)
-    title_box = title.bounding_box()
+    expect(title).to_be_visible()
     for i in range(4):
-        box = tabs.nth(i).bounding_box()
+        box = links.nth(i).bounding_box()
         assert box["x"] >= 0
         assert box["x"] + box["width"] <= 360
-        # Their own row under the title.
-        assert box["y"] >= title_box["y"] + title_box["height"] - 1
+        assert box["height"] >= 44
+        assert box["y"] + box["height"] <= PHONE["height"]
 
-    tablist = header.locator("[role=tablist]")
-    assert tablist.evaluate("el => el.scrollWidth <= el.clientWidth")
+    navigation = header.locator("nav[aria-label='Main navigation']")
+    assert navigation.evaluate("el => getComputedStyle(el).position") == "fixed"
+    assert navigation.evaluate("el => el.scrollWidth <= el.clientWidth")
+    expect(navigation.locator("svg.nav-icon[aria-hidden=true]")).to_have_count(4)
 
     assert errors == []
     assert blocked == []

@@ -77,7 +77,7 @@
     return;
   }
 
-  const tabs = [...document.querySelectorAll("[role=tab]")];
+  const tabs = [...document.querySelectorAll(".top-bar__inner > .tabs .tab")];
   const chip = document.querySelector(".offline-chip");
 
   // Small DOM builder: never innerHTML with pack strings (layer rule 4).
@@ -256,6 +256,29 @@
       VERDICTS[verdictId].word,
     );
 
+  const renderServiceIcon = (serviceId) => {
+    const paths = {
+      telehealth_video: ["M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"],
+      school_video_meeting: ["m3 10 9-5 9 5-9 5z", "M7 12v5c3 2 7 2 10 0v-5"],
+      mygov_text: ["M3 10h18", "M5 10v8M9 10v8M15 10v8M19 10v8", "M3 18h18", "m4 8 8-5 8 5"],
+      voice_sms: ["M6 4h4l2 5-3 2c2 4 4 6 8 8l2-3 5 2v4c0 1-1 2-2 2C10 24 2 16 2 6c0-1 1-2 2-2z"],
+    };
+    return s(
+      "svg",
+      {
+        class: "service-icon",
+        viewBox: "0 0 24 24",
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        "aria-hidden": "true",
+        focusable: "false",
+      },
+      ...(paths[serviceId] || paths.mygov_text).map((d) => s("path", { d })),
+    );
+  };
+
   // Task-34, 2026-09-16: the row is `button.service-row` itself (Task-07's wrapping div and
   // inner button collapse into one element); tapping it toggles the detail beneath -- reason,
   // assumption if any, and the sources -- so the closed row costs one line of height (item 3,
@@ -271,11 +294,7 @@
         h(
           "span",
           { class: "service-row__label" },
-          h(
-            "span",
-            { class: `service-row__glyph service-row__glyph--${service.verdict}`, "aria-hidden": "true" },
-            VERDICTS[service.verdict].glyph,
-          ),
+          renderServiceIcon(service.service),
           h(
             "span",
             { class: "service-row__name" },
@@ -317,12 +336,14 @@
       ),
     );
     const detail = h("div", { class: "service-row__detail", hidden: "" }, detailChildren);
+    const card = h("div", { class: "service-card" }, button, detail);
     button.addEventListener("click", () => {
       const expanded = button.getAttribute("aria-expanded") === "true";
       button.setAttribute("aria-expanded", expanded ? "false" : "true");
       detail.hidden = expanded;
+      card.classList.toggle("service-card--expanded", !expanded);
     });
-    return [button, detail];
+    return card;
   };
 
   // Task-45, 2026-09-21: the card asks what the connection allows; its path note belongs in
@@ -333,11 +354,11 @@
       { class: "services" },
       h("div", { class: "services__question" }, "Can people here…"),
     );
+    const grid = h("div", { class: "services__grid" });
     for (const service of community.services) {
-      for (const node of renderServiceRow(service, community.path)) {
-        card.appendChild(node);
-      }
+      grid.appendChild(renderServiceRow(service, community.path));
     }
+    card.appendChild(grid);
     return card;
   };
 
@@ -976,8 +997,8 @@
 
   const renderMapLens = (state) =>
     h(
-      "div",
-      { class: "map-lens", role: "tablist", "aria-label": "Map lens" },
+      "nav",
+      { class: "map-lens", "aria-label": "Map lens" },
       [
         ["fix", "Fix first"],
         ["service", "Services"],
@@ -987,8 +1008,7 @@
           "a",
           {
             class: "map-lens__option",
-            role: "tab",
-            "aria-selected": state.lens === id ? "true" : "false",
+            "aria-current": state.lens === id ? "page" : null,
             href: mapHash({ ...state, lens: id }),
           },
           label,
@@ -1828,9 +1848,6 @@
     main.textContent = "";
     main.appendChild(h("h1", { class: "visually-hidden" }, "Map"));
     main.appendChild(renderMapLens(state));
-    if (state.lens === "service") {
-      main.appendChild(renderServiceSelector(state));
-    }
     const resetButton = h(
       "button",
       { type: "button", class: "button button--secondary map-controls__reset", hidden: state.region ? null : "" },
@@ -1838,12 +1855,18 @@
     );
     const regionTarget = state.region ? regionView(state.region) : null;
     const frameAttributes = {
-      class: "map-frame" + (state.lens === "service" ? " map-frame--service" : "") + (regionTarget ? " map-frame--region" : ""),
+      class: "map-frame" + (regionTarget ? " map-frame--region" : ""),
     };
     if (regionTarget) {
       frameAttributes.style = "--map-region-ratio: " + regionTarget.w + " / " + regionTarget.h;
     }
-    const frame = h("div", frameAttributes, svg, resetButton);
+    const frame = h(
+      "div",
+      frameAttributes,
+      state.lens === "service" ? renderServiceSelector(state) : null,
+      svg,
+      resetButton,
+    );
     main.appendChild(frame);
     const mapView = attachMapView(svg, ordered, state, pointGroupsById, labelsGroup, resetButton);
     resetButton.addEventListener("click", () => mapView.reset());
@@ -2137,7 +2160,11 @@
     let selected = null;
     for (const tab of tabs) {
       const isSelected = screen !== "#/" && tab.getAttribute("href").startsWith(screen);
-      tab.setAttribute("aria-selected", isSelected ? "true" : "false");
+      if (isSelected) {
+        tab.setAttribute("aria-current", "page");
+      } else {
+        tab.removeAttribute("aria-current");
+      }
       if (isSelected) {
         selected = tab;
       }

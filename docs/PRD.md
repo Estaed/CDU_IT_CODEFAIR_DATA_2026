@@ -372,6 +372,30 @@ capture"; it is the right next step and is written into the report's future work
 renaming the verdict words to Yes / Barely / No (they are the report's and FINDINGS.md's
 vocabulary, and `Degraded` here means "not proven", which the summary sentence now says).
 
+**v1 changes, seventh batch, decided 2026-09-22 (Tarik, after reviewing current mobile app
+patterns and three Crosscheck mock directions).** The app should feel like a phone tool rather
+than a document while preserving the same data, routes and verdicts. The chosen direction is
+the service-card treatment from direction A and the map composition from direction C.
+
+- *Mobile shell* (Task-53): at compact widths the title and offline state stay in the top bar,
+  while the four top-level destinations become a persistent bottom navigation. Each destination
+  has one small monochrome inline SVG icon and its visible label: Community, Fix first, Map,
+  Share. The current destination uses `aria-current="page"`; home has none selected. At wider
+  widths the same links remain in the top bar. Every target remains at least the touch token.
+- *Service cards* (Task-53): the four community service answers form a two-column grid of
+  individual cards. Each card contains a service icon, the existing task label, and the existing
+  verdict glyph and word. The icon identifies the service only; colour and the verdict glyph
+  continue to carry the result. Opening a card reveals the unchanged reason, assumption,
+  sources and best-path evidence across the full grid width.
+- *Map composition* (Task-53): the three map lenses are navigation links with
+  `aria-current="page"`. On the Services lens, its selector overlays the top of the map rather
+  than consuming a separate bar and reducing the map. The service lens uses the same map height
+  as the other lenses. Region chips, highlight/layer controls, the 96 points, legend, selection
+  card and list keep their existing behaviour.
+- Icons are authored once as small inline vector paths, need no font, image, library or request,
+  and stay decorative (`aria-hidden`) beside visible text. The build and pack byte caps do not
+  move.
+
 Considered and dropped on 2026-09-17: a restart on a different idea (13 days to submission, one
 builder, the report not started; the pipeline already holds most of the inputs the priority
 score needs); dropping the myGov row (touches the table, the selector, the evidence text and
@@ -606,4 +630,3 @@ D5. **National scope** — only if the NT is finished early; the brief allows it
 | 2026-09-17 (evening) | Priority weights approved as written in `pipeline/priority_weights.csv` (0.20 / 0.20 / 0.20 / 0.15 / 0.10 / 0.10 / −0.10 / 0 / 0); the report prints the CSV and the sensitivity table beside it | Tarik ("tamam yap") |
 | 2026-09-21 | Fifth batch (§4.2): the app opens on a home screen with one sentence, three pack figures and three buttons; service rows read as questions; one summary sentence per community assembled from pack strings; inside words renamed or folded; `Fix first` tab label. No new feature, no new verdict. Goal: the ten-second hand-over test, three of three. The before/after button, service pings, per-service reports and renamed verdict words were considered and dropped | Tarik ("hepsini yapalim"), on Eko's proposal |
 | 2026-09-21 (late) | Sixth batch (§4.2): map redesigned on Tarik's free hand. Three lenses (Fix first default, Services, Sources), no clusters (deterministic declutter), region chips that zoom, filters that dim, height capped so the legend shows, a selection card with the summary sentence. Earlier map rules (Task-29 clusters, removing filters) are superseded. The `degraded` summary clause quotes the pack's assumption, not the satellite figure | Tarik ("tamamen özgürsün"), design by Eko |
-

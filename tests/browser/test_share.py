@@ -74,7 +74,9 @@ def test_share_card_renders(context):
     assert built in meta.inner_text()
     expect(page.locator(".share-card__statement")).to_contain_text("It does not measure signal.")
     expect(page.locator(".footer__team")).to_have_count(1)
-    expect(page.locator("[role=tab][aria-selected=true]")).to_have_text("Share")
+    expect(page.locator("nav[aria-label='Main navigation'] [aria-current=page]")).to_have_text(
+        "Share"
+    )
 
     assert page.evaluate("window.__swRegistered === undefined")
     # Task-28: the manifest link is a static <head> tag present on every route, not a runtime

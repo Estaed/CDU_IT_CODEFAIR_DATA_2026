@@ -132,6 +132,13 @@ component key is given in the first column. Every class is defined once in `scre
 
 ## Where the screens depart from a literal reading, and why
 
+- **2026-09-22 — mobile shell, service cards and map composition (Task-53):** PRD §4.2
+  seventh batch supersedes the original icon-free top-tab treatment at compact widths. The
+  four top-level links become a persistent bottom navigation with monochrome inline SVG icons
+  and visible labels; the community's four service answers become individual two-column cards;
+  and the Services selector overlays the map so it does not shorten the frame. Wider widths
+  keep the top navigation. Verdict glyphs, words, colours, reasons and data remain unchanged.
+
 - **Button padding.** DESIGN.md gives `padding: 0 20px` and no 20px token exists. The screens
   use `calc(var(--space-md) + var(--space-xxs))`, which is 20px composed from tokens.
 - **Verdict glyph size.** The mirror's `VerdictBadge.jsx` and `MapLegend.jsx` set the glyph at a

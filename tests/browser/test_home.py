@@ -80,7 +80,7 @@ def test_home_route_and_exact_contract(context):
         "A diagnosis, not a fix: every figure is from a published source, and the app measures "
         "nothing."
     )
-    expect(page.locator("[role=tab][aria-selected=true]")).to_have_count(0)
+    expect(page.locator("nav[aria-label='Main navigation'] [aria-current=page]")).to_have_count(0)
 
     assert errors == []
     assert blocked == []
@@ -108,7 +108,9 @@ def test_home_actions_open_their_declared_destinations(context):
 
     page.goto(f"{DIST_INDEX}#/")
     page.get_by_role("link", name="What to fix first", exact=True).click()
-    expect(page.locator("[role=tab][aria-selected=true]")).to_have_text("Fix first")
+    expect(page.locator("nav[aria-label='Main navigation'] [aria-current=page]")).to_have_text(
+        "Fix first"
+    )
 
     page.goto(f"{DIST_INDEX}#/")
     page.get_by_role("link", name="See the map", exact=True).click()

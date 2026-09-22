@@ -90,7 +90,7 @@ def test_default_map_contract(browser):
     page, blocked, errors = _open_page(browser, "#/map")
     pack = _pack(page)
 
-    expect(page.locator(".map-lens__option[aria-selected=true]")).to_have_text("Fix first")
+    expect(page.locator(".map-lens__option[aria-current=page]")).to_have_text("Fix first")
     expect(page.locator("svg.map[data-lens=fix]")).to_have_attribute("viewBox", "0 0 300 480")
     expect(page.locator("g.map__community")).to_have_count(96)
     expect(page.locator(".map__cluster")).to_have_count(0)
@@ -158,7 +158,7 @@ def test_lenses_sources_and_service_match_pack(browser):
         bucket: sum(value == bucket for value in expected_sources.values())
         for bucket in ("measured", "disagree", "agree")
     }
-    expect(page.locator(".map-lens__option[aria-selected=true]")).to_have_text("Sources")
+    expect(page.locator(".map-lens__option[aria-current=page]")).to_have_text("Sources")
     for label, bucket in (
         ("Drive test found no signal", "measured"),
         ("Sources disagree", "disagree"),
@@ -193,7 +193,7 @@ def test_lenses_sources_and_service_match_pack(browser):
 def test_lens_control_keeps_selected_and_filter(browser):
     page, blocked, errors = _open_page(browser, "#/map?filter=clinic-no-terrestrial&selected=426")
 
-    page.get_by_role("tab", name="Sources", exact=True).click()
+    page.get_by_role("link", name="Sources", exact=True).click()
     params = _params(page)
     assert params == {"lens": "sources", "filter": "clinic-no-terrestrial", "selected": "426"}
 

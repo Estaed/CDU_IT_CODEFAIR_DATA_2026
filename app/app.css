@@ -136,7 +136,7 @@ a.top-bar__title { color: inherit; text-decoration: none; }
   text-decoration: none;
 }
 
-.map-lens__option[aria-selected="true"] { color: var(--text-heading); background: var(--surface-page); }
+.map-lens__option[aria-current="page"] { color: var(--text-heading); background: var(--surface-page); }
 
 .chip, .map-lens__option, .map-controls__reset { min-height: var(--size-touch); }
 
@@ -148,7 +148,6 @@ a.top-bar__title { color: inherit; text-decoration: none; }
   margin-top: var(--space-xs);
 }
 
-.map-frame--service { height: min(59vh, var(--size-viewport-min-height)); }
 .map-frame--region { height: auto; aspect-ratio: var(--map-region-ratio); max-height: min(62vh, var(--size-viewport-min-height)); }
 
 .map-frame .map {
@@ -249,16 +248,24 @@ a.top-bar__title { color: inherit; text-decoration: none; }
    to `.report-button` above for the same reason: `width: 100%` plus margin is wider than the
    container. */
 .map-service {
+  position: absolute;
+  z-index: 1;
+  top: var(--space-sm);
+  left: var(--space-md);
   display: block;
   width: calc(100% - 2 * var(--space-md));
   min-height: var(--size-control);
-  margin: var(--space-sm) var(--space-md) 0;
+  margin: 0;
   padding: 0 var(--space-md);
   font: var(--text-body-md);
   color: var(--text-heading);
   background: var(--surface-page);
   border: var(--size-hairline) solid var(--border-hairline);
   border-radius: var(--radius-md);
+}
+
+.map-frame:has(.map-service) .map-controls__reset {
+  top: calc(var(--space-sm) + var(--size-control) + var(--space-xs));
 }
 
 .map-legend {
@@ -347,6 +354,8 @@ a.top-bar__title { color: inherit; text-decoration: none; }
   margin: 0 calc(-1 * var(--space-md));
 }
 .top-bar__inner > .tabs .tab { flex: 1 1 0; justify-content: center; }
+.nav-icon { display: none; width: var(--size-badge); height: var(--size-badge); stroke-width: var(--size-focus-ring); }
+.top-bar__inner > .tabs .tab[aria-current="page"] { color: var(--tab-selected); border-bottom-color: var(--tab-selected); }
 
 /* A tab row that scrolls fades on the side that hides more (app.js sets data-overflow). The
    mask is alpha, not a colour: black and transparent only say how much of the row shows. */
@@ -406,16 +415,31 @@ a.top-bar__title { color: inherit; text-decoration: none; }
    (item 3). */
 .services {
   margin: var(--space-md) var(--space-md) 0;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+.services .section__note { padding-top: var(--space-xs); }
+.services__question { padding: 0 0 var(--space-sm); font: var(--text-title-md); color: var(--text-heading); }
+.services__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-xs); }
+.service-card {
+  min-width: 0;
+  overflow: hidden;
+  background: var(--surface-page);
   border: var(--size-hairline) solid var(--border-hairline);
   border-radius: var(--radius-lg);
-  overflow: hidden;
 }
-.services .section__note { padding-top: var(--space-xs); border-bottom: var(--size-hairline) solid var(--border-hairline); }
-.services__question { padding: var(--space-sm) var(--space-md); border-bottom: var(--size-hairline) solid var(--border-hairline); font: var(--text-title-md); color: var(--text-heading); }
-/* The card already carries its own bottom border; the last row does not need a second one.
-   `:last-of-type` (by tag, not class) reaches the last row's button through the detail panels
-   interleaved between rows. */
-.services button:last-of-type { border-bottom: 0; }
+.service-card--expanded { grid-column: 1 / -1; background: var(--surface-soft); }
+.service-card .service-row { border-bottom: 0; }
+.service-card .service-row__button { min-height: calc(var(--size-touch) * 2); padding: var(--space-sm); }
+.service-card .service-row__top { height: 100%; align-items: flex-start; flex-direction: column; }
+.service-card .service-row__label { flex: 1 1 auto; align-items: flex-start; flex-direction: column; }
+.service-card .service-row__badge { align-self: flex-start; }
+.service-icon { width: var(--size-badge); height: var(--size-badge); color: var(--text-heading); stroke-width: var(--size-focus-ring); }
+.service-card--expanded .service-row__button { min-height: var(--size-touch); }
+.service-card--expanded .service-row__top,
+.service-card--expanded .service-row__label { flex-direction: row; align-items: center; }
+.service-card--expanded .service-row__badge { align-self: auto; }
 
 /* A folded section's own title-sized summary line, replacing the banned `.section__title` on
    this screen (item 6); `.section` still gives it the top hairline and vertical rhythm. The
@@ -430,11 +454,6 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 
 /* The glyph beside the service name, coloured like its badge (item 3). */
 .service-row__label { display: flex; align-items: center; gap: var(--space-xs); }
-.service-row__glyph--works { color: var(--verdict-works-text); }
-.service-row__glyph--degraded { color: var(--verdict-degraded-text); }
-.service-row__glyph--fails { color: var(--verdict-fails-text); }
-.service-row__glyph--nodata { color: var(--verdict-nodata-text); }
-
 /* The row's detail, beneath it once tapped: the reason needs its own horizontal padding now
    that it no longer sits inside the button's own padded box. */
 .service-row__detail { padding-bottom: var(--space-sm); }
@@ -616,3 +635,32 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 
 .reliability-line > summary { cursor: pointer; color: var(--text-body); }
 .reliability-line__body { margin: var(--space-xs) 0 0; padding: 0 var(--space-md); font: var(--text-body-sm); color: var(--text-body); }
+
+@media (max-width: 40rem) {
+  .top-bar__inner { flex-wrap: nowrap; height: var(--size-topbar); }
+  .top-bar__inner > .tabs {
+    position: fixed;
+    z-index: 2;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    order: initial;
+    margin: 0;
+    padding: var(--space-xxs) var(--space-xs) env(safe-area-inset-bottom);
+    overflow: visible;
+    background: var(--surface-page);
+    border-top: var(--size-hairline) solid var(--border-hairline);
+  }
+  .top-bar__inner > .tabs .tab {
+    min-height: calc(var(--size-touch) + var(--space-xs));
+    padding: var(--space-xxs);
+    flex-direction: column;
+    gap: 0;
+    border-bottom: 0;
+    border-radius: var(--radius-md);
+    font: var(--text-label);
+  }
+  .top-bar__inner > .tabs .tab[aria-current="page"] { background: var(--surface-block); }
+  .nav-icon { display: block; }
+  .content { padding-bottom: calc(var(--size-touch) + var(--space-xl) + env(safe-area-inset-bottom)); }
+}

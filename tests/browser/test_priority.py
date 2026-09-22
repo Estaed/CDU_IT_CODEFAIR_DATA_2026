@@ -148,9 +148,11 @@ def test_all_chip_restores_96(context):
 def test_tab_order_and_selected(context):
     page, blocked, errors = _open_page(context, "#/priority")
 
-    tabs = page.locator("header.top-bar [role=tab]")
-    expect(tabs).to_have_text(["Community", "Fix first", "Map", "Share"])
-    expect(page.locator("[role=tab][aria-selected=true]")).to_have_text("Fix first")
+    links = page.locator("header.top-bar nav[aria-label='Main navigation'] .tab")
+    expect(links).to_have_text(["Community", "Fix first", "Map", "Share"])
+    expect(page.locator("nav[aria-label='Main navigation'] [aria-current=page]")).to_have_text(
+        "Fix first"
+    )
 
     assert errors == []
     assert blocked == []
