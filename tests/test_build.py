@@ -255,13 +255,16 @@ def test_icons_written_at_declared_sizes_and_deterministic():
             assert img.size == (size, size)
             assert img.mode == "RGB"
 
-    ink = _token("color-ink")
-    ink_rgb = tuple(int(ink[i : i + 2], 16) for i in (1, 3, 5))
+    # 2026-09-23: the icon is the top bar's brand mark, ink double check on the canvas colour.
+    def rgb(token: str) -> tuple[int, ...]:
+        value = _token(token)
+        return tuple(int(value[i : i + 2], 16) for i in (1, 3, 5))
+
     with Image.open(dist / "icon-512.png") as img:
         corner = img.getpixel((0, 0))
-        centre = img.getpixel((256, 256))
-    assert corner == ink_rgb
-    assert centre != corner
+        colours = {colour for _, colour in img.getcolors(maxcolors=512 * 512)}
+    assert corner == rgb("color-canvas")
+    assert rgb("color-ink") in colours
 
     first_build = {name: (dist / name).read_bytes() for name in sizes}
     build_app.main()

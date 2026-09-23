@@ -337,11 +337,18 @@
     );
     const detail = h("div", { class: "service-row__detail", hidden: "" }, detailChildren);
     const card = h("div", { class: "service-card" }, button, detail);
+    const setExpanded = (one, expanded) => {
+      one.querySelector(".service-row").setAttribute("aria-expanded", expanded ? "true" : "false");
+      one.querySelector(".service-row__detail").hidden = !expanded;
+      one.classList.toggle("service-card--expanded", expanded);
+    };
+    // One card open at a time: opening a card closes the one already open.
     button.addEventListener("click", () => {
       const expanded = button.getAttribute("aria-expanded") === "true";
-      button.setAttribute("aria-expanded", expanded ? "false" : "true");
-      detail.hidden = expanded;
-      card.classList.toggle("service-card--expanded", !expanded);
+      for (const other of card.parentElement?.querySelectorAll(".service-card--expanded") || []) {
+        setExpanded(other, false);
+      }
+      setExpanded(card, !expanded);
     });
     return card;
   };
@@ -1335,9 +1342,13 @@
     }));
     const restingPoints = declutter(truePoints, 1);
 
-    const updateLayout = () => {
+    // Moving the points is cheap and follows every zoom step; placing the labels measures text
+    // and is deferred until a pan or pinch settles, so a gesture never waits on it.
+    const positions = new Map();
+    let movedAtZoom = null;
+    const movePoints = () => {
+      movedAtZoom = zoom;
       const factor = Math.max(0, Math.min(1, (DECLUTTER_FULL_ZOOM - zoom) / 7));
-      const positions = new Map();
       for (let i = 0; i < communities.length; i += 1) {
         const community = communities[i];
         const x = community.x + (restingPoints[i].x - community.x) * factor;
@@ -1348,6 +1359,9 @@
           `translate(${f1(x - community.x)} ${f1(y - community.y)})`,
         );
       }
+    };
+
+    const placeLabels = () => {
       labelsGroup.textContent = "";
       const filter = pack.filters.find((one) => one.id === state.filter);
       const labels = [];
@@ -1412,33 +1426,12 @@
           order: 1,
         };
       });
-      const tierOneMarkers = communities
-        .filter((community) => state.lens === "fix" && mapTier(community) === 1)
-        .map((community) => ({ id: String(community.id), element: pointGroupsById.get(community.id)?.querySelector(".map__hit") }))
-        .filter((marker) => marker.element);
       const overlaps = (a, b) =>
         a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
-      const scaledBox = (element) => {
-        const box = element.getBBox();
-        const width = box.width / zoom;
-        const height = box.height / zoom;
-        const centreX = box.x + box.width / 2;
-        const centreY = box.y + box.height / 2;
-        return {
-          x: centreX + (box.x - centreX) / zoom,
-          y: centreY + (box.y - centreY) / zoom,
-          width,
-          height,
-        };
-      };
       const screenBox = (element) => {
         const box = element.getBoundingClientRect();
         return { x: box.left, y: box.top, width: box.width, height: box.height };
       };
-      const allLabels = [...labels, ...townLabels].sort(
-        (a, b) => a.order - b.order || a.point.y - b.point.y || String(a.element.textContent).localeCompare(String(b.element.textContent)),
-      );
-      const occupied = [];
       const labelCentre = (box) => ({
         x: box.x + box.width / 2,
         y: box.y + box.height / 2,
@@ -1447,59 +1440,83 @@
         entry.town
           ? entry.element.parentElement.querySelector(".map__town-dot")
           : pointGroupsById.get(Number(entry.element.getAttribute("data-for")))?.querySelector(".map__hit");
-      const alignLabel = (label, entry) => {
+      const allLabels = [...labels, ...townLabels].sort(
+        (a, b) => a.order - b.order || a.point.y - b.point.y || String(a.element.textContent).localeCompare(String(b.element.textContent)),
+      );
+
+      // Read everything once (one layout), then place by arithmetic and write once: measuring a
+      // label after every candidate move forced a layout per candidate and froze the phone.
+      for (const entry of townLabels) {
+        entry.element.removeAttribute("hidden");
+      }
+      const svgBox = svg.getBoundingClientRect();
+      for (const entry of allLabels) {
+        const element = entry.element;
+        const box = element.getBBox();
+        const x = Number(element.getAttribute("x"));
+        const anchorLeft = element.getAttribute("text-anchor") === "end" ? x - box.width : x;
+        entry.size = {
+          width: box.width,
+          height: box.height,
+          dx: box.x - anchorLeft,
+          dy: box.y - Number(element.getAttribute("y")),
+        };
         const marker = ownMarker(entry);
-        if (!marker) {
-          return;
-        }
-        const svgBox = svg.getBoundingClientRect();
-        const scaleX = svgBox.width / view.w;
-        const scaleY = svgBox.height / view.h;
-        for (let attempt = 0; attempt < 3; attempt += 1) {
-          const labelBox = screenBox(label);
-          const markerBox = screenBox(marker);
-          const labelMid = labelCentre(labelBox);
-          const markerMid = labelCentre(markerBox);
-          const distance = Math.hypot(labelMid.x - markerMid.x, labelMid.y - markerMid.y);
-          const allowed = 40 + labelBox.width / 2;
-          if (distance <= allowed || distance === 0) {
-            return;
-          }
-          label.setAttribute(
-            "x",
-            f1(Number(label.getAttribute("x")) + (markerMid.x - labelMid.x) / scaleX),
-          );
-          label.setAttribute(
-            "y",
-            f1(Number(label.getAttribute("y")) + (markerMid.y - labelMid.y) / scaleY),
-          );
-        }
+        entry.marker = marker ? screenBox(marker) : null;
+      }
+      const tierOneBoxes = communities
+        .filter((community) => state.lens === "fix" && mapTier(community) === 1)
+        .map((community) => ({ id: String(community.id), element: pointGroupsById.get(community.id)?.querySelector(".map__hit") }))
+        .filter((marker) => marker.element)
+        .map((marker) => ({ id: marker.id, box: screenBox(marker.element) }));
+
+      const scale = Math.min(svgBox.width / view.w, svgBox.height / view.h);
+      const originX = svgBox.left + (svgBox.width - view.w * scale) / 2;
+      const originY = svgBox.top + (svgBox.height - view.h * scale) / 2;
+      // The label's box in view units, shrunk by its CSS scale(1 / zoom) about its own centre.
+      const scaledBox = (entry, x, y, anchor) => {
+        const { width, height, dx, dy } = entry.size;
+        const centreX = (anchor === "end" ? x - width : x) + dx + width / 2;
+        const centreY = y + dy + height / 2;
+        return {
+          x: centreX - width / zoom / 2,
+          y: centreY - height / zoom / 2,
+          width: width / zoom,
+          height: height / zoom,
+        };
       };
+      const toScreen = (box) => ({
+        x: originX + (box.x - view.x) * scale,
+        y: originY + (box.y - view.y) * scale,
+        width: box.width * scale,
+        height: box.height * scale,
+      });
+      // Half a pixel of margin absorbs the rounding between this arithmetic and the drawn text.
+      const padded = (box) => ({ x: box.x - 0.5, y: box.y - 0.5, width: box.width + 1, height: box.height + 1 });
       const keepsTierOneClear = (entry, box) => {
         if (entry.selected) {
           return true;
         }
-        return tierOneMarkers.every((marker) => marker.id === entry.element.getAttribute("data-for") || !overlaps(box, screenBox(marker.element)));
+        return tierOneBoxes.every((marker) => marker.id === entry.element.getAttribute("data-for") || !overlaps(box, marker.box));
       };
       const keepsOwnTierOneNearest = (entry, box) => {
-        if (entry.selected || !entry.tierOne || !tierOneMarkers.length) {
+        if (entry.selected || !entry.tierOne || !tierOneBoxes.length) {
           return true;
         }
-        const own = ownMarker(entry);
-        if (!own) {
+        if (!entry.marker) {
           return false;
         }
         const centre = labelCentre(box);
-        const ownBox = screenBox(own);
-        const ownDistance = Math.hypot(centre.x - (ownBox.x + ownBox.width / 2), centre.y - (ownBox.y + ownBox.height / 2));
-        return tierOneMarkers.every((marker) => {
-          const markerBox = screenBox(marker.element);
-          const distance = Math.hypot(centre.x - (markerBox.x + markerBox.width / 2), centre.y - (markerBox.y + markerBox.height / 2));
-          return ownDistance <= distance;
+        const own = labelCentre(entry.marker);
+        const ownDistance = Math.hypot(centre.x - own.x, centre.y - own.y);
+        return tierOneBoxes.every((marker) => {
+          const other = labelCentre(marker.box);
+          return ownDistance <= Math.hypot(centre.x - other.x, centre.y - other.y);
         });
       };
+      const occupied = [];
+      const placements = [];
       for (const entry of allLabels) {
-        const label = entry.element;
         const gap = 8 / zoom;
         const radius = entry.radius / zoom;
         const side = entry.point.x < view.x + view.w * 0.4 ? 1 : -1;
@@ -1508,19 +1525,20 @@
         const candidates = [];
         for (const sideSign of sides) {
           for (const offset of verticalOffsets) {
+            // The label shrinks about its own centre, so x and y are chosen for the shrunk box:
+            // its near edge sits beside the marker and its middle on the marker's line, at any zoom.
+            const { width, height, dx, dy } = entry.size;
+            const shrink = width / 2 - width / zoom / 2;
             candidates.push({
-              x: entry.point.x + sideSign * (radius + gap / 2),
-              y: entry.point.y + offset,
+              x: entry.point.x + sideSign * (radius + gap / 2 - shrink) - dx,
+              y: entry.point.y + offset - dy - height / 2,
               anchor: sideSign > 0 ? "start" : "end",
             });
           }
         }
         let accepted = null;
         for (const candidate of candidates) {
-          label.setAttribute("x", f1(candidate.x));
-          label.setAttribute("y", f1(candidate.y));
-          label.setAttribute("text-anchor", candidate.anchor);
-          const box = scaledBox(label);
+          const box = scaledBox(entry, candidate.x, candidate.y, candidate.anchor);
           const left = view.x + 0.5;
           const top = view.y + 0.5;
           const right = view.x + view.w - 0.5;
@@ -1530,24 +1548,38 @@
           if (Math.hypot(shiftX, shiftY) > gap) {
             continue;
           }
-          if ((shiftX || shiftY) && Math.hypot(shiftX, shiftY) <= gap) {
-            label.setAttribute("x", f1(candidate.x + shiftX));
-            label.setAttribute("y", f1(candidate.y + shiftY));
+          let x = Number(f1(candidate.x + shiftX));
+          let y = Number(f1(candidate.y + shiftY));
+          let screen = toScreen(scaledBox(entry, x, y, candidate.anchor));
+          // A label pushed far from its marker by the edge shift is centred back on the marker.
+          if (entry.marker) {
+            const labelMid = labelCentre(screen);
+            const markerMid = labelCentre(entry.marker);
+            if (Math.hypot(labelMid.x - markerMid.x, labelMid.y - markerMid.y) > 40 + screen.width / 2) {
+              x = Number(f1(x + (markerMid.x - labelMid.x) / scale));
+              y = Number(f1(y + (markerMid.y - labelMid.y) / scale));
+              screen = toScreen(scaledBox(entry, x, y, candidate.anchor));
+            }
           }
-          alignLabel(label, entry);
-          const screen = screenBox(label);
+          screen = padded(screen);
           if (
             !occupied.some((other) => overlaps(screen, other)) &&
             keepsTierOneClear(entry, screen) &&
             keepsOwnTierOneNearest(entry, screen)
           ) {
-            accepted = screen;
+            accepted = { x, y, anchor: candidate.anchor };
+            occupied.push(screen);
             break;
           }
         }
+        placements.push([entry.element, accepted]);
+      }
+      for (const [label, accepted] of placements) {
         if (accepted) {
+          label.setAttribute("x", f1(accepted.x));
+          label.setAttribute("y", f1(accepted.y));
+          label.setAttribute("text-anchor", accepted.anchor);
           label.removeAttribute("hidden");
-          occupied.push(accepted);
         } else {
           label.setAttribute("hidden", "");
         }
@@ -1562,15 +1594,24 @@
         .forEach((label) => labelsGroup.appendChild(label));
     };
 
-    let layoutFrame = null;
+    const updateLayout = () => {
+      movePoints();
+      placeLabels();
+    };
+
+    const LABEL_SETTLE_MS = 150;
+    let labelTimer = null;
     const scheduleLayout = () => {
-      if (layoutFrame !== null) {
-        return;
+      if (movedAtZoom !== zoom) {
+        movePoints();
       }
-      layoutFrame = requestAnimationFrame(() => {
-        layoutFrame = null;
-        updateLayout();
-      });
+      clearTimeout(labelTimer);
+      labelTimer = setTimeout(() => {
+        labelTimer = null;
+        if (svg.isConnected) {
+          placeLabels();
+        }
+      }, LABEL_SETTLE_MS);
     };
     window.addEventListener("resize", scheduleLayout);
 
@@ -2276,9 +2317,10 @@
 
   // The app works offline either way (it renders data_pack.json, requests nothing at runtime),
   // so the chip says that rather than "Online", which misled testers into thinking the app
-  // needed a connection (Task-26; BACKLOG 2026-09-15, Task-07).
+  // needed a connection (Task-26; BACKLOG 2026-09-15, Task-07). "Works offline" replaced
+  // "Offline-ready" on 2026-09-23: "ready" read as a claim that the data is up to date.
   const setChip = () => {
-    chip.textContent = navigator.onLine ? "Offline-ready" : "Offline";
+    chip.textContent = navigator.onLine ? "Works offline" : "Offline";
   };
 
   // Task-24: a pack held in the browser's own storage (store.js) that is newer than the

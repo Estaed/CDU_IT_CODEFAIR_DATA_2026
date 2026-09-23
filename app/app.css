@@ -132,7 +132,7 @@ a.top-bar__title { color: inherit; text-decoration: none; }
   min-height: var(--size-touch);
   padding: 0 var(--space-xs);
   font: var(--text-tab);
-  color: var(--text-secondary);
+  color: var(--text-body);
   text-decoration: none;
 }
 
@@ -141,6 +141,12 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 .map-lens__option[aria-current="page"] { color: var(--text-heading); background: var(--surface-pressed); }
 
 .chip, .map-lens__option, .map-controls__reset, .map-controls__zoom { min-height: var(--size-touch); }
+
+/* Toggle chips: an unselected chip is outlined, not faded, so its text keeps full contrast;
+   the selected one is filled with a dark outline. */
+.chip[aria-pressed] { border: var(--size-hairline) solid var(--border-hairline); }
+.chip[aria-pressed="false"] { color: var(--text-body); background: var(--surface-page); }
+.chip[aria-pressed="true"] { color: var(--text-heading); background: var(--surface-pressed); border-color: var(--text-heading); }
 
 .map-frame {
   position: relative;
@@ -195,9 +201,7 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 
 .layer-chips { padding: var(--space-sm) var(--space-md) 0; }
 
-.layer-chip { border: none; cursor: pointer; }
-
-.layer-chip[aria-pressed="false"] { opacity: 0.5; }
+.layer-chip { cursor: pointer; }
 
 .map-controls__reset {
   position: absolute;
@@ -245,7 +249,7 @@ a.top-bar__title { color: inherit; text-decoration: none; }
   transform: scale(calc(1 / var(--map-zoom, 1)));
 }
 
-.map__community { cursor: pointer; transition: opacity 180ms ease, transform 180ms ease; }
+.map__community { cursor: pointer; transition: opacity 180ms ease; }
 .map__community--dim { opacity: 0.2; }
 .map__community--selected { opacity: 1; }
 
@@ -335,7 +339,6 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 
 .map-regions { display: flex; gap: var(--space-xs); padding: 0 var(--space-md) var(--space-sm); overflow-x: auto; }
 .map-regions .chip { flex: 0 0 auto; text-decoration: none; }
-.map-regions .chip[aria-pressed="false"] { opacity: 0.5; }
 
 .map-more { border-top: var(--size-hairline) solid var(--border-hairline); border-bottom: var(--size-hairline) solid var(--border-hairline); }
 .map-more > summary { padding: var(--space-sm) var(--space-md); font: var(--text-title-sm); color: var(--text-heading); cursor: pointer; }
@@ -562,7 +565,9 @@ a.top-bar__title { color: inherit; text-decoration: none; }
    the count line, the paste-in fold and Copy evidence. Tokens only, like every rule above. */
 .report-form { display: grid; gap: var(--space-sm); margin: var(--space-sm) var(--space-md) 0; }
 .report-form__note { margin: 0; font: var(--text-body-sm); color: var(--text-secondary); }
-.report-form__row { display: flex; flex-wrap: wrap; gap: var(--space-xs); padding: 0; }
+.report-form__row { display: flex; flex-wrap: wrap; gap: var(--space-xs); min-width: 0; margin: 0; padding: 0; border: 0; }
+/* A fieldset keeps its grouping for screen readers but loses the desktop frame: the legend reads as a label. */
+.report-form__row > legend { margin-bottom: var(--space-xxs); padding: 0; font: var(--text-label); color: var(--text-heading); }
 .report-form__status {
   flex: 1 1 0;
   min-height: var(--size-touch);
@@ -575,8 +580,7 @@ a.top-bar__title { color: inherit; text-decoration: none; }
   cursor: pointer;
 }
 .report-form__status[aria-pressed="true"] { border-color: var(--text-heading); background: var(--surface-block); }
-.report-form__carrier { border: var(--size-hairline) solid transparent; cursor: pointer; }
-.report-form__carrier[aria-pressed="true"] { border-color: var(--text-heading); background: var(--surface-pressed); }
+.report-form__carrier { cursor: pointer; }
 .report-form__location { display: flex; align-items: center; gap: var(--space-xs); min-height: var(--size-touch); font: var(--text-body-sm); color: var(--text-body); }
 .report-form__save[disabled] { background: var(--action-disabled); cursor: default; }
 .report-form__result:empty { display: none; }
@@ -633,8 +637,7 @@ a.top-bar__title { color: inherit; text-decoration: none; }
   border-bottom: var(--size-hairline) solid var(--border-hairline);
 }
 
-.priority-chip { border: none; cursor: pointer; }
-.priority-chip[aria-pressed="false"] { opacity: 0.5; }
+.priority-chip { cursor: pointer; }
 
 .priority-list { list-style: none; margin: 0; padding: 0; }
 

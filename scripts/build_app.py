@@ -115,30 +115,39 @@ def read_tokens(names: tuple[str, ...]) -> dict[str, str]:
     return {name: found[name] for name in names}
 
 
-def draw_icon(size: int, ink: str, mark: str) -> Image.Image:
-    """A full-bleed ink square with a bold rounded check mark in mark, inside the central 60%.
+# The top bar's brand mark (app/index.html, `.brand-mark`): two strokes in a 24-unit box,
+# stroke width 2, round caps and joins. The home-screen icons draw the same double check.
+BRAND_MARK = (((3, 12), (7, 16), (15, 7)), ((9, 16), (12, 19), (21, 8)))
+BRAND_STROKE = 2
 
-    Drawn at 4x and downsampled with LANCZOS for clean edges (Task-28 Execution Guide).
+
+def draw_icon(size: int, paper: str, ink: str) -> Image.Image:
+    """The brand mark's double check in ink on a full-bleed paper square.
+
+    The mark spans the central 60%, inside the maskable safe zone. Drawn at 4x and downsampled
+    with LANCZOS for clean edges (Task-28 Execution Guide).
     """
     scale = 4
     canvas = size * scale
-    image = Image.new("RGB", (canvas, canvas), ink)
+    image = Image.new("RGB", (canvas, canvas), paper)
     draw = ImageDraw.Draw(image)
 
-    margin = canvas * 0.2
-    span = canvas - 2 * margin
-    # The vertex sits exactly on the canvas centre (margin + span * 0.5 == canvas / 2) so the
-    # centre pixel is always mark-coloured, whatever size the icon is drawn at.
-    points = [
-        (margin + span * 0.05, margin + span * 0.38),
-        (margin + span * 0.50, margin + span * 0.50),
-        (margin + span * 0.98, margin + span * 0.05),
-    ]
-    stroke = round(canvas * 0.11)
-    draw.line(points, fill=mark, width=stroke, joint="curve")
-    radius = stroke / 2
-    for x, y in (points[0], points[-1]):
-        draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=mark)
+    xs = [x for stroke in BRAND_MARK for x, _ in stroke]
+    ys = [y for stroke in BRAND_MARK for _, y in stroke]
+    span = max(max(xs) - min(xs), max(ys) - min(ys)) + BRAND_STROKE
+    unit = canvas * 0.6 / span
+    centre_x = (min(xs) + max(xs)) / 2
+    centre_y = (min(ys) + max(ys)) / 2
+    width = round(BRAND_STROKE * unit)
+    radius = width / 2
+    for stroke in BRAND_MARK:
+        points = [
+            (canvas / 2 + (x - centre_x) * unit, canvas / 2 + (y - centre_y) * unit)
+            for x, y in stroke
+        ]
+        draw.line(points, fill=ink, width=width, joint="curve")
+        for x, y in (points[0], points[-1]):
+            draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=ink)
 
     return image.resize((size, size), Image.Resampling.LANCZOS)
 
@@ -155,11 +164,11 @@ def write_host_files(dist_dir: Path, html_bytes: bytes, tokens: dict[str, str]) 
     manifest_text = manifest_text.replace(THEME_PLACEHOLDER, tokens["color-canvas"])
     (dist_dir / MANIFEST_SRC.name).write_text(manifest_text, encoding="utf-8", newline="\n")
 
-    ink, mark = tokens["color-ink"], tokens["color-on-primary"]
+    paper, ink = tokens["color-canvas"], tokens["color-ink"]
     icons = {
-        "icon-192.png": draw_icon(192, ink, mark),
-        "icon-512.png": draw_icon(512, ink, mark),
-        "apple-touch-icon.png": draw_icon(180, ink, mark),
+        "icon-192.png": draw_icon(192, paper, ink),
+        "icon-512.png": draw_icon(512, paper, ink),
+        "apple-touch-icon.png": draw_icon(180, paper, ink),
     }
     for name, image in icons.items():
         image.save(dist_dir / name, format="PNG", optimize=False)
@@ -191,7 +200,7 @@ def main() -> str:
     pack_text = PACK.read_text(encoding="utf-8")
     # APP_URL comes from constants.md through the pack, so the QR and the share button agree.
     qr = qr_svg(json.loads(pack_text)["app_url"])
-    tokens = read_tokens(("color-canvas", "color-ink", "color-on-primary"))
+    tokens = read_tokens(("color-canvas", "color-ink"))
     js_parts = []
     for path in JS_FILES:
         text = path.read_text(encoding="utf-8")

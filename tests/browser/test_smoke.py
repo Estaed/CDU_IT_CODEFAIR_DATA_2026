@@ -45,10 +45,11 @@ def test_offline_smoke(browser):
     page.close()
 
 
-def test_offline_chip_reads_offline_ready_then_offline(browser):
+def test_offline_chip_reads_works_offline_then_offline(browser):
     # Task-26: the chip used to read "Online"/"Offline", which misled testers into thinking the
-    # app needs a connection; it now reads "Offline-ready" while online (the app renders
-    # data_pack.json and requests nothing at runtime either way).
+    # app needs a connection; it reads "Works offline" while online (the app renders
+    # data_pack.json and requests nothing at runtime either way). "Offline-ready" was dropped
+    # 2026-09-23 because "ready" read as a claim that the data is current.
     context = browser.new_context()
     page = context.new_page()
     blocked: list[str] = []
@@ -66,7 +67,7 @@ def test_offline_chip_reads_offline_ready_then_offline(browser):
     page.wait_for_load_state()
 
     chip = page.locator(".offline-chip")
-    assert chip.text_content() == "Offline-ready"
+    assert chip.text_content() == "Works offline"
 
     context.set_offline(True)
     page.evaluate("window.dispatchEvent(new Event('offline'))")
