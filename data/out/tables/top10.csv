@@ -1,11 +1,11 @@
-rank,name,region,population,score,intervention,addressee,why,telehealth_video,reliability_word,agreement
-1,Nauiyu,Top End,411,0.632,verify on the ground,"DCDD, carrier",Services present and population rank it here; a drive test found no signal inside claimed coverage.,degraded,low,4/5
-2,Nitjpurru,Big Rivers,142,0.608,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,fails,none,1/4
-3,Galiwinku,East Arnhem,2582,0.597,backup power,carrier,Services present and population rank it here; microwave backhaul.,degraded,low,4/4
-4,Amanbidji,Big Rivers,88,0.596,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,fails,none,1/4
-5,Areyonga,Central Australia,277,0.586,low-latency backhaul,"DCDD, nbn",Telehealth verdict and services present rank it here; health centre on a satellite path.,fails,none,0/4
-6,Maningrida,Top End,2956,0.582,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,degraded,low,4/4
-7,Wurrumiyanga,Top End,1668,0.568,backup power,carrier,Population and services present rank it here; microwave backhaul.,degraded,low,4/4
-8,Milingimbi,East Arnhem,1288,0.561,backup power,carrier,Services present and population rank it here; microwave backhaul.,degraded,low,4/4
-9,Jilkminggan,Big Rivers,309,0.553,verify on the ground,"DCDD, carrier",Population and services present rank it here; a drive test found no signal inside claimed coverage.,degraded,low,4/5
-10,Numbulwar,Big Rivers,799,0.549,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,degraded,low,4/4
+rank,group,name,region,population,score,intervention,addressee,why,telehealth_video,reliability_word,agreement
+1,service,Nitjpurru,Big Rivers,142,0.608,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,fails,none,1/4
+2,service,Amanbidji,Big Rivers,88,0.596,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,fails,none,1/4
+3,service,Areyonga,Central Australia,277,0.586,low-latency backhaul,"DCDD, nbn",Telehealth verdict and services present rank it here; health centre on a satellite path.,fails,none,0/4
+4,service,Rittarangu,Big Rivers,139,0.526,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,fails,none,1/4
+5,service,Dhalinybuy,East Arnhem,92,0.525,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,fails,none,0/3
+6,service,Gan Gan,East Arnhem,87,0.523,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,fails,none,0/3
+7,service,Woodycupaldiya,Top End,36,0.502,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,fails,none,1/3
+8,service,Gurrumuru,East Arnhem,34,0.500,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,fails,none,0/3
+9,service,Baniyala,East Arnhem,138,0.489,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,fails,none,1/3
+10,service,Orrtipa-Thurra,Central Australia,38,0.483,low-latency backhaul,"DCDD, nbn",Telehealth verdict and population rank it here; health centre on a satellite path.,fails,none,2/4

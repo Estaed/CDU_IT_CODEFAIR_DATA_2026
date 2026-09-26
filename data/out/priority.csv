@@ -1,97 +1,97 @@
-rank,id,name,score,intervention,addressee,why,c_population,c_services_present,c_telehealth_verdict,c_voice_sms_verdict,c_claim_reliability,c_audit_non_alignment_5km,c_mbsp_funded_5km,c_cyclone_exposure,c_adii_lga
-1,397,Nauiyu,0.632,verify on the ground,"DCDD, carrier",Services present and population rank it here; a drive test found no signal inside claimed coverage.,0.151,0.182,0.100,0.000,0.100,0.100,-0.000,0.000,0.000
-2,639,Nitjpurru,0.608,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.124,0.109,0.200,0.150,0.025,0.000,-0.000,0.000,0.000
-3,492,Galiwinku,0.597,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.197,0.200,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-4,622,Amanbidji,0.596,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.112,0.109,0.200,0.150,0.025,0.000,-0.000,0.000,0.000
-5,20,Areyonga,0.586,low-latency backhaul,"DCDD, nbn",Telehealth verdict and services present rank it here; health centre on a satellite path.,0.141,0.145,0.200,0.075,0.025,0.000,-0.000,0.000,0.000
-6,362,Maningrida,0.582,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.200,0.182,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-7,400,Wurrumiyanga,0.568,backup power,carrier,Population and services present rank it here; microwave backhaul.,0.186,0.182,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-8,531,Milingimbi,0.561,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.179,0.182,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-9,593,Jilkminggan,0.553,verify on the ground,"DCDD, carrier",Population and services present rank it here; a drive test found no signal inside claimed coverage.,0.144,0.109,0.100,0.000,0.100,0.100,-0.000,0.000,0.000
-10,549,Numbulwar,0.549,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.167,0.182,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-11,411,Pirlangimpi,0.548,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.148,0.200,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-12,580,Barunga,0.545,verify on the ground,"DCDD, carrier",Population and services present rank it here; a drive test found no signal inside claimed coverage.,0.150,0.145,0.100,0.000,0.050,0.100,-0.000,0.000,0.000
-13,426,Wadeye,0.543,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.193,0.200,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-14,429,Warruwi,0.538,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.156,0.182,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-15,72,Kintore,0.537,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.155,0.182,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-16,374,Milikapiti,0.537,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.155,0.182,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-17,633,Ngukurr,0.529,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.179,0.200,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-18,145,Santa Teresa,0.528,backup power,carrier,Population and services present rank it here; microwave backhaul.,0.164,0.164,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-19,641,Rittarangu,0.526,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.124,0.127,0.200,0.150,0.025,0.000,-0.100,0.000,0.000
-20,473,Dhalinybuy,0.525,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.113,0.036,0.200,0.150,0.025,0.000,-0.000,0.000,0.000
-21,451,Angurugu,0.524,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.174,0.200,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-22,498,Gan Gan,0.523,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.112,0.036,0.200,0.150,0.025,0.000,-0.000,0.000,0.000
-23,550,Ramingining,0.522,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.172,0.200,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-24,131,Papunya,0.520,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.156,0.164,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-25,555,Umbakumba,0.519,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.155,0.164,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-26,410,Peppimenarti,0.517,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.135,0.182,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-27,329,Gunbalanya,0.512,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.180,0.182,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-28,624,Minyerri,0.512,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.166,0.145,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-29,434,Woodycupaldiya,0.502,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.090,0.036,0.200,0.150,0.025,0.000,-0.000,0.000,0.000
-30,42,Atitjere,0.501,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.137,0.164,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-31,517,Gurrumuru,0.500,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.089,0.036,0.200,0.150,0.025,0.000,-0.000,0.000,0.000
-32,609,Lajamanu,0.498,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.166,0.182,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-33,458,Baniyala,0.489,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.123,0.091,0.200,0.150,0.025,0.000,-0.100,0.000,0.000
-34,66,Kaltukatjara,0.486,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.140,0.145,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-35,603,Kalkarindji,0.485,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.153,0.182,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-36,26,Orrtipa-Thurra,0.483,low-latency backhaul,"DCDD, nbn",Telehealth verdict and population rank it here; health centre on a satellite path.,0.092,0.091,0.200,0.075,0.025,0.000,-0.000,0.000,0.000
-37,500,Gapuwiyak,0.482,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.168,0.164,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-38,587,Bulman,0.477,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.131,0.145,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-39,43,Hermannsburg,0.476,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.162,0.164,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-40,10,Ampilatwatja,0.470,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.156,0.164,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-41,532,Milyakburra,0.466,refresh the coverage list,DCDD,"Services present and population rank it here; predicted coverage, not on the 2022 list.",0.121,0.145,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-42,198,Yuendumu,0.465,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.169,0.145,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-43,404,Nganmarriyanga,0.465,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.152,0.164,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-44,258,Robinson River,0.461,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.134,0.127,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-45,202,Ali Curung,0.449,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.154,0.145,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-46,203,Alpurrurulam,0.446,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.151,0.145,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-47,658,Yarralin,0.441,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.145,0.145,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-48,219,Canteen Creek,0.441,refresh the coverage list,DCDD,"Population and services present rank it here; predicted coverage, not on the 2022 list.",0.131,0.109,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
-49,581,Wugularr,0.439,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.162,0.127,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-50,128,Nyirripi,0.438,refresh the coverage list,DCDD,"Services present and population rank it here; predicted coverage, not on the 2022 list.",0.142,0.145,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-51,148,Titjikala,0.432,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.136,0.145,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-52,86,Laramba,0.431,refresh the coverage list,DCDD,"Services present and population rank it here; predicted coverage, not on the 2022 list.",0.135,0.145,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-53,227,Wutunugurra,0.424,refresh the coverage list,DCDD,"Services present and population rank it here; predicted coverage, not on the 2022 list.",0.128,0.145,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-54,120,Mutitjulu,0.421,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.144,0.127,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-55,375,Minjilang,0.407,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.144,0.164,0.100,0.000,0.100,0.000,-0.100,0.000,0.000
-56,250,Imangara,0.389,mobile site (MBSP nomination),"DCDD, carrier",Voice verdict and population rank it here; no prediction and no licensed site within 5 km.,0.110,0.055,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
-57,514,Gunyangara,0.387,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.141,0.145,0.100,0.000,0.000,0.000,-0.000,0.000,0.000
-58,112,Mount Liebig,0.387,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.141,0.145,0.100,0.000,0.100,0.000,-0.100,0.000,0.000
-59,586,Bulla,0.386,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.109,0.127,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-60,186,Willowra,0.385,refresh the coverage list,DCDD,"Services present and population rank it here; predicted coverage, not on the 2022 list.",0.139,0.145,0.100,0.000,0.000,0.000,-0.000,0.000,0.000
-61,36,Finke,0.381,refresh the coverage list,DCDD,"Services present and population rank it here; predicted coverage, not on the 2022 list.",0.136,0.145,0.100,0.000,0.100,0.000,-0.100,0.000,0.000
-62,595,Manyallaluk,0.379,backup power,carrier,Population and services present rank it here; microwave backhaul.,0.120,0.109,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
-63,294,Belyuen,0.375,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.129,0.145,0.100,0.000,0.000,0.000,-0.000,0.000,0.000
-64,41,Haasts Bluff,0.374,monitor,DCDD,Population and services present rank it here; no rule above it fired.,0.114,0.109,0.050,0.075,0.025,0.000,-0.000,0.000,0.000
-65,524,Mapuru,0.358,verify and publish the licensed site,"carrier, ACMA","Voice verdict and population rank it here; licensed site within 5 km, no coverage map.",0.115,0.018,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
-66,244,Mungkarta,0.355,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.000,0.055,0.200,0.075,0.025,0.000,-0.000,0.000,0.000
-67,51,Imanpa,0.352,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.125,0.127,0.100,0.000,0.100,0.000,-0.100,0.000,0.000
-68,9,Amoonguna,0.349,low-latency backhaul,"DCDD, nbn",Population and services present rank it here; health centre on a satellite path.,0.140,0.109,0.100,0.000,0.000,0.000,-0.000,0.000,0.000
-69,174,Wallace Rockhole,0.343,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.116,0.127,0.100,0.000,0.100,0.000,-0.100,0.000,0.000
-70,363,Manmoyi,0.342,verify and publish the licensed site,"carrier, ACMA","Voice verdict and population rank it here; licensed site within 5 km, no coverage map.",0.117,0.000,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
-71,591,Daguragu,0.341,monitor,DCDD,Population and claim reliability rank it here; no rule above it fired.,0.136,0.055,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
-72,33,Engawala,0.341,monitor,DCDD,Population and services present rank it here; no rule above it fired.,0.132,0.109,0.050,0.000,0.050,0.000,-0.000,0.000,0.000
-73,197,Yuelamu,0.338,refresh the coverage list,DCDD,"Population and services present rank it here; predicted coverage, not on the 2022 list.",0.129,0.109,0.050,0.000,0.050,0.000,-0.000,0.000,0.000
-74,464,Birany Birany,0.318,verify and publish the licensed site,"carrier, ACMA","Voice verdict and population rank it here; licensed site within 5 km, no coverage map.",0.093,0.000,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
-75,469,Rorruwuy,0.318,verify and publish the licensed site,"carrier, ACMA","Voice verdict and population rank it here; licensed site within 5 km, no coverage map.",0.093,0.000,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
-76,582,Binjari,0.314,measure the link here,DCDD,Population and telehealth verdict rank it here; a health centre whose link nobody has measured.,0.141,0.073,0.100,0.000,0.000,0.000,-0.000,0.000,0.000
-77,127,Nturiya,0.314,monitor,DCDD,Population and claim reliability rank it here; no rule above it fired.,0.109,0.055,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
-78,576,Yirrkala,0.312,monitor,DCDD,Population and services present rank it here; no rule above it fired.,0.166,0.145,0.000,0.000,0.000,0.000,-0.000,0.000,0.000
-79,187,Wilora,0.311,refresh the coverage list,DCDD,"Population and claim reliability rank it here; predicted coverage, not on the 2022 list.",0.106,0.055,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
-80,654,Weemol,0.304,monitor,DCDD,Population and claim reliability rank it here; no rule above it fired.,0.118,0.036,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
-81,868,Wurankuwu,0.303,verify and publish the licensed site,"carrier, ACMA","Voice verdict and population rank it here; licensed site within 5 km, no coverage map.",0.078,0.000,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
-82,138,Pmara Jutunta,0.283,measure the link here,DCDD,Population and telehealth verdict rank it here; a health centre whose link nobody has measured.,0.129,0.055,0.100,0.000,0.000,0.000,-0.000,0.000,0.000
-83,147,Arawerr,0.278,refresh the coverage list,DCDD,"Population and claim reliability rank it here; predicted coverage, not on the 2022 list.",0.110,0.018,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
-84,542,Ngangalala,0.275,monitor,DCDD,Population and claim reliability rank it here; no rule above it fired.,0.107,0.018,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
-85,63,Irrultja,0.264,monitor,DCDD,Population and voice verdict rank it here; no rule above it fired.,0.096,0.018,0.050,0.075,0.025,0.000,-0.000,0.000,0.000
-86,264,Tara,0.244,refresh the coverage list,DCDD,"Population and telehealth verdict rank it here; predicted coverage, not on the 2022 list.",0.103,0.091,0.100,0.000,0.050,0.000,-0.100,0.000,0.000
-87,256,Wandangula,0.244,refresh the coverage list,DCDD,"Claim reliability and population rank it here; predicted coverage, not on the 2022 list.",0.094,0.000,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
-88,319,Gochan Jiny Jirra,0.225,mobile site (MBSP nomination),"DCDD, carrier",Voice verdict and telehealth verdict rank it here; no prediction and no licensed site within 5 km.,0.000,0.000,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
-89,600,Hodgson River Station,0.225,mobile site (MBSP nomination),"DCDD, carrier",Voice verdict and telehealth verdict rank it here; no prediction and no licensed site within 5 km.,0.000,0.000,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
-90,721,Likkaparta,0.225,mobile site (MBSP nomination),"DCDD, carrier",Voice verdict and telehealth verdict rank it here; no prediction and no licensed site within 5 km.,0.000,0.000,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
-91,252,Marlinja,0.218,monitor,DCDD,Population and telehealth verdict rank it here; no rule above it fired.,0.099,0.018,0.050,0.000,0.050,0.000,-0.000,0.000,0.000
-92,571,Yathalamarra,0.206,monitor,DCDD,Population and telehealth verdict rank it here; no rule above it fired.,0.106,0.000,0.050,0.000,0.050,0.000,-0.000,0.000,0.000
-93,642,Rockhole,0.187,monitor,DCDD,Population and telehealth verdict rank it here; no rule above it fired.,0.119,0.018,0.050,0.000,0.000,0.000,-0.000,0.000,0.000
-94,608,Kybrook Farm,0.168,monitor,DCDD,Claim reliability and telehealth verdict rank it here; no rule above it fired.,0.000,0.018,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
-95,744,Pickertaramoor,0.168,refresh the coverage list,DCDD,"Claim reliability and telehealth verdict rank it here; predicted coverage, not on the 2022 list.",0.000,0.018,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
-96,65,Iwupataka,0.150,refresh the coverage list,DCDD,"Claim reliability and telehealth verdict rank it here; predicted coverage, not on the 2022 list.",0.000,0.000,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
+rank,id,name,score,group,intervention,addressee,why,c_population,c_services_present,c_telehealth_verdict,c_voice_sms_verdict,c_claim_reliability,c_audit_non_alignment_5km,c_mbsp_funded_5km,c_cyclone_exposure,c_adii_lga
+1,639,Nitjpurru,0.608,service,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.124,0.109,0.200,0.150,0.025,0.000,-0.000,0.000,0.000
+2,622,Amanbidji,0.596,service,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.112,0.109,0.200,0.150,0.025,0.000,-0.000,0.000,0.000
+3,20,Areyonga,0.586,service,low-latency backhaul,"DCDD, nbn",Telehealth verdict and services present rank it here; health centre on a satellite path.,0.141,0.145,0.200,0.075,0.025,0.000,-0.000,0.000,0.000
+4,641,Rittarangu,0.526,service,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.124,0.127,0.200,0.150,0.025,0.000,-0.100,0.000,0.000
+5,473,Dhalinybuy,0.525,service,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.113,0.036,0.200,0.150,0.025,0.000,-0.000,0.000,0.000
+6,498,Gan Gan,0.523,service,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.112,0.036,0.200,0.150,0.025,0.000,-0.000,0.000,0.000
+7,434,Woodycupaldiya,0.502,service,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.090,0.036,0.200,0.150,0.025,0.000,-0.000,0.000,0.000
+8,517,Gurrumuru,0.500,service,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.089,0.036,0.200,0.150,0.025,0.000,-0.000,0.000,0.000
+9,458,Baniyala,0.489,service,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.123,0.091,0.200,0.150,0.025,0.000,-0.100,0.000,0.000
+10,26,Orrtipa-Thurra,0.483,service,low-latency backhaul,"DCDD, nbn",Telehealth verdict and population rank it here; health centre on a satellite path.,0.092,0.091,0.200,0.075,0.025,0.000,-0.000,0.000,0.000
+11,250,Imangara,0.389,service,mobile site (MBSP nomination),"DCDD, carrier",Voice verdict and population rank it here; no prediction and no licensed site within 5 km.,0.110,0.055,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
+12,524,Mapuru,0.358,service,verify and publish the licensed site,"carrier, ACMA","Voice verdict and population rank it here; licensed site within 5 km, no coverage map.",0.115,0.018,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
+13,244,Mungkarta,0.355,service,low-latency backhaul,"DCDD, nbn",Telehealth verdict and voice verdict rank it here; health centre on a satellite path.,0.000,0.055,0.200,0.075,0.025,0.000,-0.000,0.000,0.000
+14,363,Manmoyi,0.342,service,verify and publish the licensed site,"carrier, ACMA","Voice verdict and population rank it here; licensed site within 5 km, no coverage map.",0.117,0.000,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
+15,464,Birany Birany,0.318,service,verify and publish the licensed site,"carrier, ACMA","Voice verdict and population rank it here; licensed site within 5 km, no coverage map.",0.093,0.000,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
+16,469,Rorruwuy,0.318,service,verify and publish the licensed site,"carrier, ACMA","Voice verdict and population rank it here; licensed site within 5 km, no coverage map.",0.093,0.000,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
+17,868,Wurankuwu,0.303,service,verify and publish the licensed site,"carrier, ACMA","Voice verdict and population rank it here; licensed site within 5 km, no coverage map.",0.078,0.000,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
+18,319,Gochan Jiny Jirra,0.225,service,mobile site (MBSP nomination),"DCDD, carrier",Voice verdict and telehealth verdict rank it here; no prediction and no licensed site within 5 km.,0.000,0.000,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
+19,600,Hodgson River Station,0.225,service,mobile site (MBSP nomination),"DCDD, carrier",Voice verdict and telehealth verdict rank it here; no prediction and no licensed site within 5 km.,0.000,0.000,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
+20,721,Likkaparta,0.225,service,mobile site (MBSP nomination),"DCDD, carrier",Voice verdict and telehealth verdict rank it here; no prediction and no licensed site within 5 km.,0.000,0.000,0.050,0.150,0.025,0.000,-0.000,0.000,0.000
+21,397,Nauiyu,0.632,check,verify on the ground,"DCDD, carrier",Services present and population rank it here; a drive test found no signal inside claimed coverage.,0.151,0.182,0.100,0.000,0.100,0.100,-0.000,0.000,0.000
+22,492,Galiwinku,0.597,check,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.197,0.200,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+23,362,Maningrida,0.582,check,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.200,0.182,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+24,400,Wurrumiyanga,0.568,check,backup power,carrier,Population and services present rank it here; microwave backhaul.,0.186,0.182,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+25,531,Milingimbi,0.561,check,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.179,0.182,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+26,593,Jilkminggan,0.553,check,verify on the ground,"DCDD, carrier",Population and services present rank it here; a drive test found no signal inside claimed coverage.,0.144,0.109,0.100,0.000,0.100,0.100,-0.000,0.000,0.000
+27,549,Numbulwar,0.549,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.167,0.182,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+28,411,Pirlangimpi,0.548,check,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.148,0.200,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+29,580,Barunga,0.545,check,verify on the ground,"DCDD, carrier",Population and services present rank it here; a drive test found no signal inside claimed coverage.,0.150,0.145,0.100,0.000,0.050,0.100,-0.000,0.000,0.000
+30,426,Wadeye,0.543,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.193,0.200,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+31,429,Warruwi,0.538,check,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.156,0.182,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+32,72,Kintore,0.537,check,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.155,0.182,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+33,374,Milikapiti,0.537,check,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.155,0.182,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+34,633,Ngukurr,0.529,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.179,0.200,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+35,145,Santa Teresa,0.528,check,backup power,carrier,Population and services present rank it here; microwave backhaul.,0.164,0.164,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+36,451,Angurugu,0.524,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.174,0.200,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+37,550,Ramingining,0.522,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.172,0.200,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+38,131,Papunya,0.520,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.156,0.164,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+39,555,Umbakumba,0.519,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.155,0.164,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+40,410,Peppimenarti,0.517,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.135,0.182,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+41,329,Gunbalanya,0.512,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.180,0.182,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+42,624,Minyerri,0.512,check,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.166,0.145,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+43,42,Atitjere,0.501,check,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.137,0.164,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+44,609,Lajamanu,0.498,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.166,0.182,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+45,66,Kaltukatjara,0.486,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.140,0.145,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+46,603,Kalkarindji,0.485,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.153,0.182,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+47,500,Gapuwiyak,0.482,check,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.168,0.164,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+48,587,Bulman,0.477,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.131,0.145,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+49,43,Hermannsburg,0.476,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.162,0.164,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+50,10,Ampilatwatja,0.470,check,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.156,0.164,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+51,532,Milyakburra,0.466,check,refresh the coverage list,DCDD,"Services present and population rank it here; predicted coverage, not on the 2022 list.",0.121,0.145,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+52,198,Yuendumu,0.465,check,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.169,0.145,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+53,404,Nganmarriyanga,0.465,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.152,0.164,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+54,258,Robinson River,0.461,check,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.134,0.127,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+55,202,Ali Curung,0.449,check,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.154,0.145,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+56,203,Alpurrurulam,0.446,check,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.151,0.145,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+57,658,Yarralin,0.441,check,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.145,0.145,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+58,219,Canteen Creek,0.441,check,refresh the coverage list,DCDD,"Population and services present rank it here; predicted coverage, not on the 2022 list.",0.131,0.109,0.100,0.000,0.100,0.000,-0.000,0.000,0.000
+59,581,Wugularr,0.439,check,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.162,0.127,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+60,128,Nyirripi,0.438,check,refresh the coverage list,DCDD,"Services present and population rank it here; predicted coverage, not on the 2022 list.",0.142,0.145,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+61,148,Titjikala,0.432,check,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.136,0.145,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+62,86,Laramba,0.431,check,refresh the coverage list,DCDD,"Services present and population rank it here; predicted coverage, not on the 2022 list.",0.135,0.145,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+63,227,Wutunugurra,0.424,check,refresh the coverage list,DCDD,"Services present and population rank it here; predicted coverage, not on the 2022 list.",0.128,0.145,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+64,120,Mutitjulu,0.421,check,measure the link here,DCDD,Population and services present rank it here; a health centre whose link nobody has measured.,0.144,0.127,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+65,375,Minjilang,0.407,check,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.144,0.164,0.100,0.000,0.100,0.000,-0.100,0.000,0.000
+66,514,Gunyangara,0.387,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.141,0.145,0.100,0.000,0.000,0.000,-0.000,0.000,0.000
+67,112,Mount Liebig,0.387,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.141,0.145,0.100,0.000,0.100,0.000,-0.100,0.000,0.000
+68,586,Bulla,0.386,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.109,0.127,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+69,186,Willowra,0.385,check,refresh the coverage list,DCDD,"Services present and population rank it here; predicted coverage, not on the 2022 list.",0.139,0.145,0.100,0.000,0.000,0.000,-0.000,0.000,0.000
+70,36,Finke,0.381,check,refresh the coverage list,DCDD,"Services present and population rank it here; predicted coverage, not on the 2022 list.",0.136,0.145,0.100,0.000,0.100,0.000,-0.100,0.000,0.000
+71,595,Manyallaluk,0.379,check,backup power,carrier,Population and services present rank it here; microwave backhaul.,0.120,0.109,0.100,0.000,0.050,0.000,-0.000,0.000,0.000
+72,294,Belyuen,0.375,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.129,0.145,0.100,0.000,0.000,0.000,-0.000,0.000,0.000
+73,51,Imanpa,0.352,check,measure the link here,DCDD,Services present and population rank it here; a health centre whose link nobody has measured.,0.125,0.127,0.100,0.000,0.100,0.000,-0.100,0.000,0.000
+74,9,Amoonguna,0.349,check,low-latency backhaul,"DCDD, nbn",Population and services present rank it here; health centre on a satellite path.,0.140,0.109,0.100,0.000,0.000,0.000,-0.000,0.000,0.000
+75,174,Wallace Rockhole,0.343,check,backup power,carrier,Services present and population rank it here; microwave backhaul.,0.116,0.127,0.100,0.000,0.100,0.000,-0.100,0.000,0.000
+76,197,Yuelamu,0.338,check,refresh the coverage list,DCDD,"Population and services present rank it here; predicted coverage, not on the 2022 list.",0.129,0.109,0.050,0.000,0.050,0.000,-0.000,0.000,0.000
+77,582,Binjari,0.314,check,measure the link here,DCDD,Population and telehealth verdict rank it here; a health centre whose link nobody has measured.,0.141,0.073,0.100,0.000,0.000,0.000,-0.000,0.000,0.000
+78,187,Wilora,0.311,check,refresh the coverage list,DCDD,"Population and claim reliability rank it here; predicted coverage, not on the 2022 list.",0.106,0.055,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
+79,138,Pmara Jutunta,0.283,check,measure the link here,DCDD,Population and telehealth verdict rank it here; a health centre whose link nobody has measured.,0.129,0.055,0.100,0.000,0.000,0.000,-0.000,0.000,0.000
+80,147,Arawerr,0.278,check,refresh the coverage list,DCDD,"Population and claim reliability rank it here; predicted coverage, not on the 2022 list.",0.110,0.018,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
+81,264,Tara,0.244,check,refresh the coverage list,DCDD,"Population and telehealth verdict rank it here; predicted coverage, not on the 2022 list.",0.103,0.091,0.100,0.000,0.050,0.000,-0.100,0.000,0.000
+82,256,Wandangula,0.244,check,refresh the coverage list,DCDD,"Claim reliability and population rank it here; predicted coverage, not on the 2022 list.",0.094,0.000,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
+83,744,Pickertaramoor,0.168,check,refresh the coverage list,DCDD,"Claim reliability and telehealth verdict rank it here; predicted coverage, not on the 2022 list.",0.000,0.018,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
+84,65,Iwupataka,0.150,check,refresh the coverage list,DCDD,"Claim reliability and telehealth verdict rank it here; predicted coverage, not on the 2022 list.",0.000,0.000,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
+85,41,Haasts Bluff,0.374,monitor,monitor,DCDD,Population and services present rank it here; no rule above it fired.,0.114,0.109,0.050,0.075,0.025,0.000,-0.000,0.000,0.000
+86,591,Daguragu,0.341,monitor,monitor,DCDD,Population and claim reliability rank it here; no rule above it fired.,0.136,0.055,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
+87,33,Engawala,0.341,monitor,monitor,DCDD,Population and services present rank it here; no rule above it fired.,0.132,0.109,0.050,0.000,0.050,0.000,-0.000,0.000,0.000
+88,127,Nturiya,0.314,monitor,monitor,DCDD,Population and claim reliability rank it here; no rule above it fired.,0.109,0.055,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
+89,576,Yirrkala,0.312,monitor,monitor,DCDD,Population and services present rank it here; no rule above it fired.,0.166,0.145,0.000,0.000,0.000,0.000,-0.000,0.000,0.000
+90,654,Weemol,0.304,monitor,monitor,DCDD,Population and claim reliability rank it here; no rule above it fired.,0.118,0.036,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
+91,542,Ngangalala,0.275,monitor,monitor,DCDD,Population and claim reliability rank it here; no rule above it fired.,0.107,0.018,0.050,0.000,0.100,0.000,-0.000,0.000,0.000
+92,63,Irrultja,0.264,monitor,monitor,DCDD,Population and voice verdict rank it here; no rule above it fired.,0.096,0.018,0.050,0.075,0.025,0.000,-0.000,0.000,0.000
+93,252,Marlinja,0.218,monitor,monitor,DCDD,Population and telehealth verdict rank it here; no rule above it fired.,0.099,0.018,0.050,0.000,0.050,0.000,-0.000,0.000,0.000
+94,571,Yathalamarra,0.206,monitor,monitor,DCDD,Population and telehealth verdict rank it here; no rule above it fired.,0.106,0.000,0.050,0.000,0.050,0.000,-0.000,0.000,0.000
+95,642,Rockhole,0.187,monitor,monitor,DCDD,Population and telehealth verdict rank it here; no rule above it fired.,0.119,0.018,0.050,0.000,0.000,0.000,-0.000,0.000,0.000
+96,608,Kybrook Farm,0.168,monitor,monitor,DCDD,Claim reliability and telehealth verdict rank it here; no rule above it fired.,0.000,0.018,0.050,0.000,0.100,0.000,-0.000,0.000,0.000

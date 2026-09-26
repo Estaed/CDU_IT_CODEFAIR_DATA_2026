@@ -455,6 +455,10 @@ def test_priority_list_is_96_rows_in_rank_order(data_pack):
     assert len(priority) == 96
     assert [entry["rank"] for entry in priority] == list(range(1, 97))
     assert {entry["id"] for entry in priority} == {c["id"] for c in data_pack["communities"]}
+    assert [entry["g"] for entry in priority] == sorted(
+        (entry["g"] for entry in priority),
+        key=("service", "check", "monitor").index,
+    )
 
 
 def test_priority_components_header_matches_the_weights_csv(data_pack):

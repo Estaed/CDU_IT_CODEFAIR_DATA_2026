@@ -128,8 +128,8 @@ def test_sources_legend_and_service_labels(context):
 def test_priority_intro_and_map_filter_note(context):
     page, blocked = _open_page(context, "#/priority")
     expect(page.locator(".priority-intro")).to_have_text(
-        "96 communities, ordered by where action is needed first. Method and weights "
-        "are in the report."
+        "96 communities in action order. The score orders places within each group; "
+        "method and weights are in the report."
     )
     page.goto(f"{DIST_INDEX}#/map")
     page.wait_for_load_state()

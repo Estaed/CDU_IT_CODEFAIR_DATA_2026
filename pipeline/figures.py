@@ -147,6 +147,7 @@ PUBLISHER_SPEC = (
 
 TOP10_COLUMNS = (
     "rank",
+    "group",
     "name",
     "region",
     "population",
@@ -622,6 +623,7 @@ def write_top10(
             writer.writerow(
                 [
                     entry["rank"],
+                    entry["group"],
                     entry["name"],
                     table_row["nt_region"].title(),
                     table_row["population_abs2021"],
@@ -780,7 +782,8 @@ TEAM_PROMPT = [
     "> claims and one government drive test), tests the best available path against what",
     "> telehealth, school video, myGov and voice/SMS require, and says where the sources",
     "> disagree. A small model trained on the drive tests rates how reliable each coverage",
-    "> claim is. A transparent, weighted score ranks the 96 communities for action, with one",
+    "> claim is. Source-based service gaps come before evidence checks and monitoring; a",
+    "> transparent, weighted score orders communities within each group, with one",
     "> intervention and one addressee each, and a sensitivity table shows the top of the list",
     "> does not depend on any single weight. It ships as an offline single-file web app, a",
     "> reproducible Python pipeline, this report and a pitch; nothing in the app computes a",
@@ -792,8 +795,8 @@ TEAM_PROMPT = [
     "> station nearby counted against, and two placeholders at weight zero until their data",
     "> licences arrive). Each component is scaled to 0..1 across the 96, multiplied by its",
     "> weight from `pipeline/priority_weights.csv`, and summed. The weights are a choice, not",
-    "> a measurement: say so, print the CSV, and cite the sensitivity table, which shows that",
-    "> halving or raising any one weight by half keeps at least 6 of the top 10 in place.",
+    "> a measurement: say so, print the CSV, and cite the sensitivity table. A `fails` verdict",
+    "> is inferred from published inputs and is not proof of an on-site service failure.",
     ">",
     "> Do not claim: that the app measures signal (it does not); that a reliability word is a",
     "> probability (it is a rank; the model is class-balanced on a 2.8 % base rate); that the",
@@ -893,7 +896,8 @@ def write_findings_md(
             f"data/out/tables/audit_within_5km.csv — value: {len(audit_5km)} — run {today}.",
         ],
         "Findings": [
-            f"{top1['name']} ranks #1 of 96 with a priority score of {top1['score']} "
+            f"{top1['name']} ranks #1 of 96 in the {top1['group']} group with a priority "
+            f"score of {top1['score']} "
             f"(region {top1_row['nt_region'].title()}, population "
             f"{top1_row['population_abs2021']}), intervention '{top1['intervention']}' "
             f"addressed to {top1['addressee']} because {top1['why']} Telehealth verdict "
@@ -950,7 +954,8 @@ def write_findings_md(
             f"The top 10 priority communities, with their interventions and addressees, are "
             f"the Recommendations section's evidence base — evidence: "
             f"data/out/tables/top10.csv — value: 10 — run {today}.",
-            f"The priority ranking is not fragile: the smallest top-10 overlap under any "
+            f"The groups are fixed by source-based verdict and intervention; within them, "
+            f"the smallest top-10 overlap under any "
             f"single weight moved to half or one-and-a-half of itself is "
             f"{worst['top10_overlap']} of {prioritise.TOP_N}, on {worst['component']} at "
             f"factor {worst['factor']} — evidence: "

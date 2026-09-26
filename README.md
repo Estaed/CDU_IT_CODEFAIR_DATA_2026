@@ -188,6 +188,13 @@ The pipeline always reads the **newest** file matching each source's pattern und
 produces new BushTel and ACMA RRL files, for example, dated with today's date, sitting next
 to whatever was already there.
 
+The Codex project automation **Crosscheck source refresh** checks official source metadata
+weekly. It refreshes only a source whose existing fetcher and reuse terms still apply, then
+publishes a new pack only after the pipeline and quality gate pass. BushTel and National Audit
+reuse questions, and a new ACCC or NBN release layout, require review. The app never fetches
+source data itself: an online reopen obtains the latest published page; an offline phone keeps
+its cached copy or receives a pack through the camera transfer.
+
 ### Run the pipeline
 
 ```
@@ -229,7 +236,7 @@ PYTHONUTF8=1 .venv/Scripts/python scripts/gate.py
 
 Runs, in order, stopping at the first failure: lint (`ruff check --no-cache .`), the unit
 tests, the app build above, the size check (`dist/index.html` under 1 MiB, `data_pack.json`
-under 300 KiB), then the Playwright browser smoke test. That last step is also the offline
+at most 512,000 bytes), then the Playwright browser smoke test. That last step is also the offline
 claim's verification: it opens `dist/index.html` from `file://` and asserts zero requests
 left the page. Run it on its own with:
 

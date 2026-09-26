@@ -77,6 +77,7 @@ def test_sixty_seconds(context):
     index = _chip_index(pack, CHIP_WORD)
     expected = [row for row in pack["priority"] if row["i"] == index]
     assert expected, CHIP_WORD
+    page.locator(".priority-filters > summary").click()
     page.get_by_role("button", name=CHIP_WORD, exact=True).click()
     expect(page.locator(".priority-row")).to_have_count(len(expected))
     expect(page.locator(".priority-chip[aria-pressed=true]")).to_have_text(CHIP_WORD)
@@ -140,6 +141,27 @@ def test_all_chip_restores_96(context):
     expect(page.locator(".priority-row")).to_have_count(96)
     assert page.evaluate("location.hash") == "#/priority"
 
+    assert errors == []
+    assert blocked == []
+    page.close()
+
+
+def test_action_groups_follow_the_pack(context):
+    pack = _pack()
+    page, blocked, errors = _open_page(context, "#/priority")
+    groups = page.locator(".priority-group")
+    assert groups.locator("h2").all_text_contents() == [
+        f"{title} ({sum(row['g'] == group for row in pack['priority'])})"
+        for group, title in (
+            ("service", "Service gaps"),
+            ("check", "Check the evidence"),
+            ("monitor", "Monitor"),
+        )
+    ]
+    assert page.locator(".priority-row__name").all_text_contents() == [
+        next(c["name"] for c in pack["communities"] if c["id"] == row["id"])
+        for row in pack["priority"]
+    ]
     assert errors == []
     assert blocked == []
     page.close()

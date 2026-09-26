@@ -286,6 +286,16 @@ QR olayını sonra update ederiz").
   `Priority #n of 96 · <intervention>` under the sources fold. `pack_version` becomes 3 and the
   app accepts 3 only. The Recommendations section of the report is this list's top 10 with the
   evidence per row.
+
+  **2026-09-27 decision:** the single score-first order did not answer "what to fix first":
+  Nauiyu, whose voice/SMS verdict works, outranked Nitjpurru, whose voice/SMS and telehealth
+  verdicts both fail. Keep the approved weights, but order by action group before score:
+  `service` when either source-based service verdict is `fails`, `check` when an intervention
+  other than `monitor` remains, then `monitor`. Score orders rows only within each group;
+  ties retain the Task-40 rules. The pack's priority row carries `g` and the app shows three
+  labelled sections with all 96 rows; the intervention chips sit in a closed `Filter by action`
+  fold at compact widths' first view. "Service gap" is a source-based verdict, not a field
+  measurement. The rank, report top ten and map's rank labels all follow the new order.
 - *One honest sentence about LEO* (Task-40): every satellite-path telehealth verdict carries
   the assumption that a low-earth-orbit service, where a clinic has installed one, is in no
   public record (OQ10, OQ17); when a sourced LEO latency figure exists it enters
@@ -657,3 +667,4 @@ D5. **National scope** — only if the NT is finished early; the brief allows it
 | 2026-09-21 | Fifth batch (§4.2): the app opens on a home screen with one sentence, three pack figures and three buttons; service rows read as questions; one summary sentence per community assembled from pack strings; inside words renamed or folded; `Fix first` tab label. No new feature, no new verdict. Goal: the ten-second hand-over test, three of three. The before/after button, service pings, per-service reports and renamed verdict words were considered and dropped | Tarik ("hepsini yapalim"), on Eko's proposal |
 | 2026-09-21 (late) | Sixth batch (§4.2): map redesigned on Tarik's free hand. Three lenses (Fix first default, Services, Sources), no clusters (deterministic declutter), region chips that zoom, filters that dim, height capped so the legend shows, a selection card with the summary sentence. Earlier map rules (Task-29 clusters, removing filters) are superseded. The `degraded` summary clause quotes the pack's assumption, not the satellite figure | Tarik ("tamamen özgürsün"), design by Eko |
 | 2026-09-22 | Eighth batch (§4.2): compact segmented map lenses, bounded map surface and visible zoom controls; list explains highlight counts while layers remain map-only; Crosscheck gains a small brand mark; Report here toggles and saved/imported reports are grouped and named by origin. Research basis: Apple and Android segmented-control guidance, Mapbox collision/filter patterns and Google map visual hierarchy | Tarik ("Task 54 oluştur, sana güveniyorum"), design by Eko |
+| 2026-09-27 | Fix first orders source-based service gaps, evidence checks and monitoring before the existing weighted score; the 96 remain visible in three sections. Automatic source refresh may publish only after a changed official source has been fetched completely and the pipeline and gate pass; a failed or unavailable source leaves the current pack live | Tarik ("tamam yap", "kaynakcalar update aliyorsa duzenli otomatik okey") |

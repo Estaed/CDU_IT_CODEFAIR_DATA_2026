@@ -383,6 +383,7 @@ def priority_rows(path: Path = PRIORITY_CSV, weights: list[dict] | None = None) 
             "id": int(row["id"]),
             "rank": int(row["rank"]),
             "score": _short(row["score"]),
+            "g": row["group"],
             "c": [_short(row[f"c_{name}"]) for name in names],
             "i": index_of[row["intervention"]],
             "why": row["why"],

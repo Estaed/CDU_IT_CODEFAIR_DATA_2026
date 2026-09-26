@@ -140,6 +140,26 @@ def test_ranks_unique_and_reproducible(weights):
     assert [entry["id"] for entry in first] == sorted(entry["id"] for entry in first)
 
 
+def test_service_gap_precedes_higher_scoring_evidence_check(weights):
+    rows = [
+        make_row(bushtel_id="1", name="Failure", telehealth_video="fails", voice_sms="fails"),
+        make_row(
+            bushtel_id="2",
+            name="Check",
+            population_abs2021="5000",
+            svc_health_centre="Y",
+            svc_school="Y",
+            audit5="1",
+            claim_reliability_word="low",
+        ),
+        make_row(bushtel_id="3", name="Monitor", telehealth_video="works"),
+    ]
+    entries = prioritise.ranked(rows, weights)
+    assert [entry["group"] for entry in entries] == ["service", "check", "monitor"]
+    assert entries[0]["score"] < entries[1]["score"]
+    assert [entry["id"] for entry in entries] == [1, 2, 3]
+
+
 def test_score_is_the_sum_of_its_contributions(weights):
     values = {spec["component"]: 0.25 for spec in weights}
     scored = prioritise.score(values, weights)

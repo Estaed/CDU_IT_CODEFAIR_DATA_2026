@@ -35,6 +35,7 @@ OUT_SENSITIVITY = ROOT / "data/out/tables/priority_sensitivity.csv"
 SCORE_DECIMALS = 3
 SENSITIVITY_FACTORS = (0.5, 1.5)
 TOP_N = 10
+GROUP_ORDER = ("service", "check", "monitor")
 
 # The ten BushTel presence flags, in the order the pack shows them. Repeated here rather than
 # imported from ``pipeline.pack``: that module reads shapefiles, and this one is standard
@@ -241,6 +242,17 @@ def intervention(row: dict[str, str]) -> tuple[str, str]:
     raise AssertionError("the last intervention rule must always fire")
 
 
+def action_group(row: dict[str, str], word: str) -> str:
+    """Put a modelled service failure before evidence checks and monitoring.
+
+    These are source-based verdicts, not a claim that someone measured the service on site.
+    The weighted score orders communities only within each group.
+    """
+    if row.get("telehealth_video") == "fails" or row.get("voice_sms") == "fails":
+        return "service"
+    return "monitor" if word == "monitor" else "check"
+
+
 def why(components: list[dict], word: str) -> str:
     """One sentence: the two largest contributions, then the rule that fired."""
     largest = [
@@ -260,10 +272,9 @@ def why(components: list[dict], word: str) -> str:
 def ranked(rows: list[dict[str, str]], weights: list[dict]) -> list[dict]:
     """The rows in rank order, 1..n, every rank unique and reproducible.
 
-    Rank is by score descending; ties break by telehealth verdict severity, then population
-    descending, then ``bushtel_id`` ascending, so the order never depends on input order. The
-    score the rank is taken on is the rounded one the pack shows, so two rows printed with the
-    same number are ordered by the tiebreakers and not by an invisible digit.
+    Source-based service failures come first, then evidence checks, then monitoring. The
+    weighted score orders rows within each group; ties break by telehealth severity, population
+    and ``bushtel_id``. The score used is the rounded one the pack shows.
     """
     scaled = normalise([raw_components(row) for row in rows], weights)
     entries = []
@@ -277,6 +288,7 @@ def ranked(rows: list[dict[str, str]], weights: list[dict]) -> list[dict]:
                 "score": round(scored["score"], SCORE_DECIMALS),
                 "components": scored["components"],
                 "intervention": word,
+                "group": action_group(row, word),
                 "addressee": addressee,
                 "why": why(scored["components"], word),
                 "_severity": TELEHEALTH_VALUE.get(row.get("telehealth_video", ""), 0.0),
@@ -284,7 +296,13 @@ def ranked(rows: list[dict[str, str]], weights: list[dict]) -> list[dict]:
             }
         )
     entries.sort(
-        key=lambda e: (-e["score"], -e["_severity"], -e["_population"], e["id"]),
+        key=lambda e: (
+            GROUP_ORDER.index(e["group"]),
+            -e["score"],
+            -e["_severity"],
+            -e["_population"],
+            e["id"],
+        ),
     )
     for position, entry in enumerate(entries, 1):
         entry["rank"] = position
@@ -355,7 +373,7 @@ def load_rows(table: Path = TABLE, reliability: Path = RELIABILITY_CSV) -> list[
 def write_priority(entries: list[dict], weights: list[dict], path: Path = OUT_PRIORITY) -> Path:
     """The 96 in rank order: the score, one contribution column per component, and the words."""
     names = [spec["component"] for spec in weights]
-    header = ["rank", "id", "name", "score", "intervention", "addressee", "why"]
+    header = ["rank", "id", "name", "score", "group", "intervention", "addressee", "why"]
     header += [f"c_{name}" for name in names]
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -370,6 +388,7 @@ def write_priority(entries: list[dict], weights: list[dict], path: Path = OUT_PR
                     entry["id"],
                     entry["name"],
                     f"{entry['score']:.{SCORE_DECIMALS}f}",
+                    entry["group"],
                     entry["intervention"],
                     entry["addressee"],
                     entry["why"],

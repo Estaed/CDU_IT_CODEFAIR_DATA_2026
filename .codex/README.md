@@ -19,8 +19,8 @@ which is why the same shortcuts live in `~/.codex/prompts/`.
 
 ## Keeping both CLIs in sync
 
-    python D:\TarikOS\.claude\scripts\mount_skills.py            # repair links + regenerate prompts
-    python D:\TarikOS\.claude\scripts\mount_skills.py --check    # audit only, exit 1 if anything is missing
+    python D:\TarikOS\.brain\scripts\mount_skills.py            # repair links + regenerate prompts
+    python D:\TarikOS\.brain\scripts\mount_skills.py --check    # audit only, exit 1 if anything is missing
 
 Run it after writing a new skill in the vault. A skill that exists but is not
 mounted does not error — it simply never gets called, which is the hardest kind
@@ -28,26 +28,8 @@ of failure to notice.
 
 ## Hooks
 
-Two different things share the name `hooks.json`, and only one of them belongs here.
-
-**The Beyin *memory* hooks stay in the vault.** Those four hooks (`SessionStart`,
-`UserPromptSubmit`, `PreCompact`, `SessionEnd`) *write* to `D:\TarikOS\daily\`. A
-project does not write to the brain directly — the session summary is produced by
-whichever session you ran, in the vault. Do not copy those here.
-
-**The rule-injection hook does belong here**, because it only *reads*. `.codex/hooks.json`
-in this project registers one `SessionStart` entry pointing at
-`.claude/hooks/codex-brain-rules.cmd`, which runs the same `brain-rules.sh` that the
-Claude side uses. Read-only, no second copy of the rules, no writes to the brain.
-
-**It is not in this template.** It is generated per project, because the command path has
-to be absolute — Codex defines neither `CODEX_PROJECT_DIR` nor `CLAUDE_PROJECT_DIR`, and a
-file shipped here would hand every clone the template's own path. The generator refuses to
-run while `CLAUDE.md` still has the `<PROJECT NAME>` placeholder, so it cannot reappear
-here by accident. Run it **in the clone**, as a setup step:
-
-    python D:/TarikOS/.claude/scripts/render_codex_hooks.py --project .
-    python D:/TarikOS/.claude/scripts/render_codex_hooks.py --project . --check
-
-Codex asks for trust once per clone. **An unapproved hook is skipped silently** and the
-run still reports `Completed`, so absence of an error is not evidence that it worked.
+Codex memory and rule hooks now live in the user-level `~/.codex/hooks.json`.
+This project does not keep a second `.codex/hooks.json`. To audit the user-level
+hooks, run `python D:/TarikOS/.brain/scripts/render_codex_hooks.py --user --check`.
+The script's `--project .` mode removes obsolete project hook entries; it does not
+generate a project hook file.

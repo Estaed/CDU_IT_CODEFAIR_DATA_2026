@@ -536,6 +536,11 @@
   // printed: the rank, the intervention and the reliability word are all decided in
   // pipeline/prioritise.py and pipeline/reliability.py (layer rule 9).
   const PRIORITY_ALL = "all";
+  const PRIORITY_GROUPS = [
+    ["service", "Service gaps", "A source-based verdict says video care or calls and texts fail. Confirm locally before investment."],
+    ["check", "Check the evidence", "Coverage claims or link quality need checking before choosing a fix."],
+    ["monitor", "Monitor", "Current sources do not point to a specific fix."],
+  ];
 
   const priorityHash = (word) =>
     word === PRIORITY_ALL ? "#/priority" : `#/priority?intervention=${encodeURIComponent(word)}`;
@@ -553,7 +558,8 @@
 
   const priorityText = (community) => {
     const one = interventionOf(community.priority.i);
-    return `Priority #${community.priority.rank} of ${pack.count} · ${one.word} · ${one.addressee}`;
+    const group = PRIORITY_GROUPS.find(([id]) => id === priorityRowOf(community).g);
+    return `${group[1]} · Priority #${community.priority.rank} of ${pack.count} · ${one.word} · ${one.addressee}`;
   };
 
   const renderPriorityLine = (community) =>
@@ -2010,9 +2016,8 @@
     main.appendChild(renderMapList(state, filter));
   };
 
-  // Task-41, 2026-09-17: the Priority tab. `pack.priority` is already in rank order and already
-  // carries the intervention index per row, so this screen filters that list by the chip and
-  // prints it -- it ranks nothing and compares nothing (CLAUDE.md Blueprint, "Priority row").
+  // The pipeline puts service gaps, evidence checks and monitoring in order. This screen only
+  // prints the pack's group and rank; it never classifies or scores a community.
   const renderPriorityChips = (activeWord) => {
     const bar = h("div", { class: "chips priority-chips" });
     for (const word of [PRIORITY_ALL, ...pack.priority_interventions.map((one) => one.word)]) {
@@ -2074,11 +2079,32 @@
       h(
         "p",
         { class: "priority-intro" },
-        `${pack.priority.length} communities, ordered by where action is needed first. Method and weights are in the report.`,
+        `${pack.priority.length} communities in action order. The score orders places within each group; method and weights are in the report.`,
       ),
     );
-    main.appendChild(renderPriorityChips(active));
-    main.appendChild(h("ol", { class: "priority-list" }, rows.map(renderPriorityRow)));
+    main.appendChild(
+      h(
+        "details",
+        { class: "priority-filters", open: active === PRIORITY_ALL ? null : "" },
+        h("summary", {}, "Filter by action"),
+        renderPriorityChips(active),
+      ),
+    );
+    for (const [id, title, note] of PRIORITY_GROUPS) {
+      const groupRows = rows.filter((row) => row.g === id);
+      if (!groupRows.length) {
+        continue;
+      }
+      main.appendChild(
+        h(
+          "section",
+          { class: "priority-group" },
+          h("h2", { class: "priority-group__title" }, `${title} (${groupRows.length})`),
+          h("p", { class: "priority-group__note" }, note),
+          h("ol", { class: "priority-list" }, groupRows.map(renderPriorityRow)),
+        ),
+      );
+    }
   };
 
   // The page as a standalone file: the rendered screen and host-only links are dropped, so the
