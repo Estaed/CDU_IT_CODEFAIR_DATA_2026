@@ -935,7 +935,9 @@
 
   const mapRadius = (community, state) => {
     if (state.lens === "fix") {
-      return [11, 6, 3.5][mapTier(community) - 1];
+      // The numbered disc is sized for its number; every other place is one dot size, its tier
+      // told by ink or grey: a bigger dot read as "more of something" (Datawrapper, 2026-09-28).
+      return [11, 4, 4][mapTier(community) - 1];
     }
     if (state.lens === "service") {
       return 6;
@@ -1499,6 +1501,11 @@
         .map((community) => ({ id: String(community.id), element: pointGroupsById.get(community.id)?.querySelector(".map__hit") }))
         .filter((marker) => marker.element)
         .map((marker) => ({ id: marker.id, box: screenBox(marker.element) }));
+      // Every community's drawn mark, read in the same pass: a name should not sit on a dot.
+      const pointBoxes = communities.map((community) => ({
+        id: String(community.id),
+        box: screenBox(pointGroupsById.get(community.id).querySelector(".map__pt-shape")),
+      }));
 
       const scale = Math.min(svgBox.width / view.w, svgBox.height / view.h);
       const originX = svgBox.left + (svgBox.width - view.w * scale) / 2;
@@ -1547,6 +1554,7 @@
       const occupied = [];
       const placements = [];
       for (const entry of allLabels) {
+        const ownId = entry.town ? null : entry.element.getAttribute("data-for");
         const gap = 8 / zoom;
         const radius = entry.radius / zoom;
         const side = entry.point.x < view.x + view.w * 0.4 ? 1 : -1;
@@ -1597,10 +1605,19 @@
             keepsTierOneClear(entry, screen) &&
             keepsOwnTierOneNearest(entry, screen)
           ) {
-            accepted = { x, y, anchor: candidate.anchor };
-            occupied.push(screen);
-            break;
+            // Of the positions that clear every label and top-ten disc, the first that covers the
+            // fewest other communities' dots wins (2026-09-28: names sat on small dots).
+            const covered = pointBoxes.filter((one) => one.id !== ownId && overlaps(screen, one.box)).length;
+            if (!accepted || covered < accepted.covered) {
+              accepted = { x, y, anchor: candidate.anchor, screen, covered };
+            }
+            if (covered === 0) {
+              break;
+            }
           }
+        }
+        if (accepted) {
+          occupied.push(accepted.screen);
         }
         placements.push([entry.element, accepted]);
       }

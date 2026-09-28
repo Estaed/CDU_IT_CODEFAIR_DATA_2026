@@ -21,7 +21,10 @@ choice is in `reports/2026-09-28-design-slop-audit.md`; the palettes that were c
 - **Type:** one sans, the phone's own, heavy and tight for names; numbers in the same face with
   tabular figures; mono only for the report line a person copies or pastes.
 - **Map:** the carriers' 4G claims as one faint ochre surface under every lens (the pack's three
-  coverage layers drawn once more, overlapping, so shade deepens where more carriers claim).
+  coverage layers drawn once more, overlapping, so shade deepens where more carriers claim); in
+  dark mode the surface is a light grey, because faint ochre on black reads as brown. Every dot
+  is one size except the numbered top-ten discs; the tier is told by ink or grey.
+- **Report figures:** `docs/report/figures/` draw in the same palette and the same map language.
 - **Illustration tier:** none. **App icon:** the double check in ink on the light canvas.
 
 ## Breaks from Tarik Base

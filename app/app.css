@@ -319,7 +319,7 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 
 .map-legend__glyph--fix-one { color: var(--text-heading); font: var(--text-title-md); }
 .map-legend__glyph--fix-two { color: var(--text-heading); font: var(--text-body-sm); }
-.map-legend__glyph--fix-three { color: var(--text-secondary); font: var(--text-caption); }
+.map-legend__glyph--fix-three { color: var(--text-secondary); font: var(--text-body-sm); }
 .map-legend__glyph--source-measured { color: var(--verdict-fails-text); }
 .map-legend__glyph--source-disagree { color: var(--text-heading); }
 .map-legend__glyph--source-agree { color: var(--text-secondary); }

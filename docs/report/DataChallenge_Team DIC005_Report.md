@@ -156,7 +156,7 @@ The evidence-check group follows, led by larger communities whose link is unveri
 
 ![Figure 2](figures/Crosscheck_figure_where_to_act.png)
 
-*Figure 2. The 96 communities by action group; numbers mark the top ten of the service-gap group.*
+*Figure 2. The 96 communities by action group; numbers mark the top ten of the service-gap group; shading shows where the carriers' maps claim 4G (ACCC MIR 2025).*
 
 **Finding 5: Eight actions cover all 96 communities**
 

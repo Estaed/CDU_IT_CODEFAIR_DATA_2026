@@ -14,11 +14,13 @@ HERE = Path(__file__).resolve().parent
 TABLE = HERE.parents[2] / "data/out/tables/verdict_counts.csv"
 OUT = HERE / "Crosscheck_figure_services.png"
 
-VERDICTS = [("works", "Works", "#15803D", "white"), ("degraded", "Degraded", "#E3A21A", "#18181B"),
-            ("fails", "Fails", "#B42318", "white"), ("nodata", "No data", "#A1A1AA", "#18181B")]
-SERVICES = [("Telehealth video", "Telehealth video"), ("School video meeting", "Online school lesson"),
+# The app's "Territory" verdict colours (app/theme.css): Degraded is gold, never the ochre accent.
+VERDICTS = [("works", "Works", "#15803D", "white"), ("degraded", "Degraded", "#E8C547", "#141414"),
+            ("fails", "Fails", "#B42318", "white"), ("nodata", "No data", "#A3A3A3", "#141414")]
+SERVICES = [("Telehealth video", "Telehealth video"),
+            ("School video meeting", "Online school lesson"),
             ("myGov and banking", "Government websites"), ("Voice and SMS", "Voice calls and SMS")]
-INK, INK_MUTED = "#18181B", "#52525B"
+INK, INK_MUTED = "#141414", "#585858"
 plt.rcParams["font.family"] = ["Calibri", "Arial", "DejaVu Sans"]
 
 counts = {}
@@ -43,23 +45,25 @@ for i, (key, label) in enumerate(SERVICES):
         left += n
     ax.text(-1.5, y, label, ha="right", va="center", fontsize=8.5, color=INK)
 
-ax.set_xlim(0, 96); ax.set_ylim(-0.5, len(SERVICES) - 0.3)
-ax.set_xticks([0, 24, 48, 72, 96]); ax.tick_params(axis="x", labelsize=7, colors=INK_MUTED, length=0)
+ax.set_xlim(0, 96)
+ax.set_ylim(-0.5, len(SERVICES) - 0.3)
+ax.set_xticks([0, 24, 48, 72, 96])
+ax.tick_params(axis="x", labelsize=7, colors=INK_MUTED, length=0)
 ax.set_yticks([])
 for side in ("top", "right", "left"):
     ax.spines[side].set_visible(False)
-ax.spines["bottom"].set_color("#E4E4E7")
+ax.spines["bottom"].set_color("#D6D6D3")
 ax.set_xlabel("Communities (of 96)", fontsize=7.5, color=INK_MUTED)
 
-fig.legend(handles=[Patch(facecolor=c, label=l) for _, l, c, _ in VERDICTS], loc="upper left",
-           bbox_to_anchor=(0.30, 0.86), ncol=4, frameon=False, fontsize=7.5, handlelength=1.1,
-           columnspacing=1.2, labelcolor=INK)
-fig.text(0.02, 0.975, "What the best available connection supports", fontsize=11.5, fontweight="bold",
-         color=INK, va="top")
+fig.legend(handles=[Patch(facecolor=colour, label=word) for _, word, colour, _ in VERDICTS],
+           loc="upper left", bbox_to_anchor=(0.30, 0.86), ncol=4, frameon=False, fontsize=7.5,
+           handlelength=1.1, columnspacing=1.2, labelcolor=INK)
+fig.text(0.02, 0.975, "What the best available connection supports", fontsize=11.5,
+         fontweight="bold", color=INK, va="top")
 fig.text(0.02, 0.9, "Only 1 of 96 communities has a path known to meet telehealth's 100 ms limit.",
          fontsize=8.3, color=INK_MUTED, va="top")
-fig.text(0.02, 0.02, "\"No data\": no health centre or school recorded. Source: Crosscheck verdict table "
-         "(data pack 2026-09-27).", fontsize=6.3, color=INK_MUTED)
+fig.text(0.02, 0.02, "\"No data\": no health centre or school recorded. Source: Crosscheck verdict "
+         "table (data pack 2026-09-27).", fontsize=6.3, color=INK_MUTED)
 fig.subplots_adjust(left=0.30, right=0.97, top=0.72, bottom=0.26)
 fig.savefig(OUT, dpi=300, facecolor="white")
 print(OUT)

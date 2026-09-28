@@ -109,7 +109,14 @@ the pack. **Done:** the carriers' own 4G claims (ACCC MIR 2025, three layers alr
 pack) drawn under every lens as one faint ochre surface that deepens where carriers overlap,
 explained in the legend; rank numbers now scale with their discs (they drifted out when
 zoomed); the ± buttons are smaller; "Tap a community." is a hint, not a field-like box.
-Not done: the 1–10 / 11–30 / rest size tiers and the label collisions remain (Blueprint map).
+Later the same evening (Tarik left the rest to Eko): every dot is one size except the numbered
+top-ten discs, the tier told by ink or grey (S16: rank drawn as size reads as a quantity); the
+label placer now also counts the dots a name would cover and takes the position that covers
+fewest, among those that already cleared other labels and the top-ten discs (two dense spots,
+Woodycupaldiya and Orrtipa-Thurra, still touch a dot, masked by the label's halo). The report's
+Figure 2 was redrawn in the same language (ochre claims, ink numbered top ten, greys, one dot
+size) and Figure 1 in the Territory verdict colours; both were swapped into the Word report,
+whose ten pages and page breaks are unchanged except one line moving from page 7 to page 8.
 
 **Other fixes in round 2.** Report here gets Share's chevron and becomes the screen's one
 primary action; the verdict badges of a card row share one baseline; Filter by action is one
