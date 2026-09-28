@@ -4,7 +4,9 @@ Crosscheck compares published connectivity claims for 96 remote Northern Territo
 
 **CDU IT Code Fair 2026 · Data Innovation Challenge · Remote Connectivity · Team DIC005**
 
-![Crosscheck home screen](design/shots/light-home.png)
+<p align="center">
+  <img src="design/shots/light-home.png" alt="Crosscheck home screen" width="260">
+</p>
 
 ## Explore
 
@@ -17,11 +19,9 @@ Crosscheck is a single-file web app. [Build it locally](#reproduce); its [planne
 | **Map** | Where do the patterns sit across the NT? |
 | **Share** | How can someone carry a summary or data update without a network? |
 
-![Community screen with cited service verdicts](design/shots/light-community.png)
-
-![Priority list ordered by the Python pipeline](design/shots/light-priority.png)
-
-![NT map with priorities and carrier-claimed 4G areas](design/shots/light-map.png)
+| Community | Fix first | Map |
+|:---:|:---:|:---:|
+| <img src="design/shots/light-community.png" alt="Community screen with cited service verdicts" width="220"> | <img src="design/shots/light-priority.png" alt="Priority list ordered by the Python pipeline" width="220"> | <img src="design/shots/light-map.png" alt="NT map with priorities and carrier-claimed 4G areas" width="220"> |
 
 These are screenshots of the built app from 28 September 2026. [Both themes and the Share screen](design/shots/) are also available.
 
@@ -40,7 +40,7 @@ For submission, the organiser calls for a **PDF data analysis report**, a **pres
 - The [provenance register](data/out/PROVENANCE.md) lists each source, retrieval date, licence status and attribution. Raw snapshots are not committed.
 - A service verdict is inferred from published inputs. **Fails** means the published path does not meet the cited requirement; a clinic might have an unpublished link.
 - The National Audit shows a nearby drive-test contradiction for three communities. Reliability words elsewhere are model estimates, not local measurements or calibrated probabilities.
-- BushTel and National Audit reuse terms remain unresolved in the current provenance record. Their derived fields appear in the committed pack; review their public redistribution status before making the repository public.
+- The committed pack includes derived BushTel and National Audit fields with attribution; the [provenance register](data/out/PROVENANCE.md) records their current reuse status.
 - A **Report here** entry stays on the person's phone unless they choose to share it. It never changes a source-based verdict.
 
 ## Reproduce
