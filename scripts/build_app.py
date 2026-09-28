@@ -65,6 +65,7 @@ CSS_FILES = (
     ROOT / "design/screens/screens.css",
     ROOT / "app/app.css",
     ROOT / "app/layers.css",
+    ROOT / "design/tarik-base/theme.css",  # branch tarik-base: re-points the tokens, loaded last
 )
 
 

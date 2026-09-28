@@ -1,0 +1,148 @@
+/* Tarik Base theme for Crosscheck (branch tarik-base, 2026-09-28).
+   Loaded last by scripts/build_app.py, so it only re-points the design system's custom
+   properties and restyles a handful of components; app.css, screens.css and every behaviour are
+   untouched. Dark graphite is the default, light follows the OS. Values are Tarik Base tokens
+   (TarikOS .brain/skills/tasarim/references/DESIGN.md); deliberate breaks are in
+   design/tarik-base/deviations.md. */
+
+:root {
+  color-scheme: dark light;
+
+  /* raw colours the design system and layers.css read directly */
+  --color-primary: #FF5A1F; --color-primary-pressed: #E84A12; --color-primary-disabled: #2A2930;
+  --color-ink: #F2F2F2; --color-body: #F2F2F2; --color-muted: #A1A1AA; --color-muted-soft: #71717A;
+  --color-hairline: #3A3940; --color-hairline-soft: #212026;
+  --color-canvas: #0D0D0F; --color-surface-soft: #16161A; --color-surface-card: #16161A;
+  --color-surface-strong: #2A2930; --color-on-primary: #0D0D0F;
+
+  /* verdicts: status colours as text, a faint tint as fill */
+  --verdict-works-text: #3DD68C;    --verdict-works-fill: rgb(61 214 140 / 0.12);
+  --verdict-degraded-text: #F5B83D; --verdict-degraded-fill: rgb(245 184 61 / 0.12);
+  --verdict-fails-text: #F2555A;    --verdict-fails-fill: rgb(242 85 90 / 0.14);
+  --verdict-nodata-text: #A1A1AA;   --verdict-nodata-fill: #212026;
+
+  /* semantic aliases */
+  --text-heading: #F2F2F2; --text-body: #F2F2F2; --text-secondary: #A1A1AA; --text-tertiary: #71717A;
+  --text-on-primary: #0D0D0F;
+  --surface-page: #0D0D0F; --surface-block: #16161A; --surface-soft: #16161A; --surface-pressed: #2A2930;
+  --border-hairline: #3A3940; --border-hairline-soft: #212026;
+  --action-primary: #FF5A1F; --action-primary-pressed: #E84A12; --action-disabled: #2A2930;
+  --link: #FF7A45; --focus-ring: #FF5A1F; --tab-selected: #FF7A45;
+  --map-outline: #4F4E53; --map-land: #16161A;
+  --layer-regions-sa3: #4F4E53; --layer-towns: #F2F2F2;
+  --tb-nav: #212026; --tb-nav-active: #2A2930; --tb-edge: #4F4E53;
+
+  /* type: three voices. System fallbacks stand in offline (no web fonts, 1 MiB budget). */
+  --font-sans: "Manrope", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  --font-display: "Newsreader", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace;
+  --weight-regular: 500; --weight-semibold: 600; --weight-bold: 700;
+  --size-title-lg: 28px; --size-title-md: 18px; --size-title-sm: 16px; --size-button: 16px;
+  --size-caption: 12px; --size-label: 12px;
+  --tracking-title-lg: -0.5px;
+  --text-title-lg: var(--weight-bold) var(--size-title-lg)/1.1 var(--font-display);
+  --text-title-md: var(--weight-bold) var(--size-title-md)/1.3 var(--font-sans);
+  --text-title-sm: var(--weight-bold) var(--size-title-sm)/1.35 var(--font-sans);
+  --text-body-md: var(--weight-regular) 16px/1.5 var(--font-sans);
+  --text-body-sm: var(--weight-regular) 14px/1.45 var(--font-sans);
+  --text-caption: var(--weight-regular) var(--size-caption)/1.4 var(--font-sans);
+  --text-label: var(--weight-semibold) var(--size-label)/1.3 var(--font-sans);
+  --text-button: var(--weight-bold) var(--size-button)/1.2 var(--font-sans);
+  --text-tab: var(--weight-semibold) 14px/1.3 var(--font-sans);
+  --text-figure-lg: 600 24px/1.1 var(--font-mono);
+  --text-figure-md: 600 16px/1.4 var(--font-mono);
+  --text-figure-sm: 400 13px/1.5 var(--font-mono);
+  --text-figure-xs: 400 12px/1.4 var(--font-mono);
+
+  /* shape and size */
+  --radius-xs: 6px; --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 24px;
+  --size-control: 48px; --size-chip: 32px; --size-screen-pad: 20px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-primary: #D4400A; --color-primary-pressed: #A83206; --color-primary-disabled: #E7E7EA;
+    --color-ink: #18181B; --color-body: #18181B; --color-muted: #52525B; --color-muted-soft: #8B8B94;
+    --color-hairline: #E4E4E7; --color-hairline-soft: #EFEFF1;
+    --color-canvas: #F4F4F5; --color-surface-soft: #FFFFFF; --color-surface-card: #FFFFFF;
+    --color-surface-strong: #E7E7EA; --color-on-primary: #FFFFFF;
+
+    --verdict-works-text: #15803D;    --verdict-works-fill: rgb(21 128 61 / 0.10);
+    --verdict-degraded-text: #B45309; --verdict-degraded-fill: rgb(180 83 9 / 0.10);
+    --verdict-fails-text: #D92D32;    --verdict-fails-fill: rgb(217 45 50 / 0.10);
+    --verdict-nodata-text: #52525B;   --verdict-nodata-fill: #EFEFF1;
+
+    --text-heading: #18181B; --text-body: #18181B; --text-secondary: #52525B; --text-tertiary: #8B8B94;
+    --text-on-primary: #FFFFFF;
+    --surface-page: #F4F4F5; --surface-block: #FFFFFF; --surface-soft: #FFFFFF; --surface-pressed: #E7E7EA;
+    --border-hairline: #E4E4E7; --border-hairline-soft: #EFEFF1;
+    --action-primary: #D4400A; --action-primary-pressed: #A83206; --action-disabled: #E7E7EA;
+    --link: #C2410C; --focus-ring: #D4400A; --tab-selected: #C2410C;
+    --map-outline: #B4B4BB; --map-land: #FFFFFF;
+    --layer-regions-sa3: #B4B4BB; --layer-towns: #18181B;
+    --tb-nav: #EFEFF1; --tb-nav-active: #FFFFFF; --tb-edge: #18181B;
+  }
+}
+
+/* --- components that need more than a token swap ------------------------------------------ */
+
+body { background: var(--surface-page); color: var(--text-body); }
+
+/* Brand in the display serif; the navigation becomes pills with the active one lifted. */
+.top-bar__title { font: var(--weight-bold) 22px/1.1 var(--font-display); letter-spacing: -0.4px; }
+.top-bar .tabs { gap: var(--space-xxs); padding: var(--space-xxs); background: var(--tb-nav);
+  border: var(--size-hairline) solid var(--border-hairline); border-radius: var(--radius-pill); }
+.top-bar .tab { min-height: 36px; padding: 0 var(--space-sm); border-bottom: 0; border-radius: var(--radius-pill); }
+.top-bar .tab[aria-selected="true"], .top-bar .tab[aria-current="page"] {
+  color: var(--tab-selected); background: var(--tb-nav-active); }
+
+/* Phone: the fixed bottom bar is the base nav-bar (surface-2, hairline on top, full width);
+   only the active item is a pill. */
+@media (max-width: 40rem) {
+  .top-bar__inner > .tabs { border: 0; border-top: var(--size-hairline) solid var(--border-hairline);
+    border-radius: 0; background: var(--tb-nav); padding: var(--space-xs) var(--space-sm) env(safe-area-inset-bottom); }
+  .top-bar__inner > .tabs .tab { min-height: 52px; border-radius: var(--radius-pill); }
+  .top-bar__inner > .tabs .tab[aria-current="page"] { background: var(--tb-nav-active); color: var(--tab-selected); }
+}
+
+/* Map: the top ten carry the one accent; everything else stays neutral. */
+[data-tier="1"] .map__pt--fix, .map__pt--fix[data-tier="1"] { fill: var(--action-primary); }
+[data-tier="1"] .map__rank, .map__rank[data-tier="1"] { fill: var(--text-on-primary); }
+.map-legend__glyph--fix-one { color: var(--action-primary); }
+
+/* Filter tabs stay underlined (a filter, not navigation), with the accent line. */
+.filter-tabs .tab[aria-selected="true"] { border-bottom-color: var(--action-primary); }
+
+/* Chips: 8px corners, hairline outline; selected chips invert (ink on canvas). */
+.offline-chip, .chip { border-radius: var(--radius-sm); background: transparent;
+  border: var(--size-hairline) solid var(--border-hairline); }
+.chip[aria-pressed="true"], .chip[aria-selected="true"], .chip--selected {
+  background: var(--text-heading); color: var(--surface-page); border-color: var(--text-heading); }
+
+/* Verdict badges read as status pills: outline in the status colour over its faint tint. */
+.verdict-badge { border-radius: var(--radius-pill); border: var(--size-hairline) solid currentColor;
+  padding: 0 var(--space-xs); }
+
+/* Cards: surface-1 with a hairline and 16px corners instead of flat grey blocks. */
+.assumption-note { border-radius: var(--radius-md); border: var(--size-hairline) solid var(--border-hairline);
+  border-left: var(--size-rule) solid var(--verdict-degraded-text); }
+.transfer__section, .home { border-radius: var(--radius-lg); }
+.service-card, .service-card--expanded, .share-card, .transfer__section { background: var(--surface-block); }
+.service-card .service-row__button { background: transparent; }
+.service-card .service-row__button:active { background: var(--surface-pressed); }
+
+/* The one number that matters on a community screen gets the metric voice. */
+.community-header__population .fig, .community-header__population { font: var(--text-figure-lg); color: var(--text-heading); }
+
+/* Secondary buttons sit on surface-2 per the base; primary keeps near-black text on ember. */
+.button--secondary { background: var(--tb-nav); border-color: var(--border-hairline); }
+
+/* Focus: the accent ring, 2px, everywhere. */
+:focus-visible { outline: var(--size-focus-ring) solid var(--focus-ring); outline-offset: 2px; }
+
+/* QR codes stay black on white with a quiet zone in both modes: phone cameras and jsQR read
+   dark-on-light reliably, inverted codes often not. A white tile on graphite is the one place
+   the dark theme shows pure white, on purpose. */
+.qr, .report-line__qr, .transfer__svg { background: #FFFFFF; padding: 12px; border-radius: var(--radius-md);
+  box-sizing: content-box; }
+.qr__modules, .report-line__qr path, .transfer__svg path { fill: #000000; }
