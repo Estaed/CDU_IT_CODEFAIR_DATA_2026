@@ -12,6 +12,6 @@ The Data Innovation Challenge report for team DIC005 and what it is built from.
 Redraw the figures after the pipeline changes:
 
 ```
-uv run python report/figures/Crosscheck_figure_services.py
-uv run python report/figures/Crosscheck_figure_where_to_act.py
+uv run python docs/report/figures/Crosscheck_figure_services.py
+uv run python docs/report/figures/Crosscheck_figure_where_to_act.py
 ```

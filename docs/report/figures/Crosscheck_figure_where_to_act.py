@@ -15,7 +15,7 @@ from matplotlib.patches import PathPatch
 from matplotlib.path import Path as MPath
 
 HERE = Path(__file__).resolve().parent
-PACK = HERE.parents[1] / "data/out/data_pack.json"
+PACK = HERE.parents[2] / "data/out/data_pack.json"
 OUT = HERE / "Crosscheck_figure_where_to_act.png"
 
 ACCENT = "#D4400A"      # key series: service gap

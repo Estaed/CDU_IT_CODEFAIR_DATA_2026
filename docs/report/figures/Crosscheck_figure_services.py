@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 
 HERE = Path(__file__).resolve().parent
-TABLE = HERE.parents[1] / "data/out/tables/verdict_counts.csv"
+TABLE = HERE.parents[2] / "data/out/tables/verdict_counts.csv"
 OUT = HERE / "Crosscheck_figure_services.png"
 
 VERDICTS = [("works", "Works", "#15803D", "white"), ("degraded", "Degraded", "#E3A21A", "#18181B"),
