@@ -67,4 +67,52 @@ colour following the theme. The full gate stayed green after every pass.
   place: light is the default, the canvas is neutral (`#F4F4F5`, not cream), the accent is
   saturated ember, not clay `#D97757`, and the serif is used only for the brand, the home
   question and a community's name. S1 also says a pinned brief wins, and Tarik Base is the
-  pinned brief here. Worth a look in the base language, not in this app.
+  pinned brief here. Worth a look in the base language, not in this app. (Superseded the same
+  evening by round 2 below.)
+
+## Round 2, the same evening: Tarik's second pass
+
+Tarik kept the 2×2 cards (so that item above is closed), asked for the page to breathe ("like
+everything was stuffed into a Word document"), for black and orange that feel original, for a
+better map idea, and for eight concrete fixes. Three research sub-agents read the web the same
+day; their sources are cited as they reported them (S1 was read directly, the NT colours were
+checked directly on nt.gov.au and pmc.gov.au).
+
+**Why the pages felt crammed.** `design/screens/screens.css` gives every `.section` a
+full-width hairline and 12 px above and below it, so the space between groups equalled the
+space inside them. Refactoring UI ("start with too much white space", fewer borders), NN/g
+(proximity 2020, common region 2020, cards vs lists 2016), Apple HIG (grouped lists), Material 3
+("use full-width dividers sparingly"), GOV.UK (section breaks are space; details only for what
+some users need) and the NHS App (stacked card links, expanders matching cards) agree on: space
+between groups, containers rather than lines, inset dividers between rows. **Done:** no
+full-width rule in the scrolling body; a 4 / 12 / 24–32 rhythm; the community's five folds and
+lines as one grouped card of rows; community reports as its own card; Fix first and the map's
+list as grouped lists; the first-screen budget at 360 × 780 still holds (actions row ends at
+748, 724 and 748 for the three test communities).
+
+**Why black and orange read generic, and the fix.** Tarik Base's light greys are Tailwind's zinc
+scale verbatim (`#F4F4F5`, `#E4E4E7`, `#71717A`, `#18181B`) with orange-700, green-700 and
+amber-700; its dark mode is S1's "near-black with a single vermilion accent"; the ember accent
+sat between Crosscheck's amber and red verdicts. Braun, Teenage Engineering and the Bloomberg
+Terminal show that no hex is ownable, but a system is: orange with one job, a chosen neutral, a
+signature. The subject has its own palette: ochre, black and white are the Northern Territory's
+official colours since 17 February 1964 (flag ochre PMS 159). **Decided by Tarik:** Crosscheck
+ships "Territory" (ochre only on the primary action and the brand's tick, gold for Degraded,
+sans headings, flag black in dark; `design/deviations.md`); Tarik Base itself moves to an
+"Instrument" v4 (a chosen housing grey, orange as a lamp) after the submission, as its own job.
+
+**The map.** Sources: Matthew Ericson (NYT, "when maps shouldn't be maps", 2011), Datawrapper
+(no zoom on purpose, mobile locator maps, crop plus inset, cartograms), ABC News equal-hex
+electorate maps (2022, 2025), NPR hex tile maps (2015). The strongest alternative was regional
+small multiples; Tarik chose instead to add detail and a heat surface from the data already in
+the pack. **Done:** the carriers' own 4G claims (ACCC MIR 2025, three layers already in the
+pack) drawn under every lens as one faint ochre surface that deepens where carriers overlap,
+explained in the legend; rank numbers now scale with their discs (they drifted out when
+zoomed); the ± buttons are smaller; "Tap a community." is a hint, not a field-like box.
+Not done: the 1–10 / 11–30 / rest size tiers and the label collisions remain (Blueprint map).
+
+**Other fixes in round 2.** Report here gets Share's chevron and becomes the screen's one
+primary action; the verdict badges of a card row share one baseline; Filter by action is one
+ordered list with a check and a count per action instead of wrapped chips; the hard offset
+shadow of Tarik Base's feature card is not used (Impeccable bans it outside a neobrutalist
+world, and every card here is peer data).

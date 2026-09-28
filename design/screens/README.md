@@ -214,13 +214,15 @@ component key is given in the first column. Every class is defined once in `scre
 - **Map, Task-48 (2026-09-21 late, PRD §4.2 sixth batch).** The app departs from `map.html`
   with three lenses, no grouped markers, region zoom, filters that dim instead of remove,
   a phone-height-capped map and a selection card under the legend.
-- **Tarik Base theme (2026-09-28, Tarik's decision).** Every screen departs from the mirror's
-  colours, type and shapes on purpose: `app/theme.css` re-points the tokens to Tarik Base
-  (off-white canvas with white cards by default, graphite on the dark toggle, one ember accent
-  for the next action, the current tab and the top ten places), headings in the phone's serif,
-  12-pixel buttons, 8-pixel chips, outlined verdict pills. Layout, routes and copy follow the
-  reference screens as before. The breaks from Tarik Base itself are in `design/deviations.md`;
-  the look before this is kept at the tag `design-original` (`design/original/`).
+- **Tarik Base shapes in the Territory palette (2026-09-28, Tarik's decisions).** Every screen
+  departs from the mirror's colours, type, shapes and rules on purpose: `app/theme.css`
+  re-points the tokens (off-white canvas with white cards by default, flag black on the dark
+  toggle, NT ochre only on a screen's one primary action and the brand's tick, Degraded in
+  gold), one bold system sans, 12-pixel buttons, 8-pixel chips, outlined verdict pills; the
+  full-width hairlines between sections give way to space and grouped cards of rows; the map
+  gains a faint surface of the carriers' 4G claims. Routes and copy follow the reference screens
+  as before. The breaks from Tarik Base itself are in `design/deviations.md`; the look before
+  this is kept at the tag `design-original` (`design/original/`).
 - **Map height at 768.** The mirror's map is `width: 100%; height: auto` on a 300 × 480 view box,
   so inside the 640px content column it would be 1024px tall and the selected label would scale
   with it. Decided 2026-09-13: `screens.css` caps the map at `--size-viewport-min-height` and

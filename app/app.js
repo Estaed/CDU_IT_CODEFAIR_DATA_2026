@@ -861,18 +861,23 @@
     main.appendChild(renderCommunitySummary(community));
     main.appendChild(renderServices(community));
     main.appendChild(renderActionsRow(community));
-    main.appendChild(renderSourcesFold(community));
-    // Task-41, 2026-09-17: where it ranks and whether the coverage claim holds, under the
-    // sources fold and below the actions row -- above that row they would push it past
-    // Task-34's 780 px fold budget, the same reason the reports block sits here.
-    main.appendChild(renderPriorityLine(community));
-    main.appendChild(renderReliabilityLine(community));
-    // Task-35: the community's own reports -- the count line, the paste-in fold and Copy
-    // evidence -- sit under the sources fold, and below the row whose Report here button
-    // writes one: above that row they would push it past Task-34's 780 px fold budget.
+    // Task-41, 2026-09-17: where it ranks and whether the coverage claim holds sit below the
+    // actions row -- above that row they would push it past Task-34's 780 px fold budget.
+    // 2026-09-28 (Tarik Base, design/deviations.md): the folds and those two lines are one
+    // grouped card of rows instead of five ruled strips, and the community's own reports
+    // (Task-35) follow as a card of their own, still below the row that writes them.
+    main.appendChild(
+      h(
+        "div",
+        { class: "details-group" },
+        renderSourcesFold(community),
+        renderPriorityLine(community),
+        renderReliabilityLine(community),
+        renderPresent(community),
+        renderActions(community),
+      ),
+    );
     main.appendChild(window.CrosscheckReport.renderReports(community, evidenceHeader(community)));
-    main.appendChild(renderPresent(community));
-    main.appendChild(renderActions(community));
   };
 
   // Exposed for the browser test, which runs the builders over every community in the pack.
@@ -1128,8 +1133,27 @@
           h("span", { class: "fig map-legend__count" }, "(" + count + ")"),
         ),
       ),
+      h(
+        "span",
+        { class: "map-legend__heat" },
+        h("span", { class: "map-legend__heat-swatch", "aria-hidden": "true" }),
+        "Shaded: where carriers claim 4G (darker: more carriers)",
+      ),
     );
   };
+
+  // 2026-09-28 (Tarik): the carriers' own coverage claims as one shaded surface under every
+  // lens, so the map shows where the claims are and the communities they miss. The three
+  // carrier layers the pack already carries are drawn once more in one tint, overlapping; the
+  // per-carrier toggles under "Highlight and layers" stay as they were.
+  const renderHeat = () =>
+    s(
+      "g",
+      { class: "map__heat", "aria-hidden": "true" },
+      ...pack.layers
+        .filter((layer) => layer.kind === "area")
+        .flatMap((layer) => layer.paths.map((d) => s("path", { d }))),
+    );
 
   const MAP_LIST_ORDER = ["fails", "degraded", "nodata", "works"];
 
@@ -1807,14 +1831,17 @@
       title = `${community.name} · priority ${priority.rank}`;
       shapes = [s("circle", { class: "map__pt map__pt--fix", cx: f1(x), cy: f1(y), r: size })];
       if (tier === "1") {
+        // Centred on the disc and drawn inside the disc's own group (below), so both scale
+        // about the same centre: a baseline offset grew with the zoom and pushed the number out.
         rankText = s(
           "text",
           {
             class: "map__rank",
             "data-for": String(community.id),
             x: f1(x),
-            y: f1(y + 2.5),
+            y: f1(y),
             "text-anchor": "middle",
+            "dominant-baseline": "central",
           },
           String(priority.rank),
         );
@@ -1846,11 +1873,8 @@
       attributes,
       s("title", {}, title),
       s("circle", { class: "map__hit", cx: f1(x), cy: f1(y), r: 16 }),
-      s("g", { class: "map__pt-shape" }, ...shapes),
+      s("g", { class: "map__pt-shape" }, ...shapes, ...(rankText ? [rankText] : [])),
     );
-    if (rankText) {
-      group.appendChild(rankText);
-    }
     if (community.id === state.selected) {
       group.appendChild(s("circle", { class: "map__ring", cx: f1(x), cy: f1(y), r: 9 }));
     }
@@ -1926,6 +1950,7 @@
         preserveAspectRatio: "xMidYMid meet",
       },
       s("g", { class: "map__land" }, s("path", { d: pack.outline })),
+      renderHeat(),
       ...pack.layers.filter((layer) => layer.kind !== "point").map((layer) => renderLayerGroup(layer, visibleSlugs)),
       ...pointGroups,
       ...pack.layers.filter((layer) => layer.kind === "point").map((layer) => renderLayerGroup(layer, visibleSlugs)),
@@ -2027,6 +2052,14 @@
           type: "button",
           class: "chip priority-chip",
           "aria-pressed": word === activeWord ? "true" : "false",
+          // The name is the word alone: CSS-generated text would otherwise join the name.
+          "aria-label": word === PRIORITY_ALL ? "All" : word,
+          // How many rows the option leaves, shown by CSS beside the word; a count of pack rows.
+          "data-count": String(
+            word === PRIORITY_ALL
+              ? pack.priority.length
+              : pack.priority.filter((row) => interventionOf(row.i).word === word).length,
+          ),
         },
         word === PRIORITY_ALL ? "All" : word,
       );

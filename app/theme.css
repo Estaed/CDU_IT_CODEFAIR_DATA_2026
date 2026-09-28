@@ -1,41 +1,49 @@
-/* Tarik Base theme (2026-09-28, Tarik's decision): custom property definitions only, nothing
-   else in this file (layer rule 5). Loaded after the design system's tokens, it re-points them:
-   light is the default on :root, dark applies when the person picks it (html[data-theme="dark"],
-   set by the toggle in the top bar and remembered on the phone). Values are Tarik Base tokens
-   (TarikOS .brain/skills/tasarim/references/DESIGN.md); deliberate breaks are listed in
-   design/deviations.md. scripts/build_app.py reads --color-canvas and --color-ink from the
-   first block for the manifest and the home-screen icons, so keep them in `--name:#hex;` form. */
+/* Crosscheck theme, "Territory" (2026-09-28, Tarik's decision): custom property definitions
+   only, nothing else in this file (layer rule 5). Loaded after the design system's tokens, it
+   re-points them: light is the default on :root, dark applies when the person picks it
+   (html[data-theme="dark"], set by the toggle in the top bar and remembered on the phone).
+   The palette is the Northern Territory's own: ochre, black and white, its official colours
+   since 17 February 1964 (flag ochre PMS 159, nt.gov.au). Ochre marks the one primary action
+   and the brand's tick, nothing else; in light mode it is never text (4.0:1 on white). Shapes,
+   spacing and states follow Tarik Base; the breaks are listed in design/deviations.md.
+   scripts/build_app.py reads --color-canvas and --color-ink from the first block for the
+   manifest and the home-screen icons, so keep them in `--name:#hex;` form. */
 
 :root {
   color-scheme: light;
-  --color-primary:#D4400A;--color-primary-pressed:#A83206;--color-primary-disabled:#E7E7EA;
-  --color-primary-text:#C2410C;--color-on-primary:#FFFFFF;
-  --color-ink:#18181B;--color-body:#18181B;--color-muted:#52525B;--color-muted-soft:#8B8B94;
-  --color-hairline:#E4E4E7;--color-hairline-soft:#E4E4E7;--color-hairline-strong:#B4B4BB;
-  --color-canvas:#F4F4F5;--color-surface-card:#FFFFFF;--color-surface-soft:#EFEFF1;--color-surface-strong:#E7E7EA;
+  --color-primary:#CB6015;--color-primary-pressed:#B0520F;--color-primary-disabled:#EAEAE8;
+  --color-primary-text:#141414;--color-on-primary:#141414;
+  --color-ink:#141414;--color-body:#141414;--color-muted:#585858;--color-muted-soft:#8A8A86;
+  --color-hairline:#D6D6D3;--color-hairline-soft:#D6D6D3;--color-hairline-strong:#A8A8A3;
+  --color-canvas:#F4F4F4;--color-surface-card:#FFFFFF;--color-surface-soft:#EAEAE8;--color-surface-strong:#E0E0DD;
   --color-surface-raised:#FFFFFF;
   --color-qr-paper:#FFFFFF;--color-qr-ink:#000000;
 
-  --verdict-works-text:#15803D;--verdict-degraded-text:#B45309;
-  --verdict-fails-text:#D92D32;--verdict-nodata-text:#52525B;
+  /* Degraded is gold, not amber, so it never reads as the ochre accent beside it. */
+  --verdict-works-text:#15803D;--verdict-degraded-text:#7A5C00;
+  --verdict-fails-text:#B42318;--verdict-nodata-text:#585858;
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --color-primary:#FF5A1F;--color-primary-pressed:#E84A12;--color-primary-disabled:#2A2930;
-  --color-primary-text:#FF7A45;--color-on-primary:#0D0D0F;
-  --color-ink:#F2F2F2;--color-body:#F2F2F2;--color-muted:#A1A1AA;--color-muted-soft:#71717A;
-  --color-hairline:#3A3940;--color-hairline-soft:#2A2930;--color-hairline-strong:#4F4E53;
-  --color-canvas:#0D0D0F;--color-surface-card:#16161A;--color-surface-soft:#212026;--color-surface-strong:#2A2930;
-  --color-surface-raised:#2A2930;
+  --color-primary:#E07A2E;--color-primary-pressed:#C96A22;--color-primary-disabled:#202020;
+  --color-primary-text:#E07A2E;--color-on-primary:#000000;
+  --color-ink:#EDEDED;--color-body:#EDEDED;--color-muted:#A3A3A3;--color-muted-soft:#737373;
+  --color-hairline:#333333;--color-hairline-soft:#333333;--color-hairline-strong:#4A4A4A;
+  --color-canvas:#000000;--color-surface-card:#151515;--color-surface-soft:#202020;--color-surface-strong:#2A2A2A;
+  --color-surface-raised:#2A2A2A;
 
-  --verdict-works-text:#3DD68C;--verdict-degraded-text:#F5B83D;
-  --verdict-fails-text:#F2555A;--verdict-nodata-text:#A1A1AA;
+  --verdict-works-text:#3DD68C;--verdict-degraded-text:#E8C547;
+  --verdict-fails-text:#F2555A;--verdict-nodata-text:#A3A3A3;
+
+  /* Faint ochre on black reads as brown; the claims surface is a light grey in the dark. */
+  --map-heat: var(--color-ink);
+  --map-heat-opacity: 0.13;
 }
 
 :root {
-  /* Semantic aliases that point somewhere else than the design system's: the accent marks the
-     next action, the current place and links; the map land is a card on the frame's surface. */
+  /* Semantic aliases that point somewhere else than the design system's: links and the current
+     tab are ink in light mode and ochre in dark; the map land is a card on the frame's surface. */
   --link: var(--color-primary-text);
   --focus-ring: var(--color-primary);
   --tab-selected: var(--color-primary-text);
@@ -43,6 +51,10 @@
   --map-land: var(--color-surface-card);
   --border-strong: var(--color-hairline-strong);
   --surface-raised: var(--color-surface-raised);
+  /* The carriers' coverage claims on the map: the land's own ochre, faint, deepening where the
+     three carriers' polygons overlap. Data colour, not the action accent. */
+  --map-heat: var(--color-primary);
+  --map-heat-opacity: 0.16;
 
   /* Verdicts read as status pills: the colour is the outline and the word, never a fill. */
   --verdict-works-fill: transparent;
@@ -50,15 +62,15 @@
   --verdict-fails-fill: transparent;
   --verdict-nodata-fill: transparent;
 
-  /* Three voices of type. No font ships with the app (offline, one file under 1 MiB), so each
-     voice is the best face the phone already has. */
-  --font-display: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Serif", serif;
+  /* One sans for every word, heavy and tight for names; numbers in the same face with tabular
+     figures. No font ships with the app (offline, one file under 1 MiB), so it is the phone's. */
+  --font-display: var(--font-sans);
   --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, "Roboto Mono", monospace;
   --weight-bold: 700;
   --size-title-lg: 28px;
   --size-button: 16px;
-  --size-brand: 22px;
-  --tracking-title-lg: -0.4px;
+  --size-brand: 20px;
+  --tracking-title-lg: -0.5px;
   --text-title-lg: var(--weight-bold) var(--size-title-lg)/1.12 var(--font-display);
   --text-title-md: var(--weight-bold) var(--size-title-md)/var(--leading-snug) var(--font-sans);
   --text-title-sm: var(--weight-bold) var(--size-title-sm)/var(--leading-snug) var(--font-sans);

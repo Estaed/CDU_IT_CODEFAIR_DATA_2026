@@ -773,6 +773,9 @@ a.top-bar__title { color: inherit; text-decoration: none; }
   background: var(--surface-pressed);
 }
 .report-form__status[aria-pressed="true"] { color: var(--surface-page); background: var(--text-heading); border-color: var(--text-heading); }
+/* Report here is the community screen's one primary action: the ochre surface. */
+.report-button { color: var(--text-on-primary); background: var(--action-primary); border-color: transparent; }
+.report-button:active { background: var(--action-primary-pressed); }
 .search-input, .map-service, .reports-fold__text { background: var(--surface-block); border-color: var(--border-strong); }
 .search-input:focus { border-color: var(--focus-ring); }
 
@@ -781,10 +784,27 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 .kind-chip { background: transparent; border: var(--size-hairline) solid var(--border-strong); }
 .verdict-badge { border: var(--size-hairline) solid currentColor; border-radius: var(--radius-pill); }
 
-/* Map: the ten places to fix first carry the one accent; everything else stays neutral. */
-.map__community[data-tier="1"] .map__pt--fix { fill: var(--action-primary); }
-.map__rank { fill: var(--text-on-primary); }
-.map-legend__glyph--fix-one { color: var(--action-primary); }
+/* Map, fix-first lens: the ten places to fix first are ink discs carrying their rank; the
+   ochre stays off the map (Territory: ochre is the primary action and the brand's tick). */
+.map__community[data-tier="1"] .map__pt--fix { fill: var(--text-heading); }
+.map__rank { fill: var(--surface-page); }
+.map-legend__glyph--fix-one { color: var(--text-heading); }
+
+/* The carriers' claims as one faint surface; the legend's last line explains it with a swatch
+   of the same tint. */
+.map__heat path { fill: var(--map-heat); fill-opacity: var(--map-heat-opacity); stroke: none; }
+.map-legend__heat { display: flex; flex: 0 0 100%; align-items: center; gap: var(--space-xs); color: var(--text-secondary); }
+.map-legend__heat-swatch {
+  flex: 0 0 auto;
+  width: var(--space-md);
+  height: var(--space-sm);
+  background: var(--map-heat);
+  border-radius: var(--radius-xs);
+  opacity: calc(var(--map-heat-opacity) * 2);
+}
+
+/* The brand's tick is the one ochre mark in the top bar. */
+.brand-mark { color: var(--action-primary); }
 
 /* QR codes stay black on white with their quiet zone in both themes: phone cameras and jsQR
    read dark on light reliably and an inverted code often not. */
@@ -895,6 +915,168 @@ details[open] > summary::after { transform: translateY(20%) rotate(-135deg); }
   transform: rotate(-45deg);
 }
 
+/* Report here opens its form below like Share opens its fold: the same chevron, turning. */
+.report-button::after {
+  content: "";
+  flex: 0 0 auto;
+  width: var(--space-xs);
+  height: var(--space-xs);
+  margin-left: var(--space-sm);
+  border-right: var(--size-focus-ring) solid currentColor;
+  border-bottom: var(--size-focus-ring) solid currentColor;
+  transform: translateY(-30%) rotate(45deg);
+  transition: transform var(--motion-fast);
+}
+.report-button[aria-expanded="true"]::after { transform: translateY(20%) rotate(-135deg); }
+
+/* The four answers: each card's verdict sits on the card's bottom line, so the badges of a row
+   line up whatever the length of the question above them. */
+.service-card { display: flex; flex-direction: column; }
+.service-card > .service-row__button { display: flex; flex: 1 1 auto; flex-direction: column; }
+.service-card .service-row__top { flex: 1 1 auto; height: auto; gap: var(--space-sm); }
+.service-card .service-row__badge { margin-top: auto; }
+.service-card--expanded .service-row__badge { margin-top: 0; }
+
+/* The rank number is drawn inside its disc's group, which already scales with the zoom. */
+.map__pt-shape .map__rank { transform: none; }
+
+/* Zoom buttons: a small quiet stack; pinch and the region chips do most of the zooming. */
+.map-controls { border-radius: var(--radius-sm); }
+.map-controls__zoom {
+  width: calc(var(--size-touch) - var(--space-xs));
+  height: calc(var(--size-touch) - var(--space-xs));
+  min-height: calc(var(--size-touch) - var(--space-xs));
+  font: var(--text-body-md);
+}
+
+/* Before a community is picked the map card is a quiet hint, not a box that looks like a field. */
+.map-card:has(> .map-card__hint) { padding: 0 var(--space-xxs); background: transparent; border: 0; }
+.map-card__hint { font: var(--text-caption); color: var(--text-secondary); }
+
+/* Filter by action: one orderly list inside a card, a check on the chosen word and, on the
+   right, how many communities it leaves. */
+.priority-chips {
+  display: grid;
+  margin: 0 var(--space-md) var(--space-md);
+  padding: 0;
+  overflow: hidden;
+  background: var(--surface-block);
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+}
+.priority-chips .priority-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  height: auto;
+  min-height: var(--size-touch);
+  padding: 0 var(--space-md);
+  font: var(--text-body-sm);
+  color: var(--text-heading);
+  text-align: left;
+  white-space: normal;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+.priority-chips .priority-chip + .priority-chip { border-top: var(--size-hairline) solid var(--border-hairline); }
+.priority-chips .priority-chip::before {
+  content: "";
+  flex: 0 0 auto;
+  width: var(--space-sm);
+  height: var(--space-xxs);
+  margin-top: calc(-1 * var(--space-xxs));
+  border-left: var(--size-focus-ring) solid transparent;
+  border-bottom: var(--size-focus-ring) solid transparent;
+  transform: rotate(-45deg);
+}
+.priority-chips .priority-chip[aria-pressed="true"] { font-weight: var(--weight-bold); color: var(--text-heading); background: transparent; }
+.priority-chips .priority-chip[aria-pressed="true"]::before { border-color: var(--text-heading); }
+.priority-chips .priority-chip::after {
+  content: attr(data-count);
+  margin-left: auto;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.priority-chips .priority-chip:active { background: var(--surface-pressed); }
+
+/* Airy layout (2026-09-28; reports/2026-09-28-design-slop-audit.md): space and containers
+   separate groups, never full-width rules. Three steps: 4 inside an item, 12 between items of a
+   group, 24 to 32 between groups. Rows inside a group are divided by a hairline that starts at
+   the text edge (drawn as a background line, so it needs no extra element). */
+main .section { border-top: 0; }
+.community-header { padding-bottom: 0; border-bottom: 0; }
+.search { padding-top: var(--space-sm); }
+.community-summary { margin-top: var(--space-sm); }
+.services { margin-top: var(--space-lg); }
+.services__grid { gap: var(--space-sm); }
+.actions.section { padding-top: var(--space-md); }
+.footer { margin-top: var(--space-xxl); border-top: 0; }
+
+.details-group, .community-reports, .priority-list, .map-list, .map-more {
+  margin: var(--space-lg) var(--space-md) 0;
+  overflow: hidden;
+  background: var(--surface-block);
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+}
+.details-group > * + *, .priority-row + .priority-row, .map-list__item + .map-list__item,
+.map-more__group {
+  background-image: linear-gradient(var(--border-hairline), var(--border-hairline));
+  background-repeat: no-repeat;
+  background-position: right top;
+  background-size: calc(100% - var(--space-md)) var(--size-hairline);
+}
+
+/* The community's details: each fold, the priority line and the trust line are rows. */
+.details-group > * { margin: 0; padding: var(--space-xxs) var(--space-md); }
+/* A row title may hold a word in another voice ("…here: medium"), so the chevron is placed at
+   the row's right edge rather than laid out as a flex item after mixed inline content. */
+.details-group > details > summary {
+  position: relative;
+  display: block;
+  min-height: var(--size-control);
+  padding: var(--space-sm) var(--space-xl) var(--space-sm) 0;
+  font: var(--text-title-sm);
+}
+.details-group > details > summary::after {
+  position: absolute;
+  top: 50%;
+  right: var(--space-xxs);
+  margin: 0;
+  transform: translateY(-75%) rotate(45deg);
+}
+.details-group > details[open] > summary::after { transform: translateY(-25%) rotate(-135deg); }
+.details-group > details[open] { padding-bottom: var(--space-md); }
+.details-group .reliability-line__word { font-weight: var(--weight-regular); color: var(--text-secondary); }
+.details-group .reliability-line__body, .details-group .present-list, .details-group .fact { padding: 0; }
+.details-group .fact { margin-top: var(--space-sm); }
+.details-group .agreement { padding: var(--space-xs) 0 var(--space-sm); }
+.details-group .publisher-row, .details-group .actions__item { padding: var(--space-sm) 0; border-bottom: 0; }
+/* Inside the card the publisher's name takes the whole first line; its kind and claim follow. */
+.details-group .publisher-row__top { flex-wrap: wrap; row-gap: var(--space-xxs); }
+.details-group .publisher-row__name { flex-basis: 100%; }
+.details-group .priority-line .text-link { min-height: var(--size-control); font: var(--text-body-md); }
+
+/* Community reports: a card of its own, because it holds actions. */
+.community-reports { display: grid; gap: var(--space-sm); padding: var(--space-md); }
+.community-reports__title, .reports-line, .reports-fold { padding: 0; }
+.community-reports .evidence-button { width: 100%; margin: 0; }
+
+/* Fix first: each group is a label, a note and one grouped list, 32 apart. */
+.priority-filters { border-bottom: 0; }
+.priority-group { padding-top: var(--space-xs); }
+.priority-group__title { padding-top: var(--space-md); }
+.priority-list { margin-top: var(--space-sm); }
+.priority-row { border-bottom: 0; }
+
+/* Map: the extra layers and the community list as grouped cards under the map. */
+.map-more { border: var(--size-hairline) solid var(--border-hairline); }
+.map-list { margin-top: var(--space-sm); }
+.map-list__item { border-bottom: 0; }
+.map-list-heading { padding-top: var(--space-lg); border-bottom: 0; }
+
 /* Disabled reads as disabled: surface fill and subtle ink, never white on grey. */
 .report-form__save[disabled] { color: var(--text-tertiary); }
 
@@ -903,5 +1085,5 @@ details[open] > summary::after { transform: translateY(20%) rotate(-135deg); }
 .map__community[data-tier="3"] .map__pt--fix { fill: var(--text-secondary); }
 
 @media (prefers-reduced-motion: reduce) {
-  summary::after { transition: none; }
+  summary::after, .report-button::after { transition: none; }
 }
