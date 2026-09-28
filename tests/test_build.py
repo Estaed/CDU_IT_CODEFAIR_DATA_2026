@@ -99,9 +99,10 @@ def test_sizes_meta_matches_files():
 
 
 def _token(name: str) -> str:
-    css = (ROOT / "design" / "ds" / "design" / "tokens" / "colors.css").read_text(encoding="utf-8")
+    # The light default: the first definition in the Tarik Base theme (2026-09-28).
+    css = (ROOT / "app" / "theme.css").read_text(encoding="utf-8")
     match = re.search(rf"--{name}:(#[0-9a-fA-F]+);", css)
-    assert match, f"{name} not found in colors.css"
+    assert match, f"{name} not found in app/theme.css"
     return match.group(1)
 
 

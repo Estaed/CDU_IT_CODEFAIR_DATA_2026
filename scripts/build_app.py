@@ -50,17 +50,21 @@ JSQR_LICENSE_HEADER = (
 # Served by the host only; dist/index.html never depends on them.
 SW_SRC = ROOT / "app/sw.js"
 MANIFEST_SRC = ROOT / "app/manifest.webmanifest"
-TOKENS_CSS = ROOT / "design/ds/design/tokens/colors.css"
+# Tarik Base theme (2026-09-28): its first block is the light default, which the manifest and
+# the home-screen icons are drawn from.
+TOKENS_CSS = ROOT / "app/theme.css"
 SIZES_PLACEHOLDER = "<!-- SIZES -->"
 BUILD_PLACEHOLDER = b"__BUILD__"
 THEME_PLACEHOLDER = "__THEME_COLOR__"
 TOKEN_RE = re.compile(r"--([a-z0-9-]+):(#[0-9a-fA-F]{3,8});")
 
-# Order fixed by CLAUDE.md Blueprint: tokens, base, the reference screens, then the app.
+# Order fixed by CLAUDE.md Blueprint: tokens, the theme that re-points them, base, the
+# reference screens, then the app.
 CSS_FILES = (
     ROOT / "design/ds/design/tokens/colors.css",
     ROOT / "design/ds/design/tokens/typography.css",
     ROOT / "design/ds/design/tokens/spacing.css",
+    ROOT / "app/theme.css",
     ROOT / "design/ds/design/base.css",
     ROOT / "design/screens/screens.css",
     ROOT / "app/app.css",
@@ -107,8 +111,10 @@ def qr_svg(text: str) -> str:
 
 
 def read_tokens(names: tuple[str, ...]) -> dict[str, str]:
-    """Parse the requested custom properties out of colors.css; never retype a hex value."""
-    found = dict(TOKEN_RE.findall(TOKENS_CSS.read_text(encoding="utf-8")))
+    """Parse the requested custom properties out of the theme's light (first) block."""
+    found: dict[str, str] = {}
+    for name, value in TOKEN_RE.findall(TOKENS_CSS.read_text(encoding="utf-8")):
+        found.setdefault(name, value)
     missing = [name for name in names if name not in found]
     if missing:
         raise ValueError(f"{TOKENS_CSS.name} is missing token(s): {', '.join(missing)}")

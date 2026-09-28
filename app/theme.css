@@ -1,0 +1,81 @@
+/* Tarik Base theme (2026-09-28, Tarik's decision): custom property definitions only, nothing
+   else in this file (layer rule 5). Loaded after the design system's tokens, it re-points them:
+   light is the default on :root, dark applies when the person picks it (html[data-theme="dark"],
+   set by the toggle in the top bar and remembered on the phone). Values are Tarik Base tokens
+   (TarikOS .brain/skills/tasarim/references/DESIGN.md); deliberate breaks are listed in
+   design/deviations.md. scripts/build_app.py reads --color-canvas and --color-ink from the
+   first block for the manifest and the home-screen icons, so keep them in `--name:#hex;` form. */
+
+:root {
+  color-scheme: light;
+  --color-primary:#D4400A;--color-primary-pressed:#A83206;--color-primary-disabled:#E7E7EA;
+  --color-primary-text:#C2410C;--color-on-primary:#FFFFFF;
+  --color-ink:#18181B;--color-body:#18181B;--color-muted:#52525B;--color-muted-soft:#8B8B94;
+  --color-hairline:#E4E4E7;--color-hairline-soft:#E4E4E7;--color-hairline-strong:#B4B4BB;
+  --color-canvas:#F4F4F5;--color-surface-card:#FFFFFF;--color-surface-soft:#EFEFF1;--color-surface-strong:#E7E7EA;
+  --color-surface-raised:#FFFFFF;
+  --color-qr-paper:#FFFFFF;--color-qr-ink:#000000;
+
+  --verdict-works-text:#15803D;--verdict-degraded-text:#B45309;
+  --verdict-fails-text:#D92D32;--verdict-nodata-text:#52525B;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-primary:#FF5A1F;--color-primary-pressed:#E84A12;--color-primary-disabled:#2A2930;
+  --color-primary-text:#FF7A45;--color-on-primary:#0D0D0F;
+  --color-ink:#F2F2F2;--color-body:#F2F2F2;--color-muted:#A1A1AA;--color-muted-soft:#71717A;
+  --color-hairline:#3A3940;--color-hairline-soft:#2A2930;--color-hairline-strong:#4F4E53;
+  --color-canvas:#0D0D0F;--color-surface-card:#16161A;--color-surface-soft:#212026;--color-surface-strong:#2A2930;
+  --color-surface-raised:#2A2930;
+
+  --verdict-works-text:#3DD68C;--verdict-degraded-text:#F5B83D;
+  --verdict-fails-text:#F2555A;--verdict-nodata-text:#A1A1AA;
+}
+
+:root {
+  /* Semantic aliases that point somewhere else than the design system's: the accent marks the
+     next action, the current place and links; the map land is a card on the frame's surface. */
+  --link: var(--color-primary-text);
+  --focus-ring: var(--color-primary);
+  --tab-selected: var(--color-primary-text);
+  --map-outline: var(--color-hairline-strong);
+  --map-land: var(--color-surface-card);
+  --border-strong: var(--color-hairline-strong);
+  --surface-raised: var(--color-surface-raised);
+
+  /* Verdicts read as status pills: the colour is the outline and the word, never a fill. */
+  --verdict-works-fill: transparent;
+  --verdict-degraded-fill: transparent;
+  --verdict-fails-fill: transparent;
+  --verdict-nodata-fill: transparent;
+
+  /* Three voices of type. No font ships with the app (offline, one file under 1 MiB), so each
+     voice is the best face the phone already has. */
+  --font-display: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Serif", serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, "Roboto Mono", monospace;
+  --weight-bold: 700;
+  --size-title-lg: 28px;
+  --size-button: 16px;
+  --size-brand: 22px;
+  --tracking-title-lg: -0.4px;
+  --text-title-lg: var(--weight-bold) var(--size-title-lg)/1.12 var(--font-display);
+  --text-title-md: var(--weight-bold) var(--size-title-md)/var(--leading-snug) var(--font-sans);
+  --text-title-sm: var(--weight-bold) var(--size-title-sm)/var(--leading-snug) var(--font-sans);
+  --text-button: var(--weight-bold) var(--size-button)/var(--leading-none) var(--font-sans);
+  --text-brand: var(--weight-bold) var(--size-brand)/var(--leading-none) var(--font-display);
+  /* Numbers speak in the sans with tabular figures (app.css sets tabular-nums on .fig); the mono
+     voice is kept for machine text only, the report line a person copies or pastes. */
+  --text-figure-lg: var(--weight-semibold) var(--size-figure-lg)/var(--leading-tight) var(--font-sans);
+  --text-figure-md: var(--weight-regular) var(--size-figure-md)/var(--leading-normal) var(--font-sans);
+  --text-figure-sm: var(--weight-regular) var(--size-figure-sm)/var(--leading-normal) var(--font-sans);
+  --text-figure-xs: var(--weight-regular) var(--size-figure-xs)/var(--leading-snug) var(--font-sans);
+  --text-code: var(--weight-regular) var(--size-figure-xs)/var(--leading-snug) var(--font-mono);
+
+  /* Shape and size: 12 px buttons and cards' 16 px corners, 8 px chips, 48 px controls. */
+  --radius-xs: 6px; --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 24px;
+  --size-control: 48px; --size-chip: 32px; --size-icon: 20px; --size-nav-pill: 32px;
+  --size-qr-quiet: 12px;
+  --motion-fast: 120ms ease-out;
+  --size-glyph: 10px; --size-glyph-stroke: 1.5px;
+}

@@ -118,11 +118,13 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 .map-lens {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-xxs);
   margin: var(--space-sm) var(--space-md) 0;
+  padding: var(--space-xxs);
   overflow: hidden;
-  background: var(--surface-page);
+  background: var(--surface-soft);
   border: var(--size-hairline) solid var(--border-hairline);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
 }
 
 .map-lens__option {
@@ -136,17 +138,17 @@ a.top-bar__title { color: inherit; text-decoration: none; }
   text-decoration: none;
 }
 
-.map-lens__option + .map-lens__option { border-left: var(--size-hairline) solid var(--border-hairline); }
+.map-lens__option { border-radius: var(--radius-sm); }
 
-.map-lens__option[aria-current="page"] { color: var(--text-heading); background: var(--surface-pressed); }
+.map-lens__option[aria-current="page"] { color: var(--text-heading); background: var(--surface-raised); box-shadow: 0 0 0 var(--size-hairline) var(--border-hairline); }
 
 .chip, .map-lens__option, .map-controls__reset, .map-controls__zoom { min-height: var(--size-touch); }
 
 /* Toggle chips: an unselected chip is outlined, not faded, so its text keeps full contrast;
-   the selected one is filled with a dark outline. */
-.chip[aria-pressed] { border: var(--size-hairline) solid var(--border-hairline); }
-.chip[aria-pressed="false"] { color: var(--text-body); background: var(--surface-page); }
-.chip[aria-pressed="true"] { color: var(--text-heading); background: var(--surface-pressed); border-color: var(--text-heading); }
+   the selected one inverts to ink (Tarik Base: a filter is never orange). */
+.chip[aria-pressed] { border: var(--size-hairline) solid var(--border-hairline); border-radius: var(--radius-sm); }
+.chip[aria-pressed="false"] { color: var(--text-body); background: transparent; }
+.chip[aria-pressed="true"] { color: var(--surface-page); background: var(--text-heading); border-color: var(--text-heading); }
 
 .map-frame {
   position: relative;
@@ -192,7 +194,7 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 
 .map__town-label, .map__label, .map__rank {
   paint-order: stroke;
-  stroke: var(--surface-page);
+  stroke: var(--map-land);
   stroke-width: var(--size-focus-ring);
   stroke-linejoin: round;
 }
@@ -393,7 +395,7 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 /* The three screen tabs get their own full-width row under the title, so none hides past the
    right edge at 360 (design/screens/README.md, "Tabs at 360", superseded 2026-09-16). */
 .top-bar__inner { flex-wrap: wrap; height: auto; min-height: var(--size-topbar); }
-.top-bar__title { flex: 1 1 auto; min-height: var(--size-touch); display: flex; align-items: center; gap: var(--space-xs); font: var(--text-title-md); }
+.top-bar__title { flex: 1 1 auto; min-height: var(--size-touch); display: flex; align-items: center; gap: var(--space-xs); font: var(--text-brand); letter-spacing: var(--tracking-title-lg); }
 .brand-mark { width: var(--size-badge); height: var(--size-badge); stroke-width: var(--size-focus-ring); }
 .top-bar__inner > .header-chips { order: 1; }
 .top-bar__inner > .tabs {
@@ -490,9 +492,9 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 .service-card--expanded .service-row__badge { align-self: auto; }
 
 /* A folded section's own title-sized summary line, replacing the banned `.section__title` on
-   this screen (item 6); `.section` still gives it the top hairline and vertical rhythm. The
-   disclosure marker is left as the browser default (no `list-style`/marker override), the same
-   as the footer's own `.footer__summary` fold, so a fold reads as tappable. */
+   this screen (item 6); `.section` still gives it the top hairline and vertical rhythm. Every
+   fold carries the same chevron marker (Tarik Base section at the end of this file), so a fold
+   reads as tappable. */
 .section > summary {
   padding: var(--space-xs) var(--space-md);
   font: var(--text-title-md);
@@ -588,7 +590,7 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 
 /* The saved line: read as a figure, wrapped rather than cut, with the two ways to send it and
    the QR a second phone reads. */
-.report-line { margin: 0; padding: var(--space-sm); font: var(--text-figure-xs); color: var(--text-body); background: var(--surface-block); border-radius: var(--radius-md); white-space: pre-wrap; overflow-wrap: anywhere; }
+.report-line { margin: 0; padding: var(--space-sm); font: var(--text-code); color: var(--text-body); background: var(--surface-block); border-radius: var(--radius-md); white-space: pre-wrap; overflow-wrap: anywhere; }
 .report-line__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm); margin-top: var(--space-xs); }
 .report-line__copy { font: var(--text-button); color: var(--link); background: transparent; border: 0; cursor: pointer; }
 .report-line__sms { font: var(--text-body-md); color: var(--link); text-decoration: underline; }
@@ -600,7 +602,7 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 .reports-line { margin: 0; padding: 0 var(--space-md); font: var(--text-body-sm); color: var(--text-body); }
 .reports-fold { padding: 0 var(--space-md); font: var(--text-body-sm); color: var(--text-body); }
 .reports-fold > summary { cursor: pointer; color: var(--text-secondary); }
-.reports-fold__text { display: block; width: 100%; margin-top: var(--space-xs); padding: var(--space-xs); font: var(--text-figure-xs); color: var(--text-heading); background: var(--surface-page); border: var(--size-hairline) solid var(--border-hairline); border-radius: var(--radius-md); }
+.reports-fold__text { display: block; width: 100%; margin-top: var(--space-xs); padding: var(--space-xs); font: var(--text-code); color: var(--text-heading); background: var(--surface-page); border: var(--size-hairline) solid var(--border-hairline); border-radius: var(--radius-md); }
 .reports-import { margin-top: var(--space-xs); }
 .reports-import__result { margin: var(--space-xs) 0 0; font: var(--text-caption); color: var(--text-secondary); }
 .evidence-button {
@@ -663,37 +665,33 @@ a.top-bar__title { color: inherit; text-decoration: none; }
 
 .priority-row { border-bottom: var(--size-hairline) solid var(--border-hairline-soft); }
 
+/* Rank in its own narrow column; name and verdict on the first line, the intervention and its
+   one-sentence reason under the name (2026-09-28: the reason is shown, no longer folded). */
 .priority-row__link {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-xs);
+  display: grid;
+  grid-template-columns: 3ch minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: var(--space-sm);
+  row-gap: var(--space-xxs);
   min-height: var(--size-touch);
-  padding: var(--space-sm) var(--space-md) var(--space-xxs);
+  padding: var(--space-sm) var(--space-md);
   font: var(--text-body-md);
   color: var(--text-heading);
   text-decoration: none;
 }
-.priority-row__link:active { background: var(--surface-block); }
+.priority-row__link:active { background: var(--surface-pressed); }
 
-.priority-row__rank { color: var(--text-secondary); }
+.priority-row__rank { font: var(--text-body-sm); color: var(--text-secondary); }
 
-.priority-row__name { flex: 1 1 auto; min-width: 0; }
+.priority-row__name { min-width: 0; font-weight: var(--weight-semibold); }
 
-/* The intervention takes the row's second line, so a long word never squeezes the name. */
-.priority-row__word {
-  flex: 0 0 100%;
-  font: var(--text-caption);
-  color: var(--text-secondary);
-}
+/* A dense list carries the verdict as glyph and word only; the outlined pill is for the four
+   answers on the community screen. */
+.priority-row__link .priority-row__badge { align-self: center; padding: 0; border-color: transparent; }
 
-.priority-row__why {
-  padding: 0 var(--space-md) var(--space-sm);
-  font: var(--text-body-sm);
-  color: var(--text-body);
-}
-.priority-row__why > summary { cursor: pointer; color: var(--text-secondary); }
-.priority-row__reason { margin: var(--space-xxs) 0 0; }
+.priority-row__word, .priority-row__reason { grid-column: 2 / -1; }
+.priority-row__word { font: var(--text-body-sm); color: var(--text-body); }
+.priority-row__reason { font: var(--text-caption); color: var(--text-secondary); }
 
 .priority-line, .reliability-line {
   margin: 0;
@@ -717,19 +715,193 @@ a.top-bar__title { color: inherit; text-decoration: none; }
     margin: 0;
     padding: var(--space-xxs) var(--space-xs) env(safe-area-inset-bottom);
     overflow: visible;
-    background: var(--surface-page);
+    background: var(--surface-soft);
     border-top: var(--size-hairline) solid var(--border-hairline);
   }
   .top-bar__inner > .tabs .tab {
-    min-height: calc(var(--size-touch) + var(--space-xs));
+    min-height: calc(var(--size-touch) + var(--space-sm));
     padding: var(--space-xxs);
     flex-direction: column;
-    gap: 0;
+    gap: var(--space-xxs);
     border-bottom: 0;
     border-radius: var(--radius-md);
     font: var(--text-label);
   }
-  .top-bar__inner > .tabs .tab[aria-current="page"] { background: var(--surface-block); }
-  .nav-icon { display: block; }
+  .top-bar__inner > .tabs .tab:active { background: transparent; }
+  /* Tarik Base nav bar: the active item is a pill behind its icon and the accent on its label. */
+  .nav-icon {
+    display: block;
+    box-sizing: border-box;
+    width: calc(var(--size-badge) + 2 * var(--space-md));
+    height: var(--size-nav-pill);
+    padding: var(--space-xxs) var(--space-md);
+    border-radius: var(--radius-pill);
+  }
+  .top-bar__inner > .tabs .tab[aria-current="page"] .nav-icon { background: var(--surface-raised); box-shadow: 0 0 0 var(--size-hairline) var(--border-hairline); }
   .content { padding-bottom: calc(var(--size-touch) + var(--space-xl) + env(safe-area-inset-bottom)); }
+}
+
+/* Tarik Base theme (2026-09-28, Tarik's decision; design/deviations.md): the component rules a
+   token swap in app/theme.css cannot reach. Tokens only, like every rule above. */
+
+/* Top bar: a quiet offline status in words, not a pill that looks tappable; the theme toggle. */
+.offline-chip { height: auto; padding: 0; font: var(--text-caption); color: var(--text-secondary); background: transparent; border-radius: 0; }
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-touch);
+  height: var(--size-touch);
+  color: var(--text-heading);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.theme-toggle:active { background: var(--surface-pressed); }
+.theme-toggle__icon { width: var(--size-icon); height: var(--size-icon); stroke-width: var(--size-focus-ring); }
+.theme-toggle__sun, :root[data-theme="dark"] .theme-toggle__moon { display: none; }
+:root[data-theme="dark"] .theme-toggle__sun { display: block; }
+
+/* Surfaces: cards are surface-1 with a hairline on the canvas; controls sit on surface-2. */
+.service-card, .service-card--expanded, .share-card, .transfer__section, .map-card { background: var(--surface-block); }
+.service-card .service-row__button { background: transparent; }
+.service-card .service-row__button:active { background: var(--surface-pressed); }
+.button--secondary, .report-button, .evidence-button, .locate-button, .transfer__button, .report-form__status {
+  background: var(--surface-soft);
+  border-color: var(--border-hairline);
+}
+.button--secondary:active, .report-button:active, .evidence-button:active, .locate-button:active, .transfer__button:active {
+  background: var(--surface-pressed);
+}
+.report-form__status[aria-pressed="true"] { color: var(--surface-page); background: var(--text-heading); border-color: var(--text-heading); }
+.search-input, .map-service, .reports-fold__text { background: var(--surface-block); border-color: var(--border-strong); }
+.search-input:focus { border-color: var(--focus-ring); }
+
+/* Chips, tags and verdicts: 8 px chips, outlined tags, status pills outlined in their colour. */
+.chip { border-radius: var(--radius-sm); }
+.kind-chip { background: transparent; border: var(--size-hairline) solid var(--border-strong); }
+.verdict-badge { border: var(--size-hairline) solid currentColor; border-radius: var(--radius-pill); }
+
+/* Map: the ten places to fix first carry the one accent; everything else stays neutral. */
+.map__community[data-tier="1"] .map__pt--fix { fill: var(--action-primary); }
+.map__rank { fill: var(--text-on-primary); }
+.map-legend__glyph--fix-one { color: var(--action-primary); }
+
+/* QR codes stay black on white with their quiet zone in both themes: phone cameras and jsQR
+   read dark on light reliably and an inverted code often not. */
+.qr, .report-line__qr, .transfer__svg { background: var(--color-qr-paper); border-radius: var(--radius-md); }
+.report-line__qr, .transfer__svg { padding: var(--size-qr-quiet); }
+.qr__modules, .transfer__svg path { fill: var(--color-qr-ink); }
+
+/* Numbers take the voice and size of the sentence they sit in, with tabular figures; a mono
+   digit inside prose read as a glitch ("All 4 sources", "495  KB"). */
+.fig, .fig--xs, .fig--md { font: inherit; font-variant-numeric: tabular-nums; }
+.fig--lg { font: var(--text-figure-lg); font-variant-numeric: tabular-nums; }
+.tab__count, .map-legend__count, .map__rank, .priority-row__rank { font-variant-numeric: tabular-nums; }
+
+/* The search keeps its whole placeholder at 360: the location button speaks in the label size. */
+.locate-button { min-height: var(--size-control); padding: 0 var(--space-xs); font: var(--text-label); }
+
+/* Home: the three figures lead with their numbers, so the eye lands on them first. */
+.home__figure .fig { font-weight: var(--weight-bold); }
+
+/* Folds: one marker everywhere, a chevron after the words that turns when the fold opens,
+   instead of the browser's triangle in three different sizes. */
+summary { list-style: none; cursor: pointer; }
+summary::-webkit-details-marker { display: none; }
+summary::after {
+  content: "";
+  display: inline-block;
+  flex: 0 0 auto;
+  width: var(--space-xs);
+  height: var(--space-xs);
+  margin-left: var(--space-sm);
+  border-right: var(--size-focus-ring) solid currentColor;
+  border-bottom: var(--size-focus-ring) solid currentColor;
+  transform: translateY(-30%) rotate(45deg);
+  transition: transform var(--motion-fast);
+}
+details[open] > summary::after { transform: translateY(20%) rotate(-135deg); }
+.section > summary, .transfer-fold > summary, .map-more > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--size-control);
+}
+
+/* The two-action row: Share reads as the button beside Report here, not as a fold title. */
+.actions.section > .share-fold > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--size-control);
+  padding: 0 var(--space-md);
+  font: var(--text-button);
+  color: var(--text-heading);
+  background: var(--surface-soft);
+  border: var(--size-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-md);
+}
+
+/* Open, the Share fold's buttons and date line run the full width of the two-action row
+   instead of squeezing into the right-hand column under their summary. */
+.actions.section > .share-fold[open] > :not(summary) {
+  width: calc(200% + var(--space-xs));
+  margin-left: calc(-100% - var(--space-xs));
+}
+.actions.section > .share-fold .share { padding: var(--space-sm) 0 0; }
+.actions.section > .share-fold .community-header__freshness { margin-top: var(--space-xs); }
+
+/* Verdict glyphs drawn the way the map draws its points (filled disc, half disc, ring, dotted
+   ring), so they are the same size on every phone: Android's fallback font drew ● and ◐ at
+   half the size Windows does. The characters stay in the markup, hidden from screen readers
+   as before. */
+.verdict-badge > [aria-hidden], .map-legend__glyph--works, .map-legend__glyph--degraded,
+.map-legend__glyph--fails, .map-legend__glyph--nodata {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: var(--size-glyph);
+  height: var(--size-glyph);
+  overflow: hidden;
+  font-size: 0;
+  border-radius: var(--radius-pill);
+}
+.verdict-badge--works > [aria-hidden], .map-legend__glyph--works { background: currentColor; }
+.verdict-badge--degraded > [aria-hidden], .map-legend__glyph--degraded {
+  border: var(--size-glyph-stroke) solid currentColor;
+  background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+}
+.verdict-badge--fails > [aria-hidden], .map-legend__glyph--fails { border: var(--size-glyph-stroke) solid currentColor; }
+.verdict-badge--nodata > [aria-hidden], .map-legend__glyph--nodata { border: var(--size-glyph-stroke) dotted currentColor; }
+
+/* The priority line is a way into Fix first: a row with a chevron, not two lines of underlined
+   accent text. */
+.priority-line .text-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--size-touch);
+  font: var(--text-body-sm);
+  color: var(--text-heading);
+  text-decoration: none;
+}
+.priority-line .text-link::after {
+  content: "";
+  flex: 0 0 auto;
+  width: var(--space-xs);
+  height: var(--space-xs);
+  margin-left: var(--space-sm);
+  border-right: var(--size-focus-ring) solid currentColor;
+  border-bottom: var(--size-focus-ring) solid currentColor;
+  transform: rotate(-45deg);
+}
+
+/* Disabled reads as disabled: surface fill and subtle ink, never white on grey. */
+.report-form__save[disabled] { color: var(--text-tertiary); }
+
+/* Map, fix-first lens: accent for the top ten, ink for 11 to 30, grey for the rest, so the
+   colour itself says how urgent a place is and the eye goes to the ten first. */
+.map__community[data-tier="3"] .map__pt--fix { fill: var(--text-secondary); }
+
+@media (prefers-reduced-motion: reduce) {
+  summary::after { transition: none; }
 }

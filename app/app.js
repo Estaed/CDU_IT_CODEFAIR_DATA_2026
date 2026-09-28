@@ -2051,12 +2051,9 @@
         h("span", { class: "priority-row__name" }, community.name),
         renderBadge(serviceVerdict(community, DEFAULT_SERVICE), "priority-row__badge"),
         h("span", { class: "priority-row__word" }, one.word),
-      ),
-      h(
-        "details",
-        { class: "priority-row__why" },
-        h("summary", {}, "Why"),
-        h("p", { class: "priority-row__reason" }, figures(row.why)),
+        // The reason is one short sentence (at most 99 characters in the pack), so it is shown,
+        // not folded: a "Why" fold on each of 96 rows hid what every reader of the list needs.
+        h("span", { class: "priority-row__reason" }, figures(row.why)),
       ),
     );
   };
@@ -2363,6 +2360,33 @@
   chip.replaceWith(headerChips);
   headerChips.appendChild(chip);
   headerChips.appendChild(updateChip);
+
+  // Tarik Base theme (2026-09-28): light by default; the toggle keeps the choice on this phone.
+  // The <head> script in index.html applies a stored "dark" before the first paint. The browser
+  // bar follows the canvas token, read from the theme, never retyped.
+  const themeToggle = document.querySelector(".theme-toggle");
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  const setTheme = (theme) => {
+    if (theme === "dark") {
+      document.documentElement.dataset.theme = "dark";
+    } else {
+      delete document.documentElement.dataset.theme;
+    }
+    themeToggle.setAttribute("aria-pressed", String(theme === "dark"));
+    const canvas = getComputedStyle(document.documentElement).getPropertyValue("--color-canvas");
+    themeColor.setAttribute("content", canvas.trim());
+  };
+  themeToggle.addEventListener("click", () => {
+    const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    try {
+      localStorage.setItem("crosscheck-theme", next);
+    } catch (error) {
+      // Storage is optional; the choice then lasts until the page closes.
+    }
+    setTheme(next);
+  });
+  headerChips.appendChild(themeToggle);
+  setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
 
   useBuiltInButton.addEventListener("click", async () => {
     try {
