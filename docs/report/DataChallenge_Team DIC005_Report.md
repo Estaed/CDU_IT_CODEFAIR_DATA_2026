@@ -247,7 +247,7 @@ Pedregosa, F., et al. (2011). Scikit-learn: Machine learning in Python. *Journal
 
 **AI usage declaration**
 
-Claude (Anthropic) and Codex (OpenAI) were used as coding assistants to build the data pipeline and the offline application; scikit-learn was used for the reliability model in Step 3. All verdicts and priority scores come from a deterministic, rule-based pipeline, no AI model runs inside the shipped app, and AI was not used to generate or alter any underlying data, measurements or figures.
+Claude (Anthropic) and Codex (OpenAI) were used as coding assistants to build the data pipeline and the offline application; scikit-learn was used for the reliability model in Step 3. All verdicts and priority scores come from a deterministic, rule-based pipeline, no AI model runs inside the shipped app, and AI was not used to generate or alter any underlying data, measurements or figures. The two background images in the presentation slides were generated with Google AI; the slides label them as illustrations, and they do not show the communities named.
 
 **Source code**
 
