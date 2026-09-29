@@ -6,7 +6,7 @@
 
 **A tool to find and fix connectivity gaps in 96 remote NT communities**
 
-**Group: DIC005**
+**Team Number: DIC005**
 
 | **Student Name** | **Student ID** | **Role** |
 | --- | :---: | --- |
@@ -39,7 +39,7 @@ In the remote Northern Territory, a coverage map that says "connected" does not 
 
 Crosscheck brings five sources together for 96 remote NT communities: four published coverage claims and one government drive test. It checks the claims against each other and tests each community's best available connection against what telehealth video, online school lessons, government websites and voice calls need.
 
-Only 1 of 96 communities has a connection known to meet healthdirect's latency requirement for video calls. In 31 communities the sources disagree about whether there is mobile coverage at all, and in 17 no public source records any mobile voice or SMS path.
+Only 1 of 96 communities has a connection known to meet healthdirect's latency requirement for video calls. In 33 communities the five sources disagree about whether there is mobile coverage at all, and in 17 no public source records any mobile voice or SMS path.
 
 Crosscheck turns this into an action list: service gaps first, then evidence to check, then communities to monitor. Every community gets one named action and one responsible agency, and the order does not depend on any single weight. The app works fully offline on a phone.
 
@@ -113,13 +113,13 @@ The weights are a judgement, so we tested them: moving any single weight to half
 
 **Step 5: The offline app**
 
-The results ship as a web app of about 1 MB that runs in any phone browser without internet. One phone can pass an updated version to another by showing a loop of QR codes, with no Wi-Fi, data or Bluetooth. "Report here" lets residents save their phone's rough connection estimate and share it by QR code or SMS if they choose. The app computes no verdict and runs no model.
+The results ship as a web app of about 1 MB that runs in any phone browser without internet. One phone can pass an updated version to another by showing a loop of QR codes, with no Wi-Fi, data or Bluetooth. "Report here" lets residents save their phone's rough connection estimate and share it by QR code or SMS if they choose. The app computes no verdict and runs no model. It is live at https://estaed.github.io/CDU_IT_CODEFAIR_DATA_2026/.
 
 # Findings
 
 **Finding 1: One in three communities has conflicting coverage data**
 
-Of the 96 communities, the four published claims all agree on coverage for 54 and on no coverage for 11; for 31 they disagree. The most common disagreement (8 communities) is a licensed site within 5 km that no carrier map, government list or BushTel record shows. The drive test confirms the problem: within 5 km of Nauiyu, Jilkminggan and Barunga it found no signal inside a carrier's claimed coverage.
+Of the 96 communities, the four published claims all agree on coverage for 54 and on no coverage for 11; for 31 they disagree. The app counts only sources that make a claim and adds the drive test as a fifth, which gives the 33 communities with conflicting data shown on its home screen. The most common disagreement (8 communities) is a licensed site within 5 km that no carrier map, government list or BushTel record shows. The drive test confirms the problem: within 5 km of Nauiyu, Jilkminggan and Barunga it found no signal inside a carrier's claimed coverage.
 
 **Finding 2: Telehealth video depends on an unmeasured link almost everywhere**
 
@@ -251,8 +251,8 @@ Claude (Anthropic) and Codex (OpenAI) were used as coding assistants to build th
 
 **Source code**
 
-The full Python source and a README with reproduction instructions are in the submitted zip file and at https://github.com/Estaed/CDU_IT_CODEFAIR_DATA_2026.
+The full Python source and a README with reproduction instructions are in the submitted zip file and at https://github.com/Estaed/CDU_IT_CODEFAIR_DATA_2026. The interactive prototype runs at https://estaed.github.io/CDU_IT_CODEFAIR_DATA_2026/ and as index.html in the zip.
 
 **Dataset links**
 
-Every dataset is listed with its URL and licence in the References; fetch dates, sizes and attribution lines are in `data/out/PROVENANCE.md` in the source code.
+Every dataset is listed with its URL and licence in the References; fetch dates, sizes and attribution lines are in data/out/PROVENANCE.md in the source code.
