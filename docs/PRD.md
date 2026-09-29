@@ -560,7 +560,7 @@ What the app shows for one community; not a schema.
 11. **A sourced latency figure for 4G and for NBN fixed wireless.** Needed to turn the amber
     assumption into a rule; ACCC MBA reports are the likely source.
 12. **Team number** — ANSWERED 2026-09-12: **DIC005**. Held in `constants.md`; header, footer
-    and file name read it from there. (The sibling AI Challenge entry is AIC014, not this one.)
+    and file name read it from there.
 13. **Pack cap after the map layers** — ANSWERED 2026-09-15 from
     `reports/2026-09-15-map-bytes.md`: tolerance 0.02 degrees for every layer (0.01 and 0.02
     are indistinguishable at phone scale); Telstra 4G, Optus 4G, MOCN 4G (shown as TPG), SA3

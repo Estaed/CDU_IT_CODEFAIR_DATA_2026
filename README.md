@@ -55,7 +55,7 @@ uv sync
 .venv/Scripts/python scripts/gate.py
 ```
 
-The committed pack is enough to build and test `dist/index.html` without raw-data downloads. The gate runs Ruff, unit tests, the build and size checks, then Playwright against the built file with nonlocal requests blocked. `dist/` is generated and ignored by Git.
+The committed pack is enough to build `dist/index.html` and run its browser tests (`.venv/Scripts/python -m pytest -m browser`) without raw-data downloads. The full gate runs Ruff, unit tests, the build and size checks, then Playwright against the built file with nonlocal requests blocked; the source and pack unit tests read `data/raw/`, so the gate is green only once the snapshots below are fetched. `dist/` is generated and ignored by Git.
 
 To reproduce the data pack, fetch the publisher snapshots into ignored `data/raw/` with the modules under [`pipeline/fetch/`](pipeline/fetch/) (one per source: ABS boundaries, ACCC, ACMA RRL, BushTel, NBN, NT Government, National Audit, Mobile Black Spot Program; about 4.5 GB, most of it ACCC coverage KML), then run:
 

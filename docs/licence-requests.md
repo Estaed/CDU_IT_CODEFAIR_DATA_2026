@@ -1,7 +1,7 @@
 # Licence requests — drafts for Tarik to send from his CDU address
 
 Drafted 2026-09-12 after the 20-community spike showed which sources ship in the app;
-shortened the same day. Team number DIC005 (the AI Challenge entry is AIC014, not this one).
+shortened the same day. Team number DIC005.
 Send all three the same day; log the send date and any reply under "Status" so the report's
 References section can cite it.
 
