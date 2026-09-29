@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Crosscheck · Fix first concept</title>
+  <link rel="stylesheet" href="../ds/styles.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    .wrap { max-width: var(--size-content-max); margin: 0 auto; }
+    .figure { font: var(--text-figure-sm); white-space: nowrap; }
+    .source { display: block; font: var(--text-caption); color: var(--text-secondary); }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 2;
+      background: var(--surface-page);
+      border-bottom: var(--size-hairline) solid var(--border-hairline);
+    }
+    .topbar__inner {
+      display: flex; align-items: center; justify-content: space-between;
+      min-height: var(--size-topbar); padding: 0 var(--space-md);
+    }
+    .brand { font: var(--text-title-sm); color: var(--text-heading); text-decoration: none; }
+    .brand__mark { margin-right: var(--space-xs); font: var(--text-figure-md); }
+    .offline {
+      padding: var(--space-xxs) var(--space-sm); border-radius: var(--radius-pill);
+      background: var(--surface-block); color: var(--text-body); font: var(--text-label);
+    }
+
+    .hero { padding: var(--space-xl) var(--space-md) var(--space-lg); }
+    .eyebrow {
+      margin: 0 0 var(--space-xs); color: var(--text-secondary);
+      font: var(--text-label); text-transform: uppercase;
+    }
+    h1 { margin: 0; color: var(--text-heading); font: var(--text-title-lg); }
+    .hero__copy { max-width: 48ch; margin: var(--space-xs) 0 0; }
+    .hero__source { margin-top: var(--space-sm); }
+
+    .index {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-top: var(--size-hairline) solid var(--border-hairline);
+      border-bottom: var(--size-hairline) solid var(--border-hairline);
+    }
+    .index a {
+      display: flex; flex-direction: column; justify-content: center; gap: var(--space-xxs);
+      min-height: calc(var(--size-touch) + var(--space-lg));
+      padding: var(--space-xs) var(--space-sm); text-decoration: none;
+      border-right: var(--size-hairline) solid var(--border-hairline);
+      border-bottom: var(--size-focus-ring) solid transparent;
+    }
+    .index a:last-child { border-right: 0; }
+    .index a:first-child { border-bottom-color: var(--text-heading); }
+    .index strong { color: var(--text-heading); font: var(--text-figure-lg); }
+    .index span { color: var(--text-body); font: var(--text-label); }
+    .index__source { padding: var(--space-xs) var(--space-md) 0; }
+
+    .group { padding: var(--space-lg) var(--space-md); scroll-margin-top: var(--size-topbar); }
+    .group + .group { border-top: var(--size-hairline) solid var(--border-hairline); }
+    .group__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-sm); }
+    .group h2 { margin: 0; color: var(--text-heading); font: var(--text-title-md); }
+    .group__count { color: var(--text-secondary); font: var(--text-figure-xs); }
+    .group__intro { margin: var(--space-xxs) 0 var(--space-md); font: var(--text-body-sm); }
+
+    .lead {
+      border: var(--size-hairline) solid var(--border-hairline);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .lead__main { padding: var(--space-md); }
+    .lead__top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); }
+    .rank { color: var(--text-heading); font: var(--text-figure-lg); }
+    .tag {
+      padding: var(--space-xxs) var(--space-xs); border-radius: var(--radius-xs);
+      background: var(--surface-block); color: var(--text-body); font: var(--text-label);
+    }
+    .lead h3 { margin: var(--space-sm) 0 var(--space-xxs); color: var(--text-heading); font: var(--text-title-lg); }
+    .meta { color: var(--text-secondary); font: var(--text-body-sm); }
+    .verdicts { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-top: var(--space-md); }
+    .verdict {
+      display: inline-flex; align-items: center; gap: var(--space-xxs);
+      min-height: var(--size-badge); padding: 0 var(--space-xs);
+      border-radius: var(--radius-xs); color: var(--verdict-fails-text);
+      background: var(--verdict-fails-fill); font: var(--text-label);
+    }
+    .lead__explain { margin: var(--space-sm) 0 0; font: var(--text-body-sm); }
+    .action { padding: var(--space-md); background: var(--surface-soft); }
+    .action__label { display: block; margin-bottom: var(--space-xxs); color: var(--text-secondary); font: var(--text-label); }
+    .action strong { display: block; color: var(--text-heading); font: var(--text-title-sm); }
+    .action__owner { display: block; margin-top: var(--space-xxs); font: var(--text-body-sm); }
+    .action .source { margin-top: var(--space-sm); }
+
+    .list { list-style: none; margin: var(--space-sm) 0 0; padding: 0; }
+    .list li { border-bottom: var(--size-hairline) solid var(--border-hairline-soft); }
+    .list li:last-child { border-bottom: 0; }
+    .row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-md); padding: var(--space-sm) 0; }
+    .row__rank { padding-top: var(--space-xxs); color: var(--text-heading); font: var(--text-figure-md); }
+    .row__name { color: var(--text-heading); font: var(--text-title-sm); }
+    .row__meta { display: block; margin-top: var(--space-xxs); font: var(--text-body-sm); }
+    .row .source { margin-top: var(--space-xxs); }
+
+    .note { padding: var(--space-md); background: var(--surface-block); border-radius: var(--radius-xs); font: var(--text-body-sm); }
+    .note strong { color: var(--text-heading); font: var(--text-label); }
+    footer { padding: var(--space-lg) var(--space-md); border-top: var(--size-hairline) solid var(--border-hairline); }
+    footer p { margin: 0; font: var(--text-caption); color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+  <!-- Static design concept. It reads the local design-system CSS and makes no network request. -->
+  <header class="topbar">
+    <div class="topbar__inner wrap">
+      <a class="brand" href="#top"><span class="brand__mark" aria-hidden="true">✓</span>Crosscheck</a>
+      <span class="offline">Offline ready</span>
+    </div>
+  </header>
+
+  <main id="top" class="wrap">
+    <div class="hero">
+      <p class="eyebrow">Action order · <span class="figure">96</span> communities</p>
+      <h1>Fix first</h1>
+      <p class="hero__copy">Start with source-based service gaps. Check what people experience locally before committing to a fix.</p>
+      <span class="source hero__source">Priority output · Crosscheck data pack · <span class="figure">2026-09-27</span></span>
+    </div>
+
+    <nav class="index" aria-label="Priority groups">
+      <a href="#service"><strong>20</strong><span>Service gaps</span></a>
+      <a href="#check"><strong>64</strong><span>Check evidence</span></a>
+      <a href="#monitor"><strong>12</strong><span>Monitor</span></a>
+    </nav>
+    <span class="source index__source">Group counts · Crosscheck data pack · <span class="figure">2026-09-27</span></span>
+
+    <section class="group" id="service" aria-labelledby="service-title">
+      <div class="group__head"><h2 id="service-title">Service gaps</h2><span class="group__count">01–20</span></div>
+      <p class="group__intro">Video care or calls and texts have a source-based Fails verdict.</p>
+
+      <article class="lead" aria-labelledby="lead-title">
+        <div class="lead__main">
+          <div class="lead__top"><span class="rank">#01</span><span class="tag">Investigate first</span></div>
+          <h3 id="lead-title">Nitjpurru</h3>
+          <div class="meta">Big Rivers · <span class="figure">142</span> people</div>
+          <div class="verdicts" aria-label="Source-based service verdicts">
+            <span class="verdict">○ Telehealth fails</span>
+            <span class="verdict">○ Voice &amp; SMS fail</span>
+          </div>
+          <p class="lead__explain">A health centre is listed here, but the best recorded path is satellite.</p>
+        </div>
+        <div class="action">
+          <span class="action__label">Suggested intervention</span>
+          <strong>Low-latency backhaul</strong>
+          <span class="action__owner">For DCDD and nbn · priority score <span class="figure">0.608</span></span>
+          <span class="source">Community and priority output · <span class="figure">2026-09-27</span></span>
+        </div>
+      </article>
+
+      <ol class="list" aria-label="Next service gaps">
+        <li><div class="row"><span class="row__rank">#02</span><div><span class="row__name">Amanbidji</span><span class="row__meta">Low-latency backhaul · score <span class="figure">0.596</span></span><span class="source">Crosscheck priority output · <span class="figure">2026-09-27</span></span></div></div></li>
+        <li><div class="row"><span class="row__rank">#03</span><div><span class="row__name">Areyonga</span><span class="row__meta">Low-latency backhaul · score <span class="figure">0.586</span></span><span class="source">Crosscheck priority output · <span class="figure">2026-09-27</span></span></div></div></li>
+      </ol>
+    </section>
+
+    <section class="group" id="check" aria-labelledby="check-title">
+      <div class="group__head"><h2 id="check-title">Check the evidence</h2><span class="group__count">21–84</span></div>
+      <p class="group__intro">Coverage claims or link quality need local confirmation before choosing an investment.</p>
+      <ol class="list" aria-label="First evidence check">
+        <li><div class="row"><span class="row__rank">#21</span><div><span class="row__name">Nauiyu</span><span class="row__meta">Verify on the ground · DCDD, carrier</span><span class="source">Crosscheck priority output · <span class="figure">2026-09-27</span></span></div></div></li>
+      </ol>
+    </section>
+
+    <section class="group" id="monitor" aria-labelledby="monitor-title">
+      <div class="group__head"><h2 id="monitor-title">Monitor</h2><span class="group__count">85–96</span></div>
+      <p class="group__intro">Current sources do not point to a specific fix.</p>
+      <ol class="list" aria-label="First monitoring item">
+        <li><div class="row"><span class="row__rank">#85</span><div><span class="row__name">Haasts Bluff</span><span class="row__meta">Monitor · DCDD</span><span class="source">Crosscheck priority output · <span class="figure">2026-09-27</span></span></div></div></li>
+      </ol>
+    </section>
+
+    <aside class="note" aria-label="How to read this order">
+      <strong>How this order works</strong><br>
+      Source-based service gaps come first, then evidence checks, then monitoring. The weighted score orders communities within each group. A Fails verdict is not a field measurement.
+    </aside>
+  </main>
+  <footer class="wrap"><p>Crosscheck · Static design concept using the project's design tokens. No verdict is calculated on this page.</p></footer>
+</body>
+</html>

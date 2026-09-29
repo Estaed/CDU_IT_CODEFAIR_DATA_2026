@@ -1,6 +1,6 @@
 # Findings pack
 
-Generated 2026-09-27 by `pipeline.figures.write_findings_md` from the tables under `data/out/tables/`, `data/out/priority.csv`, `data/out/reliability.csv`, `pipeline/thresholds.csv` and `data/out/PROVENANCE.md`. Every number below is read from those files at write time; re-running the pipeline refreshes them.
+Generated 2026-09-29 by `pipeline.figures.write_findings_md` from the tables under `data/out/tables/`, `data/out/priority.csv`, `data/out/reliability.csv`, `pipeline/thresholds.csv` and `data/out/PROVENANCE.md`. Every number below is read from those files at write time; re-running the pipeline refreshes them.
 
 ## For the report team and their AI assistant
 
@@ -57,29 +57,29 @@ Paste the block below into your assistant, then attach or open the files it name
 
 ## Methodology
 
-- The map-claim reliability model validates on a five-fold split by ABS SA3 region; the pooled out-of-fold AUC over every claim tested is 0.7915 — evidence: data/out/tables/reliability_validation.csv — value: 0.7915 — run 2026-09-27.
-- That pooled AUC rests on 3 of 5 folds: the other 2 folds carried no positive sample, so their AUC is undefined — evidence: data/out/tables/reliability_validation.csv — value: 3 — run 2026-09-27.
-- The National Audit records a measured drive-test non-alignment within 5 km for 3 of 96 communities — evidence: data/out/tables/audit_within_5km.csv — value: 3 — run 2026-09-27.
+- The map-claim reliability model validates on a five-fold split by ABS SA3 region; the pooled out-of-fold AUC over every claim tested is 0.7915 — evidence: data/out/tables/reliability_validation.csv — value: 0.7915 — run 2026-09-29.
+- That pooled AUC rests on 3 of 5 folds: the other 2 folds carried no positive sample, so their AUC is undefined — evidence: data/out/tables/reliability_validation.csv — value: 3 — run 2026-09-29.
+- The National Audit records a measured drive-test non-alignment within 5 km for 3 of 96 communities — evidence: data/out/tables/audit_within_5km.csv — value: 3 — run 2026-09-29.
 
 ## Findings
 
-- Nitjpurru ranks #1 of 96 in the service group with a priority score of 0.608 (region Big Rivers, population 142), intervention 'low-latency backhaul' addressed to DCDD, nbn because Telehealth verdict and voice verdict rank it here; health centre on a satellite path. Telehealth verdict fails; map-claim reliability none; publisher agreement 1/4 — evidence: data/out/tables/top10.csv — value: 0.608 — run 2026-09-27.
-- 'measure the link here' is the most common intervention, reaching 31 of 96 communities, addressed to DCDD — evidence: data/out/tables/intervention_counts.csv — value: 31 — run 2026-09-27.
-- Map-claim reliability words over the 96: high 8, medium 29, low 37, none 22 — evidence: data/out/tables/reliability_words.csv — value: 8 — run 2026-09-27.
-- All four longstanding publishers (predicted, listed, licensed, portal) agree covered for 54 communities and agree not covered for 11; 31 communities see disagreement — evidence: data/out/tables/disagreement_patterns.csv — value: 54 — run 2026-09-27.
-- No public source records a mobile voice or SMS path in 17 of 96 communities (1,140 people; 8 of them have a health centre). A mobile call needs a path at both ends, so these communities are outside the mobile reach of the other 79 as well as unable to call out; landlines, payphones and satellite phones are not in any source used here. — evidence: data/out/tables/voice_unreachable.csv — value: 17 — run 2026-09-27.
-- The measured publisher (National Audit) never records 'covered'; it records a drive-test contradiction for 3 of 96 communities — evidence: data/out/tables/publisher_lines_summary.csv — value: 3 — run 2026-09-27.
+- Nitjpurru ranks #1 of 96 in the service group with a priority score of 0.608 (region Big Rivers, population 142), intervention 'low-latency backhaul' addressed to DCDD, nbn because Telehealth verdict and voice verdict rank it here; health centre on a satellite path. Telehealth verdict fails; map-claim reliability none; publisher agreement 1/4 — evidence: data/out/tables/top10.csv — value: 0.608 — run 2026-09-29.
+- 'measure the link here' is the most common intervention, reaching 31 of 96 communities, addressed to DCDD — evidence: data/out/tables/intervention_counts.csv — value: 31 — run 2026-09-29.
+- Map-claim reliability words over the 96: high 8, medium 29, low 37, none 22 — evidence: data/out/tables/reliability_words.csv — value: 8 — run 2026-09-29.
+- All four longstanding publishers (predicted, listed, licensed, portal) agree covered for 54 communities and agree not covered for 11; 31 communities see disagreement — evidence: data/out/tables/disagreement_patterns.csv — value: 54 — run 2026-09-29.
+- No public source records a mobile voice or SMS path in 17 of 96 communities (1,140 people; 8 of them have a health centre). A mobile call needs a path at both ends, so these communities are outside the mobile reach of the other 79 as well as unable to call out; landlines, payphones and satellite phones are not in any source used here. — evidence: data/out/tables/voice_unreachable.csv — value: 17 — run 2026-09-29.
+- The measured publisher (National Audit) never records 'covered'; it records a drive-test contradiction for 3 of 96 communities — evidence: data/out/tables/publisher_lines_summary.csv — value: 3 — run 2026-09-29.
 
 ## Discussion
 
-- 95 of 96 communities have no NBN path but the satellite residual, so every verdict computed off that path rests on the ACCC-measured Sky Muster latency of 664.9 ms and, where the assumption applies, the sentence quoting the Starlink LEO figure of 29.8 ms from the same ACCC release; only 1 of 96 (fixed line) does not — evidence: pipeline/thresholds.csv — value: 95 — run 2026-09-27.
-- A reliability word of 'low' is a rank, not a probability: the model is fit with class_weight=balanced against a pooled base rate of 2.83 %, so 'low' means the claim ranks with the ones the drive test contradicted, not a percent chance of being wrong — evidence: data/out/tables/reliability_validation.csv — value: 0.02832 — run 2026-09-27.
-- Only 3 of 96 communities have a drive test within 5 km; every other reliability word is an extrapolation from the nearest audited conditions, not a measurement at the community itself — evidence: data/out/tables/audit_within_5km.csv — value: 3 — run 2026-09-27.
-- 2 of the raw sources this pack cites carry an unstated licence with a request on file — evidence: data/out/PROVENANCE.md — value: 2 — run 2026-09-27.
-- Communities under 100 people are never shown a raw population figure; the telehealth verdict table suppresses 29 such communities from its population sums — evidence: data/out/tables/verdict_counts.csv — value: 29 — run 2026-09-27.
+- 95 of 96 communities have no NBN path but the satellite residual, so every verdict computed off that path rests on the ACCC-measured Sky Muster latency of 664.9 ms and, where the assumption applies, the sentence quoting the Starlink LEO figure of 29.8 ms from the same ACCC release; only 1 of 96 (fixed line) does not — evidence: pipeline/thresholds.csv — value: 95 — run 2026-09-29.
+- A reliability word of 'low' is a rank, not a probability: the model is fit with class_weight=balanced against a pooled base rate of 2.83 %, so 'low' means the claim ranks with the ones the drive test contradicted, not a percent chance of being wrong — evidence: data/out/tables/reliability_validation.csv — value: 0.02832 — run 2026-09-29.
+- Only 3 of 96 communities have a drive test within 5 km; every other reliability word is an extrapolation from the nearest audited conditions, not a measurement at the community itself — evidence: data/out/tables/audit_within_5km.csv — value: 3 — run 2026-09-29.
+- 2 of the raw sources this pack cites carry an unstated licence with a request on file — evidence: data/out/PROVENANCE.md — value: 2 — run 2026-09-29.
+- Communities under 100 people are never shown a raw population figure; the telehealth verdict table suppresses 29 such communities from its population sums — evidence: data/out/tables/verdict_counts.csv — value: 29 — run 2026-09-29.
 
 ## Recommendations
 
-- The top 10 priority communities, with their interventions and addressees, are the Recommendations section's evidence base — evidence: data/out/tables/top10.csv — value: 10 — run 2026-09-27.
-- The groups are fixed by source-based verdict and intervention; within them, the smallest top-10 overlap under any single weight moved to half or one-and-a-half of itself is 10 of 10, on population at factor 0.5 — evidence: data/out/tables/priority_sensitivity.csv — value: 10 — run 2026-09-27.
-- Eight interventions cover the 96 communities, addressed to DCDD, carriers, nbn or ACMA by pattern — evidence: data/out/tables/intervention_counts.csv — value: 8 — run 2026-09-27.
+- The top 10 priority communities, with their interventions and addressees, are the Recommendations section's evidence base — evidence: data/out/tables/top10.csv — value: 10 — run 2026-09-29.
+- The groups are fixed by source-based verdict and intervention; within them, the smallest top-10 overlap under any single weight moved to half or one-and-a-half of itself is 10 of 10, on population at factor 0.5 — evidence: data/out/tables/priority_sensitivity.csv — value: 10 — run 2026-09-29.
+- Eight interventions cover the 96 communities, addressed to DCDD, carriers, nbn or ACMA by pattern — evidence: data/out/tables/intervention_counts.csv — value: 8 — run 2026-09-29.
